@@ -69,10 +69,24 @@ jobs:
         uses: actions/configure-pages@v5
         continue-on-error: true
 
+      # A warning annotation alone is too easy to miss under a green tick, and a
+      # skipped deploy then reads as a successful one. Write it into the run
+      # summary too, so the run's own page says plainly that nothing shipped.
       - name: Report that Pages is not enabled
         if: steps.pages.outcome != 'success'
         run: |
-          echo "::warning title=Deploy skipped::GitHub Pages is not enabled for this repository, so the built game was not published. Enable it under Settings -> Pages -> Source -> 'GitHub Actions', then re-run this workflow. Pages requires a public repository on the free plan. The build and tests above passed."
+          echo "::warning title=Deploy skipped::GitHub Pages is not enabled, so nothing was published. Enable Settings -> Pages -> Source -> 'GitHub Actions', then run this workflow again. The build and tests above passed."
+          {
+            echo "## Deploy skipped — GitHub Pages is not enabled"
+            echo
+            echo "The game **built and tested successfully**, but it was **not published**."
+            echo
+            echo "To fix:"
+            echo
+            echo "1. Settings -> Pages -> Source -> **GitHub Actions**"
+            echo "2. Pages needs a **public repository** on the free plan"
+            echo "3. **Run this workflow again** — turning Pages on does not deploy anything by itself"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload site
         if: steps.pages.outcome == 'success'

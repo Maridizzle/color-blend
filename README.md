@@ -54,11 +54,14 @@ output works at a project-site path unchanged.
    plan a private repository can publish; otherwise change the repository's
    visibility under Settings -> General.
 
-Then re-run the workflow from the Actions tab, or push anything.
+**Then run the workflow again** — from the Actions tab, or by pushing anything.
+This step is easy to miss: turning Pages on does not deploy what is already
+built. Only a run that happens *after* the setting is on will publish.
 
-Until Pages is enabled the workflow fails at the `configure-pages` step, having
-already installed, tested and built successfully — that failure means "no Pages
-site yet", not a broken build.
+Before Pages is enabled the workflow still builds and tests normally and simply
+skips the deploy, leaving a "Deploy skipped" panel on the run summary saying so.
+The run stays green, because nothing is broken — but green does not mean
+published, and that panel is how to tell the difference.
 
 ### Sharing it without publishing the repository
 
