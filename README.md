@@ -33,6 +33,39 @@ disk, send it to someone, or publish it as one page. That build compiles out
 the service worker and the baked-pack loader, since a file with no siblings
 should not go looking for any.
 
+## Deploying it
+
+`.github/workflows/deploy.yml` builds the game and publishes it to GitHub Pages
+on every push to the default branch, giving it a shareable URL:
+
+```
+https://<user>.github.io/color-blend/
+```
+
+The build needs no configuration for this — `base` is already relative, so the
+output works at a project-site path unchanged.
+
+**One-time setup, in the repository's own settings:**
+
+1. **Settings -> Pages -> Source -> "GitHub Actions".** The workflow tries to
+   turn this on by itself, but creating a Pages site needs more permission than
+   a workflow token is granted, so the first time is manual.
+2. **GitHub Pages requires a public repository on the free plan.** On a paid
+   plan a private repository can publish; otherwise change the repository's
+   visibility under Settings -> General.
+
+Then re-run the workflow from the Actions tab, or push anything.
+
+Until Pages is enabled the workflow fails at the `configure-pages` step, having
+already installed, tested and built successfully — that failure means "no Pages
+site yet", not a broken build.
+
+### Sharing it without publishing the repository
+
+`npm run build:standalone` produces a single self-contained `color-blend.html`.
+It needs no server and no network, so it can simply be sent to someone, and it
+keeps the repository private.
+
 ## How the puzzle works
 
 A real image is not a monotonic gradient, so "sort darkest to lightest" and "the
