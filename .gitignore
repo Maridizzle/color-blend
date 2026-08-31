@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.vite/
+*.local
+.DS_Store
+
+# Baked pack output is generated from source zips by `npm run pack`, not
+# hand-edited. The empty index ships so the game does not 404 looking for it.
+public/packs/*
+!public/packs/index.json
+
+# Verification screenshots
+screenshots/
