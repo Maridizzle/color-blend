@@ -11,3 +11,6 @@ public/packs/*
 
 # Verification screenshots
 screenshots/
+
+# Standalone single-file build output (npm run build:standalone)
+color-blend.html

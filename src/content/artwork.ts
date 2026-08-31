@@ -46,10 +46,22 @@ function drawSquareCropped(
   ctx.drawImage(image, sx, sy, side, side, 0, 0, size, size);
 }
 
-async function fetchBlob(url: string): Promise<Blob> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Could not load ${url} (${response.status})`);
-  return response.blob();
+/**
+ * Load a URL through an <img> rather than fetch + blob + createImageBitmap.
+ *
+ * Fewer moving parts, and it survives places fetch does not: an image element
+ * is governed by img-src rather than connect-src, so this path keeps working
+ * under a restrictive CSP and for `data:` URLs, which is what lets the whole
+ * game be inlined into a single self-contained page.
+ */
+function loadImageElement(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`Could not load ${url}`));
+    image.src = url;
+  });
 }
 
 export async function loadArtwork(source: ArtworkSource, size = ARTWORK_SIZE): Promise<Artwork> {
@@ -59,12 +71,12 @@ export async function loadArtwork(source: ArtworkSource, size = ARTWORK_SIZE): P
 
   if (source.kind === 'drawn') {
     source.draw(ctx, size);
+  } else if (source.kind === 'url') {
+    const image = await loadImageElement(source.url);
+    drawSquareCropped(ctx, image, image.naturalWidth, image.naturalHeight, size);
   } else {
-    const blob =
-      source.kind === 'bytes'
-        ? new Blob([source.bytes as BlobPart], { type: source.mime })
-        : await fetchBlob(source.url);
-
+    // Pack bytes are already in memory, so decode them directly.
+    const blob = new Blob([source.bytes as BlobPart], { type: source.mime });
     let bitmap: ImageBitmap;
     try {
       bitmap = await createImageBitmap(blob);

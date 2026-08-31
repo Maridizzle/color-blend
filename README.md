@@ -17,14 +17,21 @@ you find are collected in a journal.
 
 ```sh
 npm install
-npm run dev       # play at localhost:5173
-npm test          # unit tests
-npm run build     # production build into dist/
+npm run dev              # play at localhost:5173
+npm test                 # unit tests
+npm run build            # production build into dist/
+npm run build:standalone # one self-contained color-blend.html
 ```
 
 It is a PWA: installable to a phone home screen, and playable offline once
 loaded. `base` is relative, so `dist/` works from any subpath (GitHub Pages, a
 Capacitor wrapper) with no rebuild.
+
+`build:standalone` inlines the styles, the code and all four artworks into a
+single HTML file that needs no server and no network — open it straight off
+disk, send it to someone, or publish it as one page. That build compiles out
+the service worker and the baked-pack loader, since a file with no siblings
+should not go looking for any.
 
 ## How the puzzle works
 
