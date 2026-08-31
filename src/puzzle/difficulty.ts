@@ -4,75 +4,67 @@ import { SHAPES, type ShapeName } from './shapes';
 import { buildField, fieldStats } from './field';
 
 /**
- * Difficulty calibration.
+ * How big a board gets.
  *
- * This is the piece that makes blind packs work. Nobody looks at an image
- * before it becomes a puzzle, so tile count cannot be authored by hand -- and a
- * fixed tile count is wrong in both directions: a vivid image chopped into 8x8
- * is trivial, while a hazy one chopped into 20x20 is an unreadable pixel hunt.
+ * This used to work the other way round, and it was wrong. Difficulty was
+ * expressed as a target *perceptual step* between adjacent tiles, and the tile
+ * count was solved for. That optimises the wrong quantity: a vivid image with a
+ * wide palette got *more* tiles, because the arithmetic said its shades were
+ * still far enough apart to tell apart -- so the best artwork produced the
+ * most punishing board. It produced boards of 350 tiles that were perfectly
+ * "legible" and completely unplayable.
  *
- * So difficulty is expressed as a *perceptual* target -- how different should
- * two adjacent tiles look -- and the tile count is solved for. A washed-out
- * image automatically gets fewer, larger tiles; a punchy one gets more.
+ * The limit was never whether two shades can be distinguished side by side. It
+ * is how many things a person can hold in their head and put in order. So the
+ * tile count is now authored, and the perceptual step is whatever falls out of
+ * it -- which works in the player's favour, since fewer tiles spanning the same
+ * palette means the shades land further apart and the board reads more easily.
+ *
+ * The old self-calibration survives as a safety net, because it was genuinely
+ * good at one thing: stopping a washed-out blind-pack image from being cut into
+ * more pieces than its palette can support. See `calibrate`.
  */
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export const DIFFICULTY_TUNING = {
   /**
-   * Target perceptual step between adjacent tiles, in Oklab distance.
-   * For reference ~0.02 is around the just-noticeable difference for two large
-   * adjacent patches, so 'hard' really is near the limit of discrimination.
+   * Tiles on the board, locked starters included. These are the numbers to
+   * change if the game feels too easy or too fiddly -- nothing else needs to
+   * move with them.
    */
-  targetNeighborDeltaE: {
-    easy: 0.055,
-    medium: 0.035,
-    hard: 0.022,
+  tileCount: {
+    easy: 12,
+    medium: 20,
+    hard: 30,
   } satisfies Record<Difficulty, number>,
+
   /** Locked starter tiles handed to the player as anchors. */
   lockedStarters: {
     easy: 3,
     medium: 2,
     hard: 1,
   } satisfies Record<Difficulty, number>,
-  /** Probe resolution used to measure the palette's gradient steepness. */
-  probeDimension: 12,
-  minDimension: 4,
-  maxDimension: 22,
-  /** Hard ceiling on tiles, for both rendering cost and player sanity. */
-  maxTiles: 560,
+
+  /**
+   * Adjacent tiles must differ by at least this much in Oklab, or the board
+   * gets smaller until they do. Roughly twice the just-noticeable difference
+   * for two large adjacent patches, so it is a comfort threshold rather than a
+   * detection one. On a decent palette it never binds: 30 tiles across a 0.70
+   * spread step by about 0.13.
+   */
+  minNeighborDeltaE: 0.04,
+
+  /** Never go below this, even for a nearly flat palette. */
+  minTiles: 6,
+  /** Sanity bound on the search, well above the hardest authored count. */
+  maxTiles: 60,
 } as const;
 
-/**
- * Column/row counts that make a roughly square board for a given lattice kind.
- * `n` is "tiles across" in spirit; the per-kind ratios come from each lattice's
- * cell geometry (see lattice.ts).
- */
-export function latticeForDimension(kind: LatticeKind, n: number): { cols: number; rows: number } {
-  const clamp = (v: number) => Math.max(2, Math.round(v));
-  switch (kind) {
-    case 'square':
-      return { cols: clamp(n), rows: clamp(n) };
-    case 'hex':
-      // width = cols*sqrt(3), height = rows*1.5
-      return { cols: clamp(n), rows: clamp(n * 1.1547) };
-    case 'triangle': {
-      // Triangles are small, so scale down to land on a comparable tile count.
-      const base = n / 1.3;
-      return { cols: clamp(base * 1.732), rows: clamp(base) };
-    }
-    case 'diamond':
-      // width = cols*w, height = rows*h/2
-      return { cols: clamp(n / 1.4), rows: clamp((n / 1.4) * 2) };
-  }
-}
+/** Widest column/row counts the board search will consider. */
+const SEARCH_LIMIT = 14;
 
-export function buildBoard(
-  kind: LatticeKind,
-  shape: ShapeName,
-  n: number,
-): Lattice {
-  const { cols, rows } = latticeForDimension(kind, n);
+export function buildBoard(kind: LatticeKind, shape: ShapeName, cols: number, rows: number): Lattice {
   const base = makeLattice(kind, cols, rows);
   return shape === 'full' ? base : maskLattice(base, SHAPES[shape]);
 }
@@ -80,17 +72,62 @@ export function buildBoard(
 export interface CalibrationResult {
   lattice: Lattice;
   field: Oklab[];
-  dimension: number;
+  /** Tiles actually on the board, after any shape mask. */
+  tileCount: number;
+  /** What the difficulty asked for, before the legibility floor. */
+  targetTileCount: number;
   measuredNeighborDeltaE: number;
-  targetNeighborDeltaE: number;
 }
 
 /**
- * Solve for the tile count that hits the difficulty's perceptual target.
+ * Find the board closest to a target tile count.
  *
- * Neighbor distance scales as 1/dimension because the field is a smooth
- * function of normalized position, so one probe measurement is enough to solve
- * for the dimension directly rather than searching.
+ * Searching column and row counts separately rather than a single "size"
+ * parameter matters at these small sizes: a square lattice built n-by-n can
+ * only produce 9, 16, 25 ... and so can never land on 12. Ties break toward a
+ * board that is close to square, so a 12-tile square grid comes out 4x3 rather
+ * than 12x1. Boards this small cost nothing to build, so the search is
+ * exhaustive rather than clever.
+ */
+export function boardForTileCount(
+  kind: LatticeKind,
+  shape: ShapeName,
+  target: number,
+): Lattice {
+  let best: Lattice | null = null;
+  let bestScore = Infinity;
+
+  for (let cols = 2; cols <= SEARCH_LIMIT; cols++) {
+    for (let rows = 2; rows <= SEARCH_LIMIT; rows++) {
+      const lattice = buildBoard(kind, shape, cols, rows);
+      const count = lattice.cells.length;
+      if (count < 3 || count > DIFFICULTY_TUNING.maxTiles) continue;
+
+      // Hitting the count dominates; squareness only settles ties. The aspect
+      // term is scaled to stay below one tile's worth of penalty.
+      const aspect = Math.abs(Math.log(lattice.width / lattice.height));
+      const score = Math.abs(count - target) + Math.min(aspect, 2) * 0.4;
+
+      if (score < bestScore) {
+        bestScore = score;
+        best = lattice;
+      }
+    }
+  }
+
+  // Only reachable if every candidate was rejected, which the bounds prevent.
+  return best ?? buildBoard(kind, shape, 4, 4);
+}
+
+/**
+ * Build the board for a difficulty, then check the palette can actually carry
+ * it.
+ *
+ * The floor check is the part worth keeping from the old design. Packs arrive
+ * blind, and an image whose shades barely separate would otherwise be cut into
+ * a full-size board of tiles nobody can order. Stepping the target down until
+ * adjacent tiles clear `minNeighborDeltaE` costs nothing on a good palette and
+ * rescues a poor one.
  */
 export function calibrate(
   anchors: readonly Oklab[],
@@ -99,37 +136,33 @@ export function calibrate(
   difficulty: Difficulty,
   symmetry: number,
 ): CalibrationResult {
-  const target = DIFFICULTY_TUNING.targetNeighborDeltaE[difficulty];
-  const probeDim = DIFFICULTY_TUNING.probeDimension;
+  const targetTileCount = DIFFICULTY_TUNING.tileCount[difficulty];
 
-  const probeLattice = buildBoard(kind, shape, probeDim);
-  const probeField = buildField(probeLattice, anchors, { symmetry });
-  const probe = fieldStats(probeLattice, probeField);
+  let target = targetTileCount;
+  let lattice = boardForTileCount(kind, shape, target);
+  let field = buildField(lattice, anchors, { symmetry });
+  let measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
 
-  let dimension: number = probeDim;
-  if (probe.medianMaxNeighborDeltaE > 0) {
-    dimension = Math.round((probeDim * probe.medianMaxNeighborDeltaE) / target);
+  while (
+    measured < DIFFICULTY_TUNING.minNeighborDeltaE &&
+    lattice.cells.length > DIFFICULTY_TUNING.minTiles
+  ) {
+    // Aim below the count actually achieved, so a target the search rounds up
+    // from cannot leave this loop spinning on the same board.
+    const next = Math.min(target, lattice.cells.length) - 2;
+    if (next < DIFFICULTY_TUNING.minTiles) break;
+
+    target = next;
+    lattice = boardForTileCount(kind, shape, target);
+    field = buildField(lattice, anchors, { symmetry });
+    measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
   }
-  dimension = Math.max(
-    DIFFICULTY_TUNING.minDimension,
-    Math.min(DIFFICULTY_TUNING.maxDimension, dimension),
-  );
-
-  let lattice = buildBoard(kind, shape, dimension);
-  // Back off if the shape happens to pack in more tiles than we allow.
-  while (lattice.cells.length > DIFFICULTY_TUNING.maxTiles && dimension > DIFFICULTY_TUNING.minDimension) {
-    dimension--;
-    lattice = buildBoard(kind, shape, dimension);
-  }
-
-  const field = buildField(lattice, anchors, { symmetry });
-  const stats = fieldStats(lattice, field);
 
   return {
     lattice,
     field,
-    dimension,
-    measuredNeighborDeltaE: stats.medianMaxNeighborDeltaE,
-    targetNeighborDeltaE: target,
+    tileCount: lattice.cells.length,
+    targetTileCount,
+    measuredNeighborDeltaE: measured,
   };
 }

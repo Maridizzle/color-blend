@@ -82,6 +82,8 @@ export function puzzleScreen(
   const reducedMotion = prefersReducedMotion(settings);
   const factsFound = new Set<number>();
   let solvedMoves = 0;
+  /** Fact tiles actually planted on this board; scales with its size. */
+  let factTilesOnBoard = 0;
 
   const onResize = () => session?.resize();
   window.addEventListener('resize', onResize);
@@ -118,8 +120,8 @@ export function puzzleScreen(
   }
 
   function updateFactsLabel(): void {
-    const total = Math.min(subject.facts.length, 5);
-    factsLabel.textContent = total > 0 ? `${factsFound.size} / ${total} facts` : '';
+    factsLabel.textContent =
+      factTilesOnBoard > 0 ? `${factsFound.size} / ${factTilesOnBoard} facts` : '';
   }
 
   /** The panel that slides up once the artwork has finished revealing itself. */
@@ -134,18 +136,26 @@ export function puzzleScreen(
         el('h2', { class: 'reveal-title', text: subject.title }),
         subject.blurb ? el('p', { class: 'reveal-blurb', text: subject.blurb }) : null,
         el('p', { class: 'reveal-moves', text: `Solved in ${moves} moves.` }),
-        factsFound.size > 0
+        // Every fact, not just the ones found. Fact tiles are seeded, so a
+        // replay serves the same ones and anything missed would otherwise be
+        // unreachable -- on a twelve-tile board that would permanently hide
+        // most of a subject. Finding one in play is the flourish; the full set
+        // is the point.
+        subject.facts.length > 0
           ? el('ul', {
               class: 'reveal-facts',
-              children: [...factsFound]
-                .sort((a, b) => a - b)
-                .map((i) => el('li', { text: subject.facts[i] ?? '' })),
+              children: subject.facts.map((fact, i) =>
+                el('li', {
+                  class: factsFound.has(i) ? 'reveal-fact-found' : undefined,
+                  text: fact,
+                }),
+              ),
             })
           : null,
-        subject.facts.length > factsFound.size && factsFound.size > 0
+        factsFound.size > 0
           ? el('p', {
               class: 'reveal-hint',
-              text: 'Replay to uncover the facts you missed.',
+              text: `You uncovered ${factsFound.size} of these while sorting.`,
             })
           : null,
         subject.attribution?.source || subject.attribution?.creator
@@ -182,6 +192,7 @@ export function puzzleScreen(
       if (destroyed) return;
 
       status.remove();
+      factTilesOnBoard = prepared.puzzle.factCells.length;
       updateFactsLabel();
 
       session = new PuzzleSession(

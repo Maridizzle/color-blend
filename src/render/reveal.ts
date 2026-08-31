@@ -38,14 +38,29 @@ function polygonRadius(poly: readonly (readonly [number, number])[]): number {
 
 export function buildRevealPlan(lattice: Lattice, artwork: ImageData8): RevealPlan {
   const n = lattice.cells.length;
-  const gridSize = Math.ceil(Math.sqrt(n));
   const side = Math.min(lattice.width, lattice.height);
   const square = {
     x: (lattice.width - side) / 2,
     y: (lattice.height - side) / 2,
     size: side,
   };
-  const cellSize = side / gridSize;
+
+  // Rows are derived from the columns rather than both being ceil(sqrt(n)).
+  // Using one number for both leaves the mosaic short of the bottom of the
+  // square whenever n is not a perfect square: at 12 tiles that is a 4x4 grid
+  // with three rows filled, so a quarter of the picture stays blank through the
+  // whole morph. Sizing cells per axis makes the mosaic cover the square
+  // exactly, and the authored counts divide cleanly anyway (12 = 4x3,
+  // 20 = 5x4, 30 = 6x5).
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+  const rows = Math.max(1, Math.ceil(n / cols));
+  const cellWidth = side / cols;
+  const cellHeight = side / rows;
+
+  // A last row that cannot be filled is centred, so the gap sits either side
+  // rather than hanging off one end.
+  const lastRowCount = n - (rows - 1) * cols;
+  const lastRowOffset = ((cols - lastRowCount) * cellWidth) / 2;
 
   const ranked = [...lattice.cells].sort((a, b) => a.v - b.v || a.u - b.u);
 
@@ -55,21 +70,23 @@ export function buildRevealPlan(lattice: Lattice, artwork: ImageData8): RevealPl
   const targetColor = new Array<string>(n).fill('#000');
 
   ranked.forEach((cell, rank) => {
-    const col = rank % gridSize;
-    const row = Math.floor(rank / gridSize);
+    const col = rank % cols;
+    const row = Math.floor(rank / cols);
+    const inset = row === rows - 1 ? lastRowOffset : 0;
 
-    targetCx[cell.id] = square.x + (col + 0.5) * cellSize;
-    targetCy[cell.id] = square.y + (row + 0.5) * cellSize;
+    targetCx[cell.id] = square.x + inset + (col + 0.5) * cellWidth;
+    targetCy[cell.id] = square.y + (row + 0.5) * cellHeight;
 
+    // Scale to the smaller side, so a tile never overflows a non-square cell.
     const radius = polygonRadius(cell.poly);
-    targetScale[cell.id] = radius > 0 ? (cellSize / 2) / radius : 1;
+    targetScale[cell.id] = radius > 0 ? Math.min(cellWidth, cellHeight) / 2 / radius : 1;
 
     const rgb = averageRegion(
       artwork,
-      col / gridSize,
-      row / gridSize,
-      (col + 1) / gridSize,
-      (row + 1) / gridSize,
+      col / cols,
+      row / rows,
+      (col + 1) / cols,
+      (row + 1) / rows,
     );
     targetColor[cell.id] = rgb ? rgbToHex(rgb) : '#000';
   });

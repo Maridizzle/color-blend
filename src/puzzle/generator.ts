@@ -35,9 +35,9 @@ export interface Puzzle {
   tolerance: number;
   stats: {
     tileCount: number;
-    dimension: number;
+    /** What the difficulty asked for; differs only if the legibility floor bit. */
+    targetTileCount: number;
     measuredNeighborDeltaE: number;
-    targetNeighborDeltaE: number;
   };
 }
 
@@ -223,7 +223,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
 
   const rng = makeRng(seed);
   const symmetry = pickSymmetry(rng);
-  const { lattice, field, dimension, measuredNeighborDeltaE, targetNeighborDeltaE } = calibrate(
+  const { lattice, field, tileCount, targetTileCount, measuredNeighborDeltaE } = calibrate(
     anchors,
     latticeKind,
     shape,
@@ -278,10 +278,9 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     factCells,
     tolerance,
     stats: {
-      tileCount: lattice.cells.length,
-      dimension,
+      tileCount,
+      targetTileCount,
       measuredNeighborDeltaE,
-      targetNeighborDeltaE,
     },
   };
 }

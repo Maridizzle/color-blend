@@ -99,10 +99,25 @@ distribution for a sorting puzzle. Bilinear over four corner colors, with the
 darkest and lightest diagonally opposed, spreads the shades evenly and
 guarantees a legible dark-to-light axis.
 
-**Tile count is solved for, not authored.** Difficulty is expressed as a target
-*perceptual step* between adjacent tiles, and the board size is derived from the
-palette to hit it. A washed-out image automatically gets fewer, larger tiles; a
-vivid one gets more. See `src/puzzle/difficulty.ts`.
+**Boards are sized for a person, not for a metric.** Difficulty is an authored
+tile count — 12, 20, 30 — and the perceptual step between adjacent tiles is
+whatever falls out of it. This started the other way round, with the step as the
+target and the count solved for, and that was a mistake worth recording: it
+means a vivid image with a wide palette earns *more* tiles, because the
+arithmetic says its shades are still far enough apart to tell apart. It produced
+a 352-tile board that was technically legible and completely unplayable. The
+limit was never whether two shades can be told apart side by side; it is how
+many things a person can hold in their head and put in order.
+
+Sizing by count also makes the boards easier to read, not just smaller: the same
+palette across fewer tiles puts the shades further apart. The four shipped
+puzzles now step by 0.076–0.196 in Oklab, against 0.023–0.057 before.
+
+The old calibration survives as a safety net, which is what it was always good
+for: an image whose shades barely separate gets a smaller board, so a blind pack
+cannot produce tiles nobody can order. On a decent palette it never triggers.
+See `src/puzzle/difficulty.ts` — `tileCount` is the one thing to change if the
+game feels too easy or too fiddly.
 
 ## Content packs
 
@@ -207,20 +222,17 @@ Supernova Remnant, Black Hole. The artwork lives in `public/artwork/` and is
 referenced by URL, so it goes through exactly the same palette extraction a
 loaded pack does, with no special case for being built in.
 
-The four run easy to hard, and the progression happens to teach the mechanic
-well: the galaxy's palette is nearly monochrome, so it is a pure lightness sort,
-while the black hole's anchors span 276 degrees of hue and demand you hold the
-ordering while the color walks right around the wheel.
+The four run easy to hard — 12, 20, 20 and 30 tiles — and the progression
+happens to teach the mechanic well: the galaxy is a dozen tiles and a nearly
+monochrome palette, so it is a pure lightness sort, while the black hole's
+anchors span 276 degrees of hue and demand you hold the ordering while the color
+walks right around the wheel.
 
 ## Current limits
 
-- The difficulty constants in `src/puzzle/difficulty.ts` have now been checked
-  against real images rather than only synthetic ones. On the four shipped
-  artworks the calibration lands within about 4% of its perceptual target
-  (measured neighbour ΔE 0.057/0.036/0.036/0.023 against targets of
-  0.055/0.035/0.035/0.022), producing boards of 64, 161, 194 and 352 tiles. That
-  is four images, though, not a corpus — the ingest report is still how a bad
-  outcome gets noticed.
+- Whether 12 / 20 / 30 are the *right* counts is a judgement about how it feels
+  to play, which no test settles. They come from what a person said they could
+  actually sort. Changing them is one constant.
 - Palette extraction takes the artwork as it finds it. Dark astronomical images
   cluster into fairly desaturated shades, so their boards read as tonal ramps
   with color pushing out sideways rather than as vivid hue journeys. That is

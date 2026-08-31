@@ -426,6 +426,23 @@ body {
   font-size: 14px;
 }
 
+/*
+ * The reveal lists every fact for the subject; the ones uncovered while sorting
+ * are marked. Dimming the rest rather than hiding them keeps the full set
+ * readable while still crediting what the player found.
+ */
+.reveal-facts li {
+  color: var(--text-dim);
+}
+
+.reveal-facts li.reveal-fact-found {
+  color: var(--text);
+}
+
+.reveal-facts li.reveal-fact-found::marker {
+  color: var(--accent);
+}
+
 .reveal-hint,
 .reveal-attribution {
   margin: 12px 0 0;

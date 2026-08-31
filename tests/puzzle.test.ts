@@ -13,7 +13,13 @@ import {
 } from '../src/puzzle/lattice';
 import { SHAPES, SHAPE_NAMES, type ShapeName } from '../src/puzzle/shapes';
 import { buildField, cornersFromAnchors, fieldStats, orientUv, sampleCorners } from '../src/puzzle/field';
-import { DIFFICULTY_TUNING, buildBoard, calibrate, type Difficulty } from '../src/puzzle/difficulty';
+import { buildRevealPlan } from '../src/render/reveal';
+import {
+  DIFFICULTY_TUNING,
+  boardForTileCount,
+  calibrate,
+  type Difficulty,
+} from '../src/puzzle/difficulty';
 import { arrangementOf, generatePuzzle } from '../src/puzzle/generator';
 import {
   colorAt,
@@ -207,58 +213,125 @@ describe('gradient field', () => {
 });
 
 describe('difficulty calibration', () => {
-  it('hits the perceptual target it aims for', () => {
+  it('builds the tile count the difficulty asks for', () => {
+    // The point of the whole module: a board a person can actually sort. The
+    // count is authored now, not solved for, so it should land on the number.
     for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      const target = DIFFICULTY_TUNING.tileCount[difficulty];
       const result = calibrate(PALETTE.anchors, 'square', 'full', difficulty, 0);
-      const target = DIFFICULTY_TUNING.targetNeighborDeltaE[difficulty];
-      // Dimension is an integer, so allow a generous band around the target.
-      expect(result.measuredNeighborDeltaE).toBeGreaterThan(target * 0.6);
-      expect(result.measuredNeighborDeltaE).toBeLessThan(target * 1.6);
+      expect(result.targetTileCount).toBe(target);
+      expect(Math.abs(result.tileCount - target)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('stays close to the target on every lattice kind and shape', () => {
+    for (const kind of ['square', 'hex', 'triangle', 'diamond'] as const) {
+      for (const shape of ['full', 'circle', 'hexagon'] as const) {
+        const result = calibrate(PALETTE.anchors, kind, shape, 'medium', 0);
+        const target = DIFFICULTY_TUNING.tileCount.medium;
+        // Masked lattices cannot hit every count exactly; near enough is fine,
+        // unplayably large is not.
+        expect(
+          Math.abs(result.tileCount - target),
+          `${kind}/${shape} gave ${result.tileCount}`,
+        ).toBeLessThanOrEqual(4);
+      }
+    }
+  });
+
+  it('keeps every board within human reach', () => {
+    for (const kind of ['square', 'hex', 'triangle', 'diamond'] as const) {
+      for (const shape of SHAPE_NAMES) {
+        for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+          const result = calibrate(PALETTE.anchors, kind, shape, difficulty, 0);
+          expect(result.tileCount).toBeLessThanOrEqual(DIFFICULTY_TUNING.maxTiles);
+          expect(result.tileCount).toBeGreaterThanOrEqual(DIFFICULTY_TUNING.minTiles);
+        }
+      }
     }
   });
 
   it('gives a harder difficulty more tiles', () => {
     const easy = calibrate(PALETTE.anchors, 'square', 'full', 'easy', 0);
+    const medium = calibrate(PALETTE.anchors, 'square', 'full', 'medium', 0);
     const hard = calibrate(PALETTE.anchors, 'square', 'full', 'hard', 0);
-    expect(hard.lattice.cells.length).toBeGreaterThan(easy.lattice.cells.length);
+    expect(medium.tileCount).toBeGreaterThan(easy.tileCount);
+    expect(hard.tileCount).toBeGreaterThan(medium.tileCount);
   });
 
-  it('gives a low-contrast palette fewer tiles than a vivid one', () => {
-    // This is the whole point of calibration: a washed-out blind image must not
-    // become an unreadable pixel hunt.
-    const vivid = extractPalette(
-      bandedImage(
-        [
-          [5, 5, 20],
-          [220, 40, 40],
-          [250, 250, 240],
-        ],
-        160,
-      ),
-    );
-    const washed = extractPalette(
-      bandedImage(
-        [
-          [110, 116, 128],
-          [150, 154, 164],
-          [178, 182, 190],
-        ],
-        160,
-      ),
-    );
-    expect(washed.spread).toBeLessThan(vivid.spread);
-
-    const vividBoard = calibrate(vivid.anchors, 'square', 'full', 'medium', 0);
-    const washedBoard = calibrate(washed.anchors, 'square', 'full', 'medium', 0);
-    expect(washedBoard.lattice.cells.length).toBeLessThan(vividBoard.lattice.cells.length);
+  it('leaves a decent palette well clear of the legibility floor', () => {
+    // Fewer tiles over the same range means bigger steps, so a real palette
+    // should never come near the floor -- that is the whole reason the boards
+    // got easier to read as well as smaller.
+    for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      const result = calibrate(PALETTE.anchors, 'square', 'full', difficulty, 0);
+      expect(result.measuredNeighborDeltaE).toBeGreaterThan(
+        DIFFICULTY_TUNING.minNeighborDeltaE * 1.5,
+      );
+    }
   });
 
-  it('respects the tile ceiling on every lattice kind and shape', () => {
-    for (const kind of ['square', 'hex', 'triangle', 'diamond'] as const) {
-      const board = buildBoard(kind, 'full', DIFFICULTY_TUNING.maxDimension);
-      const calibrated = calibrate(PALETTE.anchors, kind, 'full', 'hard', 0);
-      expect(calibrated.lattice.cells.length).toBeLessThanOrEqual(DIFFICULTY_TUNING.maxTiles);
-      expect(board.cells.length).toBeGreaterThan(0);
+  it('shrinks the board when the palette cannot carry the full count', () => {
+    // The safety net for blind packs: a barely-sortable image should not be cut
+    // into as many pieces as a vivid one.
+    const flat = [rgbToOklab({ r: 96, g: 100, b: 112 }), rgbToOklab({ r: 132, g: 137, b: 150 })];
+    const flatSpread = deltaE(flat[0]!, flat[1]!);
+    expect(flatSpread).toBeLessThan(0.15);
+
+    const flatBoard = calibrate(flat, 'square', 'full', 'hard', 0);
+    const vividBoard = calibrate(PALETTE.anchors, 'square', 'full', 'hard', 0);
+
+    expect(flatBoard.tileCount).toBeLessThan(vividBoard.tileCount);
+    expect(flatBoard.tileCount).toBeGreaterThanOrEqual(DIFFICULTY_TUNING.minTiles);
+  });
+
+  it('finds a near-square board rather than a long strip', () => {
+    const lattice = boardForTileCount('square', 'full', 12);
+    expect(lattice.cells.length).toBe(12);
+    const aspect = lattice.width / lattice.height;
+    expect(aspect).toBeGreaterThan(0.5);
+    expect(aspect).toBeLessThan(2);
+  });
+});
+
+describe('reveal mosaic', () => {
+  it('covers the whole square, including the bottom row', () => {
+    // The bug this guards: columns and rows were both ceil(sqrt(n)), so at 12
+    // tiles the mosaic filled a 4x4 grid three rows deep and left the bottom
+    // quarter of the artwork blank for the whole morph.
+    const artwork = bandedImage(
+      [
+        [20, 30, 70],
+        [200, 120, 60],
+      ],
+      64,
+    );
+
+    for (const count of [12, 20, 30, 7, 13, 17]) {
+      const lattice = boardForTileCount('square', 'full', count);
+      const plan = buildRevealPlan(lattice, artwork);
+      const n = lattice.cells.length;
+      const label = `${n} tiles`;
+
+      const top = plan.square.y;
+      const bottom = plan.square.y + plan.square.size;
+      const left = plan.square.x;
+      const right = plan.square.x + plan.square.size;
+
+      for (let i = 0; i < n; i++) {
+        expect(plan.targetCx[i]!, label).toBeGreaterThanOrEqual(left);
+        expect(plan.targetCx[i]!, label).toBeLessThanOrEqual(right);
+        expect(plan.targetCy[i]!, label).toBeGreaterThanOrEqual(top);
+        expect(plan.targetCy[i]!, label).toBeLessThanOrEqual(bottom);
+      }
+
+      // Tiles must reach both ends of the square, not stop short of the bottom.
+      const highest = Math.min(...plan.targetCy.slice(0, n));
+      const lowest = Math.max(...plan.targetCy.slice(0, n));
+      const rows = Math.ceil(n / Math.ceil(Math.sqrt(n)));
+      const halfCell = plan.square.size / rows / 2;
+      expect(highest - top, label).toBeLessThanOrEqual(halfCell + 1e-6);
+      expect(bottom - lowest, label).toBeLessThanOrEqual(halfCell + 1e-6);
     }
   });
 });
@@ -303,9 +376,9 @@ describe('puzzle generation', () => {
   });
 
   it('places fact tiles on movable cells and spreads them out', () => {
-    const puzzle = make({ factCount: 4, difficulty: 'easy' });
-    expect(puzzle.factCells.length).toBe(4);
-    expect(new Set(puzzle.factCells).size).toBe(4);
+    const puzzle = make({ factCount: 3, difficulty: 'hard' });
+    expect(puzzle.factCells.length).toBe(3);
+    expect(new Set(puzzle.factCells).size).toBe(3);
     for (const id of puzzle.factCells) expect(puzzle.locked[id]).toBe(false);
 
     // Spread means no two fact tiles are immediate neighbours.
