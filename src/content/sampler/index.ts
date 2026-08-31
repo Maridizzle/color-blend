@@ -1,88 +1,88 @@
 import type { Category } from '../types';
-import { drawAurora, drawCopperCrystal, drawCoralReef, drawDesertDunes } from './draw';
 
 /**
- * The shipped sampler content.
+ * The shipped starter content.
  *
- * Two categories on purpose, matching the two the game is aimed at -- walking a
- * subject like the periodic table or the world's biomes -- so the category
- * structure is exercised rather than assumed. Delete this module once real
- * packs land; nothing else imports from it except the category registry.
+ * Four artworks in one subject category, exercising the same path a loaded pack
+ * takes: the images sit in `public/artwork/` and are referenced by URL, so
+ * their palettes are extracted at play time by the ordinary pipeline with no
+ * special case for being built in.
+ *
+ * Boards are assigned explicitly rather than left to the id-hash in
+ * `specFor`, so the four read as four different puzzles: a plain square grid,
+ * a circle of hexagons, a rounded field of diamonds, and a hexagon of
+ * hexagons. Difficulty ramps across the category, and the widest-hue artwork
+ * is placed last where it can carry the most tiles.
  */
 
 export const SAMPLER_CATEGORIES: Category[] = [
   {
-    id: 'biomes',
-    title: "The World's Biomes",
-    blurb: 'Habitats and the light that falls on them.',
+    id: 'cosmos',
+    title: 'The Cosmos',
+    blurb: 'Deep space, and the physics that shapes it.',
     subjects: [
       {
-        id: 'coral-reef',
-        title: 'Coral Reef',
-        blurb: 'Tropical shallows, built by animals the size of a pinhead.',
+        id: 'spiral-galaxy',
+        title: 'Spiral Galaxy',
+        blurb: 'A hundred billion suns, held in a turning disc.',
         difficulty: 'easy',
         latticeKind: 'square',
         shape: 'full',
-        artwork: { kind: 'drawn', draw: drawCoralReef },
+        artwork: { kind: 'url', url: './artwork/spiral-galaxy.jpg' },
         facts: [
-          'Reefs cover under 1% of the ocean floor but shelter around a quarter of all marine species.',
-          'Coral is an animal, a plant, and a rock at once: a colony of polyps farming algae inside a limestone skeleton it built itself.',
-          'The algae living inside coral tissue give it its color. A stressed reef expels them and turns bone white, which is what bleaching means.',
-          'The Great Barrier Reef is roughly 2,300 km long and is visible from orbit.',
-          'Reef-building corals need light, so they grow almost entirely in the sunlit top 50 metres of water.',
+          'A spiral galaxy’s arms look blue and its centre gold for the same reason: the arms are where new stars are still forming, and the hottest, bluest of those burn out fastest, while the core is left holding older, cooler, redder ones.',
+          'Spiral arms are not solid structures that wind up over time. They are density waves — stars drift into them and out again, the way a traffic jam persists on a motorway while individual cars pass through it.',
+          'The Milky Way is a barred spiral roughly 100,000 light years across. Every picture you have seen of it from the outside is an illustration, because nothing has ever been far enough away to take that photograph.',
+          'Galaxies are mostly empty space. When Andromeda meets the Milky Way in about four billion years, the two will pass through each other with almost no stars colliding.',
+          'Counts of how many galaxies fill the observable universe have ranged from a few hundred billion to two trillion, depending on how many of the faintest ones a survey can pick out.',
         ],
       },
       {
-        id: 'aurora-tundra',
-        title: 'Arctic Tundra',
-        blurb: 'Frozen ground, and a sky that answers the sun.',
+        id: 'saturn',
+        title: 'Saturn',
+        blurb: 'The solar system’s great ringed world.',
         difficulty: 'medium',
         latticeKind: 'hex',
         shape: 'circle',
-        artwork: { kind: 'drawn', draw: drawAurora },
+        artwork: { kind: 'url', url: './artwork/saturn.jpg' },
         facts: [
-          'Tundra soil stays frozen year-round below the surface. That permafrost locks up roughly twice as much carbon as the atmosphere holds.',
-          'The aurora is solar wind striking the upper atmosphere; green comes from oxygen at about 100 km up, red from oxygen much higher still.',
-          'Almost no trees grow on tundra. The growing season is too short and the frozen subsoil blocks deep roots.',
-          'Tundra plants are mostly mosses, lichens and dwarf shrubs, and some lichens grow less than a millimetre a year.',
+          'Saturn’s rings are almost entirely water ice, in pieces ranging from specks of dust to chunks the size of a house.',
+          'The rings span about 280,000 km but are only tens of metres thick through most of that. Scaled to the width of a football pitch, they would be thinner than a sheet of paper.',
+          'They may be young. Measurements from the Cassini mission suggest the rings formed perhaps 10 to 100 million years ago — long after the first dinosaurs.',
+          'Saturn is less dense than water. Given an ocean big enough to hold it, the planet would float.',
+          'All four giant planets have rings. Saturn’s are simply the only ones bright enough to pick out through a small telescope.',
         ],
       },
       {
-        id: 'desert-dunes',
-        title: 'Sand Desert',
-        blurb: 'Where water leaves and the wind does the sculpting.',
+        id: 'supernova-remnant',
+        title: 'Supernova Remnant',
+        blurb: 'What a star leaves behind when it dies.',
         difficulty: 'medium',
         latticeKind: 'diamond',
         shape: 'squircle',
-        artwork: { kind: 'drawn', draw: drawDesertDunes },
+        artwork: { kind: 'url', url: './artwork/supernova-remnant.jpg' },
         facts: [
-          'A desert is defined by dryness, not heat: any place receiving under about 250 mm of rain a year qualifies. Antarctica is the largest.',
-          'Only about a fifth of the world’s deserts are covered in sand. Most are rock and gravel.',
-          'Dunes migrate. Wind pushes sand up the gentle windward face and it avalanches down the steep leeward side, moving the whole dune downwind.',
-          'Desert sand can swing more than 40°C between afternoon and dawn, because dry air holds almost no heat overnight.',
+          'A supernova can briefly outshine its entire galaxy: one dying star out-glowing a hundred billion others.',
+          'Most of the elements heavier than iron were forged in violent stellar events like this one and flung outward. The calcium in your bones and the iron in your blood were made inside stars.',
+          'The expanding shell is not moving into emptiness. It slams into the gas already there and lights it up, which is why remnants look like tangled filaments rather than clean bubbles.',
+          'The supernova that made the Crab Nebula was recorded by Chinese astronomers in 1054, and was bright enough to be seen in broad daylight for more than three weeks.',
+          'What is left at the centre can be a neutron star, so dense that a piece the size of a sugar cube would weigh about as much as a mountain.',
         ],
       },
-    ],
-  },
-  {
-    id: 'periodic-table',
-    title: 'The Periodic Table',
-    blurb: 'The elements, and the colors they wear.',
-    subjects: [
       {
-        id: 'copper',
-        title: 'Copper',
-        blurb: 'Element 29. One of the few metals with a color of its own.',
-        difficulty: 'medium',
+        id: 'black-hole',
+        title: 'Black Hole',
+        blurb: 'Where gravity closes the last way out.',
+        difficulty: 'hard',
         latticeKind: 'hex',
         shape: 'hexagon',
-        artwork: { kind: 'drawn', draw: drawCopperCrystal },
+        artwork: { kind: 'url', url: './artwork/black-hole.jpg' },
         facts: [
-          'Copper and gold are the only two metals with a color other than grey or silver. Both get it from how their electrons absorb blue light.',
-          'Copper has been worked for over 10,000 years, long enough that an entire archaeological age is named after its alloy with tin: bronze.',
-          'It is the second-best electrical conductor of all metals after silver, which is why nearly every wire in your home is copper.',
-          'Weathered copper turns green. That patina is a copper carbonate layer, and it protects the metal underneath rather than eating it.',
-          'Your body needs copper to make red blood cells, though only about 1.4 mg a day.',
+          'A black hole is less an object than a place: a region where gravity has closed off every path leading back out, including the ones light would take.',
+          'The event horizon is a boundary, not a surface. Falling through a large one there is no wall and no jolt — nothing nearby marks the moment you can no longer return.',
+          'The glow in an image of a black hole is not the hole. It is the accretion disk: matter torn apart and heated to millions of degrees as it spirals inward.',
+          'The first direct image of a black hole’s shadow was published in 2019, showing the giant at the centre of the galaxy M87.',
+          'Black holes are not permanent. Hawking radiation means they slowly leak energy and will eventually evaporate, though a star-sized one would outlast the present age of the universe many times over.',
         ],
       },
     ],

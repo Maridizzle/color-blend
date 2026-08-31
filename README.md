@@ -9,7 +9,7 @@ shuffled. You sort them darkest to lightest, holding the ordering even as the
 hue shifts from one color into another, with one to three starter tiles locked
 in place to orient you. Solving reflows the board into the artwork it came from.
 
-Categories are subject-based — the periodic table, the world's biomes — and
+Categories are subject-based, so playing one walks you through a topic, and
 certain tiles, unmarked, pop an educational fact when they land correctly. Facts
 you find are collected in a journal.
 
@@ -122,7 +122,7 @@ src/
   color/    Oklab conversions, k-means palette extraction, quality gate, gamut fitting
   puzzle/   lattices and shape masks, gradient field, difficulty calibration,
             generator, correctness and hints
-  content/  pack schema, zip reading, ingest, baked packs, sampler artworks
+  content/  pack schema, zip reading, ingest, baked packs, shipped artwork
   render/   canvas board, ID-buffer hit testing, reveal morph
   game/     session (state, input, animation loop), persistence, library
   ui/       screens
@@ -157,14 +157,31 @@ is, making the board playable without relying on hue at all. Arrow keys move a
 cursor between neighboring tiles on any lattice, Enter picks up and places. The
 reveal honors `prefers-reduced-motion`.
 
+## Shipped content
+
+One category, **The Cosmos**, with four subjects: Spiral Galaxy, Saturn,
+Supernova Remnant, Black Hole. The artwork lives in `public/artwork/` and is
+referenced by URL, so it goes through exactly the same palette extraction a
+loaded pack does, with no special case for being built in.
+
+The four run easy to hard, and the progression happens to teach the mechanic
+well: the galaxy's palette is nearly monochrome, so it is a pure lightness sort,
+while the black hole's anchors span 276 degrees of hue and demand you hold the
+ordering while the color walks right around the wheel.
+
 ## Current limits
 
-- The four sampler artworks are **drawn in code**, so they read as stylized
-  illustration rather than photography. They exist to make the game playable and
-  the reveal verifiable before real packs land, and are deletable in one commit
-  (`src/content/sampler/`).
-- The difficulty constants in `src/puzzle/difficulty.ts` are reasoned starting
-  points, not measured against a real photo corpus. The ingest report exists to
-  make bad outcomes visible; expect one tuning pass once real packs arrive.
+- The difficulty constants in `src/puzzle/difficulty.ts` have now been checked
+  against real images rather than only synthetic ones. On the four shipped
+  artworks the calibration lands within about 4% of its perceptual target
+  (measured neighbour ΔE 0.057/0.036/0.036/0.023 against targets of
+  0.055/0.035/0.035/0.022), producing boards of 64, 161, 194 and 352 tiles. That
+  is four images, though, not a corpus — the ingest report is still how a bad
+  outcome gets noticed.
+- Palette extraction takes the artwork as it finds it. Dark astronomical images
+  cluster into fairly desaturated shades, so their boards read as tonal ramps
+  with color pushing out sideways rather than as vivid hue journeys. That is
+  faithful rather than broken: the anchor selection already picks the most
+  chromatic clusters an image offers.
 - Packs loaded in-game live in memory for the session only. Reloading returns to
   the shipped content.
