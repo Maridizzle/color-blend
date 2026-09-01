@@ -47,6 +47,17 @@ export const DIFFICULTY_TUNING = {
   } satisfies Record<Difficulty, number>,
 
   /**
+   * Hue families the board travels through, so which end is which is obvious
+   * at a glance. Twelve tiles split three ways leaves four per family, too few
+   * to hold a gradient within each; twenty and thirty carry three comfortably.
+   */
+  toneCount: {
+    easy: 2,
+    medium: 3,
+    hard: 3,
+  } satisfies Record<Difficulty, number>,
+
+  /**
    * Adjacent tiles must differ by at least this much in Oklab, or the board
    * gets smaller until they do. Roughly twice the just-noticeable difference
    * for two large adjacent patches, so it is a comfort threshold rather than a
@@ -137,10 +148,11 @@ export function calibrate(
   symmetry: number,
 ): CalibrationResult {
   const targetTileCount = DIFFICULTY_TUNING.tileCount[difficulty];
+  const toneCount = DIFFICULTY_TUNING.toneCount[difficulty];
 
   let target = targetTileCount;
   let lattice = boardForTileCount(kind, shape, target);
-  let field = buildField(lattice, anchors, { symmetry });
+  let field = buildField(lattice, anchors, { symmetry, toneCount });
   let measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
 
   while (

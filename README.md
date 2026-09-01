@@ -4,10 +4,14 @@ An art-reveal game played through color-sorting puzzles.
 
 Each puzzle takes an artwork, pulls its key shades out, and builds a board of
 large tiles — squares, hexagons, triangles, diamonds, or a carved silhouette —
-filled with a gradient made from that artwork's own palette. The tiles are
-shuffled. You sort them darkest to lightest, holding the ordering even as the
-hue shifts from one color into another, with one to three starter tiles locked
-in place to orient you. Solving reflows the board into the artwork it came from.
+running through two or three tone families drawn from that artwork's own
+palette. The tiles are shuffled. You sort them darkest to lightest, holding the
+ordering as the colour walks from one tone into the next, with one to three
+starter tiles locked in place to orient you. Solving reflows the board into the
+artwork it came from.
+
+The two tones are what makes it readable: group the cool ones and the warm ones
+first, then order within each.
 
 Categories are subject-based, so playing one walks you through a topic, and
 certain tiles, unmarked, pop an educational fact when they land correctly. Facts
@@ -92,12 +96,37 @@ tolerance all live in Oklab.
 produces two tiles within tolerance of each other, those tiles are genuinely
 interchangeable and either placement counts.
 
-**Interpolation is bilinear, not inverse-distance.** IDW is not linearly
-precise: even between two anchors it produces an S-curve that piles most tiles
-near the two endpoint colors and leaves the middle sparse — the wrong shade
-distribution for a sorting puzzle. Bilinear over four corner colors, with the
-darkest and lightest diagonally opposed, spreads the shades evenly and
-guarantees a legible dark-to-light axis.
+**The board is re-voiced, not copied.** A board built straight from an
+artwork's own shades is usually unplayable, and measuring the shipped four shows
+why. Each already carries two opposed hue directions — cool blue-violet in the
+shadows, warm gold in the highlights, 156° to 180° apart. Both were invisible,
+for two reasons: chroma sat at 0.01–0.15, which reads as grey, and the ends sat
+at lightness 0.15 and 0.92, where the sRGB gamut is too narrow to hold any
+colour at all. The palette had put its two hue families exactly where they could
+not be seen.
+
+So the ramp pulls the lightness range in to 0.30–0.84, giving colour somewhere
+to live, and raises chroma to a floor scaled by how vivid the artwork actually
+is. On all four shipped subjects that recovers a real two- or three-tone board
+with **nothing invented** — the tones were already in the pictures. Invention is
+reserved for an artwork with a single hue, and only ever up to two families:
+a requested tone count is a ceiling, not a quota. See `src/color/tones.ts`.
+
+**Hue is interpolated around the wheel, never straight through Oklab.** A
+straight line between two near-complementary hues passes through grey at its
+midpoint, which would put a band of mud through the centre of every board and
+reintroduce the exact washed-out look the tones exist to fix. Going around the
+wheel at a held chroma gives indigo → violet → gold instead. There is a test
+pinning this down.
+
+**The field is one-dimensional.** Every cell projects onto a single oriented
+axis and takes its colour from that position along the ramp. This replaced a
+two-dimensional bilinear blend of four corner colours, which was right when
+boards ran to hundreds of tiles and wrong at twelve: nobody infers a 2D
+arrangement from a dozen swatches. One axis makes the rule literal — dark at one
+end, light at the other, cool at one end and warm at the other. Cells that
+project to the same position share a colour, which keeps the interchangeable-
+tiles fairness property intact.
 
 **Boards are sized for a person, not for a metric.** Difficulty is an authored
 tile count — 12, 20, 30 — and the perceptual step between adjacent tiles is

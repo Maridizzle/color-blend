@@ -1,5 +1,5 @@
-import { type Oklab, deltaE, mix } from '../color/oklab';
-import { fitToGamut } from '../color/gamut';
+import { type Oklab, deltaE } from '../color/oklab';
+import { type ToneSpec, planTones, sampleToneRamp } from '../color/tones';
 import type { Lattice } from './lattice';
 import type { Rng } from '../util/rng';
 
@@ -8,50 +8,21 @@ import type { Rng } from '../util/rng';
  *
  * Design constraint that drives everything here: the board must be *sortable*.
  * A player told to run darkest to lightest has to be able to succeed by looking
- * at the tiles, with no hidden information. So the field is a smooth
- * interpolation between a handful of anchor colors taken from the artwork, with
- * the darkest and lightest anchors pinned to opposite corners.
+ * at the tiles, with no hidden information.
  *
- * Interpolation is bilinear over four corner colors. That choice is load
- * bearing. The obvious alternative, inverse-distance weighting, is *not*
- * linearly precise: even with two anchors it produces an S-curve that piles
- * most tiles up near the two anchor colors and leaves the middle sparse, which
- * is exactly the wrong distribution for a sorting puzzle. Bilinear gives an
- * even spread of shades across the board.
- */
-
-/** The four corner colors, in order (0,0), (1,0), (1,1), (0,1). */
-export type CornerColors = readonly [Oklab, Oklab, Oklab, Oklab];
-
-/**
- * Turn 2-4 anchors, sorted dark to light, into four corner colors with the
- * darkest and lightest diagonally opposed.
+ * The field is one-dimensional. Every cell is projected onto a single oriented
+ * axis and takes its color from that position along a tone ramp (see
+ * `src/color/tones.ts`). This replaced a two-dimensional bilinear blend of four
+ * corner colors, which was the right shape when boards ran to hundreds of tiles
+ * and the wrong one at twelve: a player cannot infer a two-dimensional
+ * arrangement from a dozen swatches. One axis makes the rule literal -- dark at
+ * one end, light at the other, and now cool at one end and warm at the other
+ * too.
  *
- * With exactly two anchors every color in the field necessarily lies on a line
- * in Oklab, so bands of identical color are unavoidable; the 0.35/0.65 split
- * at least spreads the shades evenly rather than doubling one up.
+ * Cells that project to the same position share a color, which keeps the
+ * fairness property `solve.ts` relies on: colors a player cannot tell apart are
+ * genuinely interchangeable and either placement counts.
  */
-export function cornersFromAnchors(anchors: readonly Oklab[]): CornerColors {
-  if (anchors.length === 0) throw new Error('cornersFromAnchors needs at least one anchor');
-  if (anchors.length === 1) {
-    const only = anchors[0] as Oklab;
-    return [only, only, only, only];
-  }
-
-  const dark = anchors[0] as Oklab;
-  const light = anchors[anchors.length - 1] as Oklab;
-
-  if (anchors.length === 2) {
-    return [dark, mix(dark, light, 0.35), light, mix(dark, light, 0.65)];
-  }
-  if (anchors.length === 3) {
-    const mid = anchors[1] as Oklab;
-    return [dark, mid, light, mix(mid, mix(dark, light, 0.5), 0.5)];
-  }
-  // Four or more: the two darkest-and-lightest go on one diagonal, the two most
-  // interesting mid shades on the other.
-  return [dark, anchors[1] as Oklab, light, anchors[2] as Oklab];
-}
 
 /**
  * One of the eight symmetries of the square, applied to (u,v).
@@ -72,14 +43,21 @@ export function orientUv(u: number, v: number, symmetry: number): [number, numbe
 export interface FieldOptions {
   /** Which of the eight square symmetries to orient the gradient by. */
   symmetry?: number;
+  /** Hue families the ramp travels through. Two reads as cool-to-warm. */
+  toneCount?: number;
+  /** Reuse a plan already made, so a board and its report agree. */
+  tones?: ToneSpec;
 }
 
-/** Bilinear blend of four corner colors at normalized position (u,v). */
-export function sampleCorners(corners: CornerColors, u: number, v: number): Oklab {
-  const [c00, c10, c11, c01] = corners;
-  const top = mix(c00, c10, u);
-  const bottom = mix(c01, c11, u);
-  return mix(top, bottom, v);
+/**
+ * Position along the sort axis, 0 at the dark end and 1 at the light end.
+ *
+ * The diagonal rather than a single edge: it uses the whole board, so a wide
+ * board does not compress the ramp into a few columns, and every cell gets a
+ * distinct-ish position on any lattice shape.
+ */
+export function axisPosition(u: number, v: number): number {
+  return (u + v) / 2;
 }
 
 /**
@@ -91,12 +69,21 @@ export function buildField(
   anchors: readonly Oklab[],
   options: FieldOptions = {},
 ): Oklab[] {
-  const { symmetry = 0 } = options;
-  const corners = cornersFromAnchors(anchors);
-  return lattice.cells.map((cell) => {
+  const { symmetry = 0, toneCount = 2, tones } = options;
+  const spec = tones ?? planTones(anchors, toneCount);
+
+  // Normalise over the positions actually present. A masked silhouette may not
+  // reach the corners of its bounding box, and without this its ramp would stop
+  // short of both ends and lose the very contrast the tones are there to give.
+  const positions = lattice.cells.map((cell) => {
     const [u, v] = orientUv(cell.u, cell.v, symmetry);
-    return fitToGamut(sampleCorners(corners, u, v));
+    return axisPosition(u, v);
   });
+  const lo = Math.min(...positions);
+  const hi = Math.max(...positions);
+  const span = hi - lo;
+
+  return positions.map((p) => sampleToneRamp(spec, span > 1e-9 ? (p - lo) / span : 0.5));
 }
 
 export interface FieldStats {

@@ -12,7 +12,7 @@ import {
   triangleLattice,
 } from '../src/puzzle/lattice';
 import { SHAPES, SHAPE_NAMES, type ShapeName } from '../src/puzzle/shapes';
-import { buildField, cornersFromAnchors, fieldStats, orientUv, sampleCorners } from '../src/puzzle/field';
+import { axisPosition, buildField, fieldStats, orientUv } from '../src/puzzle/field';
 import { buildRevealPlan } from '../src/render/reveal';
 import {
   DIFFICULTY_TUNING,
@@ -133,29 +133,30 @@ describe('shape masks', () => {
 });
 
 describe('gradient field', () => {
-  it('puts the darkest and lightest anchors on opposite corners', () => {
-    const corners = cornersFromAnchors(PALETTE.anchors);
-    const dark = PALETTE.anchors[0]!;
-    const light = PALETTE.anchors[PALETTE.anchors.length - 1]!;
-    expect(deltaE(corners[0], dark)).toBeLessThan(1e-9);
-    expect(deltaE(corners[2], light)).toBeLessThan(1e-9);
+  it('runs monotonically dark to light across the board', () => {
+    // The rule the player is given. The field is one-dimensional, so position
+    // along the sort axis has to predict lightness with no exceptions.
+    const lattice = squareLattice(6, 6);
+    const field = buildField(lattice, PALETTE.anchors, { symmetry: 0, toneCount: 2 });
+    const byAxis = lattice.cells
+      .map((cell) => ({ t: axisPosition(cell.u, cell.v), L: field[cell.id]!.L }))
+      .sort((a, b) => a.t - b.t);
+
+    for (let i = 1; i < byAxis.length; i++) {
+      expect(byAxis[i]!.L).toBeGreaterThanOrEqual(byAxis[i - 1]!.L - 1e-9);
+    }
+    expect(byAxis[byAxis.length - 1]!.L - byAxis[0]!.L).toBeGreaterThan(0.4);
   });
 
-  it('interpolates linearly, not in an S-curve', () => {
-    // The reason for bilinear over inverse-distance weighting: an even spread of
-    // shades across the board. Quarter of the way along the diagonal should be
-    // about a quarter of the way along the color ramp.
-    const dark = rgbToOklab({ r: 0, g: 0, b: 0 });
-    const light = rgbToOklab({ r: 255, g: 255, b: 255 });
-    const corners = cornersFromAnchors([dark, light]);
-    const quarter = sampleCorners(corners, 0.25, 0.25);
-    const half = sampleCorners(corners, 0.5, 0.5);
-    const threeQuarter = sampleCorners(corners, 0.75, 0.75);
-
-    const total = deltaE(dark, light);
-    expect(deltaE(dark, quarter) / total).toBeCloseTo(0.25, 2);
-    expect(deltaE(dark, half) / total).toBeCloseTo(0.5, 2);
-    expect(deltaE(dark, threeQuarter) / total).toBeCloseTo(0.75, 2);
+  it('gives cells at the same axis position the same color', () => {
+    // Keeps solve.ts's fairness property alive: tiles a player cannot tell
+    // apart really are interchangeable.
+    const lattice = squareLattice(5, 5);
+    const field = buildField(lattice, PALETTE.anchors, { symmetry: 0, toneCount: 2 });
+    const a = lattice.cells.find((c) => c.u < 0.3 && c.v > 0.7)!;
+    const b = lattice.cells.find((c) => c.u > 0.7 && c.v < 0.3)!;
+    expect(axisPosition(a.u, a.v)).toBeCloseTo(axisPosition(b.u, b.v), 6);
+    expect(deltaE(field[a.id]!, field[b.id]!)).toBeLessThan(1e-9);
   });
 
   it('produces only in-gamut colors', () => {
@@ -178,8 +179,9 @@ describe('gradient field', () => {
       );
       seen.add(`${lattice.cells[darkestCell]!.u.toFixed(2)},${lattice.cells[darkestCell]!.v.toFixed(2)}`);
     }
-    // Four distinct corners are reachable; transposition duplicates them.
-    expect(seen.size).toBeGreaterThanOrEqual(4);
+    // The dark end of the ramp must be reachable from more than one corner, or
+    // every board in a category looks like the same puzzle turned around.
+    expect(seen.size).toBeGreaterThanOrEqual(2);
   });
 
   it('inverts orientation consistently', () => {
@@ -271,18 +273,24 @@ describe('difficulty calibration', () => {
     }
   });
 
-  it('shrinks the board when the palette cannot carry the full count', () => {
-    // The safety net for blind packs: a barely-sortable image should not be cut
-    // into as many pieces as a vivid one.
+  it('makes a legible board even from a nearly flat palette', () => {
+    // This used to assert the opposite -- that a flat palette got a *smaller*
+    // board, because a board built straight from the artwork's own shades would
+    // otherwise be unsortable. Re-voicing removed the need: the ramp normalises
+    // lightness to a fixed window and enforces a chroma floor, so a washed-out
+    // source now yields a board just as readable as a vivid one. The safety net
+    // survives in calibrate() as a backstop for tile counts far above the
+    // authored ones, but it cannot fire at 12/20/30.
     const flat = [rgbToOklab({ r: 96, g: 100, b: 112 }), rgbToOklab({ r: 132, g: 137, b: 150 })];
-    const flatSpread = deltaE(flat[0]!, flat[1]!);
-    expect(flatSpread).toBeLessThan(0.15);
+    expect(deltaE(flat[0]!, flat[1]!)).toBeLessThan(0.15);
 
     const flatBoard = calibrate(flat, 'square', 'full', 'hard', 0);
     const vividBoard = calibrate(PALETTE.anchors, 'square', 'full', 'hard', 0);
 
-    expect(flatBoard.tileCount).toBeLessThan(vividBoard.tileCount);
-    expect(flatBoard.tileCount).toBeGreaterThanOrEqual(DIFFICULTY_TUNING.minTiles);
+    expect(flatBoard.tileCount).toBe(vividBoard.tileCount);
+    expect(flatBoard.measuredNeighborDeltaE).toBeGreaterThan(
+      DIFFICULTY_TUNING.minNeighborDeltaE * 1.5,
+    );
   });
 
   it('finds a near-square board rather than a long strip', () => {
