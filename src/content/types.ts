@@ -33,6 +33,12 @@ export interface Subject {
   latticeKind?: LatticeKind;
   shape?: ShapeName;
   /**
+   * The colour this board comes out. Assigned across the whole category by
+   * `src/content/hues.ts` so that no two boards repeat, rather than each
+   * subject taking its artwork's dominant hue and most of them colliding.
+   */
+  hue?: number;
+  /**
    * Gradient anchors, when they were already computed during pack ingest.
    * Present means the shipped puzzle is built from exactly the palette that was
    * validated, and that play does not repeat the clustering work.

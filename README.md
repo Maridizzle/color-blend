@@ -30,9 +30,11 @@ It is a PWA: installable to a phone home screen, and playable offline once
 loaded. `base` is relative, so `dist/` works from any subpath (GitHub Pages, a
 Capacitor wrapper) with no rebuild.
 
-`build:standalone` inlines the styles, the code and all four artworks into a
-single HTML file that needs no server and no network — open it straight off
-disk, send it to someone, or publish it as one page. That build compiles out
+`build:standalone` inlines the styles, the code and every artwork into a single
+HTML file that needs no server and no network — open it straight off disk, send
+it to someone, or publish it as one page. With twenty images that file is large
+(the artwork is around 4 MB before base64), so it is a way to hand the whole
+game to one person, not a way to serve it. That build compiles out
 the service worker and the baked-pack loader, since a file with no siblings
 should not go looking for any.
 
@@ -136,6 +138,38 @@ so `DIFFICULTY_TUNING.toneCount` is one constant to raise if a category ever
 wants a harder board. The count is a ceiling either way: an artwork with one hue
 yields one whatever it says.
 
+Raising it without more work would reproduce a board already rejected twice,
+though. There is a second, perceptual reason those boards were hard, and it took
+reading up to find: **Oklab does not model the Helmholtz–Kohlrausch effect** —
+saturated colours look lighter than their measured lightness, by an amount that
+peaks around blue and vanishes around yellow. An indigo-to-gold ramp is
+therefore the worst available pairing: the dark end gets nearly the maximum
+perceived-lightness boost and the light end almost none, so the board's apparent
+order was not its actual order. It also explains why one colour works so well —
+a constant hue at constant chroma shifts every tile by the same amount, and a
+constant offset cannot change an ordering. `docs/two-colour.md` records the
+finding and the four rules a correct two-colour mode would have to follow.
+
+**No two boards in a category are the same colour.** Hue is assigned across the
+whole category rather than per subject, because per subject it collapses:
+fourteen of the twenty shipped images have a dominant hue between 43° and 87°,
+since lit dust and starlight are warm. Played end to end that is one puzzle
+wearing twenty titles.
+
+So `src/content/hues.ts` lays out *n* evenly spaced slots around the wheel and
+hands them out so each artwork gets the slot closest to a colour it actually
+contains. Even spacing is what guarantees no repeats; the matching is what keeps
+the choice tied to the pictures rather than being a palette someone picked. Each
+artwork nominates *every* chromatic cluster it has, not just its strongest,
+which is the part that makes it worth doing — an image that is mostly gold but
+holds a real blue can take a blue slot cheaply and leave the gold to an image
+with nothing else. Across the twenty shipped subjects the average rotation is
+34°, and the ones that barely move are the ones with a genuine claim.
+
+The search is greedy plus pairwise repair rather than exhaustive, so its quality
+is a claim rather than an assertion: there is a test that checks it matches a
+brute-force optimum on every category small enough to enumerate.
+
 **The field is one-dimensional.** Every cell projects onto a single oriented
 axis and takes its colour from that position along the ramp. This replaced a
 two-dimensional bilinear blend of four corner colours, which was right when
@@ -226,12 +260,15 @@ src/
   color/    Oklab conversions, k-means palette extraction, quality gate, gamut fitting
   puzzle/   lattices and shape masks, gradient field, difficulty calibration,
             generator, correctness and hints
-  content/  pack schema, zip reading, ingest, baked packs, shipped artwork
+  content/  pack schema, zip reading, ingest, per-category hue assignment,
+            baked packs, shipped artwork
   render/   canvas board, ID-buffer hit testing, reveal morph
   game/     session (state, input, animation loop), persistence, library
   ui/       screens
 tools/      pack-cli.ts (build-time ingest), verify.mjs (browser check)
 tests/      vitest
+docs/       two-colour.md — why two-tone boards were hard, and what a correct
+            version would need
 ```
 
 The engine speaks plain `{ width, height, data: Uint8ClampedArray }` — no DOM,
@@ -241,8 +278,9 @@ testable against synthetic pixel buffers.
 ## Verifying
 
 ```sh
-npm test                       # 96 unit tests: color math, tone ramps, lattices,
-                               # board shape, generation, hints, zip safety,
+npm test                       # 112 unit tests: color math, tone ramps, lattices,
+                               # board shape, hue assignment, content and board
+                               # variety, generation, hints, zip safety,
                                # ingest fallbacks
 npm run dev &                  # then, against a running server:
 npm run verify                 # drives a real browser through a whole playthrough
@@ -264,15 +302,27 @@ reveal honors `prefers-reduced-motion`.
 
 ## Shipped content
 
-One category, **The Cosmos**, with four subjects: Spiral Galaxy, Saturn,
-Supernova Remnant, Black Hole. The artwork lives in `public/artwork/` and is
-referenced by URL, so it goes through exactly the same palette extraction a
+Twenty artworks across two categories. The images live in `public/artwork/` and
+are referenced by URL, so they go through exactly the same palette extraction a
 loaded pack does, with no special case for being built in.
 
-The four run easy to hard — 12, 19, 21 and 30 tiles — in bronze, amber,
-terracotta and crimson respectively, each hue taken from its own artwork. The
-progression is purely how finely you have to judge lightness: the galaxy's
-twelve tiles step by 0.049 in Oklab, the black hole's thirty by 0.019.
+- **The Cosmos** (11) — galaxies, Saturn, the Crab Nebula, an accretion disc, a
+  black hole. Astronomical objects, carrying astronomy.
+- **Our Place In It** (9) — figures under strange skies, machines, ruins. These
+  are human-scale scenes, and a fact about spiral arms would be pasted on, so
+  the category is about scale, deep time and what we are made of instead. The
+  split is about the facts, not the pictures.
+
+Each category ramps easy to hard across its own length, and boards are assigned
+by position rather than by a hash of the subject id — a hash gives each board
+stability and says nothing about its neighbours, so across twenty subjects it
+collides and the same handful of boards keep coming back. Walking the lattice
+and shape lists with a coprime stride guarantees the set is varied, which is the
+property that actually matters once a category is longer than a few puzzles.
+
+Silhouettes carry their own minimum tile count rather than all waiting on one
+threshold: a twelve-tile circle is obviously a circle, and a twelve-tile star is
+a smudge.
 
 ## Current limits
 

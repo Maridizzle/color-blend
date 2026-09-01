@@ -47,6 +47,11 @@ export interface GenerateOptions {
   difficulty?: Difficulty;
   latticeKind?: LatticeKind;
   shape?: ShapeName;
+  /**
+   * The colour this board comes out, assigned across its category so no two
+   * boards repeat. Omitted, the board takes its artwork's own dominant hue.
+   */
+  hue?: number;
   /** Number of fact tiles to plant; capped by the facts actually available. */
   factCount?: number;
   seed?: number;
@@ -213,6 +218,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     difficulty = 'medium',
     latticeKind = 'square',
     shape = 'full',
+    hue,
     factCount = 0,
     seed = hashString(id),
   } = options;
@@ -229,6 +235,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     shape,
     difficulty,
     symmetry,
+    hue,
   );
 
   const targets = field;

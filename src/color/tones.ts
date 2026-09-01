@@ -99,6 +99,8 @@ export interface ToneFamily {
   hue: number;
   /** Mean lightness of the anchors this came from; decides its place in the ramp. */
   sourceLightness: number;
+  /** Chroma mass behind this hue; the largest is the board's dominant colour. */
+  weight: number;
   /** True when nothing in the artwork supplied this hue. */
   invented: boolean;
 }
@@ -145,8 +147,13 @@ export function selectToneFamilies(anchors: readonly Oklab[], count: number): To
   if (chromatic.length === 0) {
     const meanL = anchors.reduce((s, a) => s + a.L, 0) / Math.max(1, anchors.length);
     return [
-      { hue: 265, sourceLightness: meanL - 0.1, invented: true },
-      { hue: 265 + TONE_TUNING.inventedHueOffset, sourceLightness: meanL + 0.1, invented: true },
+      { hue: 265, sourceLightness: meanL - 0.1, weight: 0, invented: true },
+      {
+        hue: 265 + TONE_TUNING.inventedHueOffset,
+        sourceLightness: meanL + 0.1,
+        weight: 0,
+        invented: true,
+      },
     ].slice(0, count);
   }
 
@@ -175,6 +182,7 @@ export function selectToneFamilies(anchors: readonly Oklab[], count: number): To
   const chosen: ToneFamily[] = families.slice(0, realCount).map((f) => ({
     hue: f.hue,
     sourceLightness: f.lightness,
+    weight: f.weight,
     invented: false,
   }));
 
@@ -183,6 +191,7 @@ export function selectToneFamilies(anchors: readonly Oklab[], count: number): To
     const base = chosen[chosen.length - 1] as ToneFamily;
     const meanL = chromatic.reduce((s, c) => s + c.L, 0) / chromatic.length;
     chosen.push({
+      weight: 0,
       hue: mixHue(base.hue, base.hue + TONE_TUNING.inventedHueOffset, 1),
       // Take whichever lightness end the real family is not using.
       sourceLightness: base.sourceLightness < meanL ? meanL + 0.2 : meanL - 0.2,
@@ -269,11 +278,30 @@ export function toneChroma(anchors: readonly Oklab[]): number {
   );
 }
 
-/** Choose the hues and the vividness for a board in one go. */
-export function planTones(anchors: readonly Oklab[], toneCount: number): ToneSpec {
+/**
+ * Choose the hues and the vividness for a board in one go.
+ *
+ * `hue` names the colour the board should come out, and exists because a
+ * category has to hold twenty boards that do not repeat each other while each
+ * one still only takes hues its own artwork contains -- see
+ * `src/content/hues.ts`. It rotates the whole set rigidly so the dominant
+ * family lands on it, which leaves the relationships between families intact:
+ * two tones 150 degrees apart stay 150 degrees apart.
+ */
+export function planTones(
+  anchors: readonly Oklab[],
+  toneCount: number,
+  hue?: number,
+): ToneSpec {
+  const families = selectToneFamilies(anchors, Math.max(1, toneCount));
+  const chroma = toneChroma(anchors);
+  if (hue === undefined || families.length === 0) return { families, chroma };
+
+  const dominant = families.reduce((a, b) => (b.weight > a.weight ? b : a));
+  const turn = hueDelta(dominant.hue, hue);
   return {
-    families: selectToneFamilies(anchors, Math.max(1, toneCount)),
-    chroma: toneChroma(anchors),
+    families: families.map((f) => ({ ...f, hue: (((f.hue + turn) % 360) + 360) % 360 })),
+    chroma,
   };
 }
 

@@ -192,7 +192,7 @@ export function puzzleScreen(
 
   void (async () => {
     try {
-      const prepared = await preparePuzzle(subject, index);
+      const prepared = await preparePuzzle(subject, index, category.subjects.length, category.id);
       if (destroyed) return;
 
       status.remove();

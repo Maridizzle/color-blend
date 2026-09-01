@@ -47,6 +47,8 @@ export interface FieldOptions {
   toneCount?: number;
   /** Reuse a plan already made, so a board and its report agree. */
   tones?: ToneSpec;
+  /** The colour this board should come out, assigned across its category. */
+  hue?: number;
 }
 
 /**
@@ -69,8 +71,8 @@ export function buildField(
   anchors: readonly Oklab[],
   options: FieldOptions = {},
 ): Oklab[] {
-  const { symmetry = 0, toneCount = 1, tones } = options;
-  const spec = tones ?? planTones(anchors, toneCount);
+  const { symmetry = 0, toneCount = 1, tones, hue } = options;
+  const spec = tones ?? planTones(anchors, toneCount, hue);
 
   // Normalise over the positions actually present. A masked silhouette may not
   // reach the corners of its bounding box, and without this its ramp would stop

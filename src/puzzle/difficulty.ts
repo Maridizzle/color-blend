@@ -144,7 +144,14 @@ export function boardForTileCount(
     const found = searchBoards(kind, shape, target, ASPECT_MIN / slack, ASPECT_MAX * slack);
     if (found) return found;
   }
-  return buildBoard(kind, shape, 4, 4);
+  // Nothing in the whole search was both the right shape and big enough. Grow a
+  // plain board until it clears the floor, so the caller always gets a playable
+  // board rather than whatever a fixed 4x4 happens to carve down to.
+  for (let size = 4; size <= SEARCH_LIMIT; size++) {
+    const lattice = buildBoard(kind, shape, size, size);
+    if (lattice.cells.length >= DIFFICULTY_TUNING.minTiles) return lattice;
+  }
+  return buildBoard(kind, shape, SEARCH_LIMIT, SEARCH_LIMIT);
 }
 
 function searchBoards(
@@ -161,7 +168,10 @@ function searchBoards(
     for (let rows = SEARCH_MIN; rows <= SEARCH_LIMIT; rows++) {
       const lattice = buildBoard(kind, shape, cols, rows);
       const count = lattice.cells.length;
-      if (count < 3 || count > DIFFICULTY_TUNING.maxTiles) continue;
+      // The floor is minTiles, not some token 3. A silhouette carves cells away,
+      // so a lattice big enough on paper can come back below what a board is
+      // allowed to be -- a star at a small target keeps only its points.
+      if (count < DIFFICULTY_TUNING.minTiles || count > DIFFICULTY_TUNING.maxTiles) continue;
 
       // Shape first: a board outside the band is not a candidate at all, however
       // exactly it hits the count.
@@ -196,13 +206,14 @@ export function calibrate(
   shape: ShapeName,
   difficulty: Difficulty,
   symmetry: number,
+  hue?: number,
 ): CalibrationResult {
   const targetTileCount = DIFFICULTY_TUNING.tileCount[difficulty];
   const toneCount = DIFFICULTY_TUNING.toneCount[difficulty];
 
   let target = targetTileCount;
   let lattice = boardForTileCount(kind, shape, target);
-  let field = buildField(lattice, anchors, { symmetry, toneCount });
+  let field = buildField(lattice, anchors, { symmetry, toneCount, hue });
   let measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
 
   while (
@@ -216,7 +227,9 @@ export function calibrate(
 
     target = next;
     lattice = boardForTileCount(kind, shape, target);
-    field = buildField(lattice, anchors, { symmetry });
+    // Same options as the first build: dropping them here once left the retry
+    // measuring a different board from the one it was about to return.
+    field = buildField(lattice, anchors, { symmetry, toneCount, hue });
     measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
   }
 

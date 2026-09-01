@@ -3,7 +3,7 @@ import { type Palette, extractPalette } from '../color/palette';
 import { hashString } from '../util/rng';
 import { DIFFICULTY_TUNING, type Difficulty } from '../puzzle/difficulty';
 import type { LatticeKind } from '../puzzle/lattice';
-import { SHAPE_NAMES, type ShapeName } from '../puzzle/shapes';
+import { SHAPE_MIN_TILES, SHAPE_NAMES, type ShapeName } from '../puzzle/shapes';
 import { type Puzzle, generatePuzzle } from '../puzzle/generator';
 import { loadArtwork } from '../content/artwork';
 import type { Artwork, Subject } from '../content/types';
@@ -18,8 +18,15 @@ import type { Artwork, Subject } from '../content/types';
  */
 
 const LATTICE_KINDS: LatticeKind[] = ['square', 'hex', 'triangle', 'diamond'];
-/** 'full' twice so plain rectangular boards stay the most common. */
-const SHAPE_POOL: ShapeName[] = ['full', 'full', ...SHAPE_NAMES.filter((s) => s !== 'full')];
+
+/**
+ * Step through the shape list rather than taking them in order, so consecutive
+ * subjects are not a circle followed by a hexagon followed by a diamond. Coprime
+ * with the number of shapes, so it still visits all of them, and coprime with
+ * the number of lattices too -- which is what makes (lattice, shape) unique for
+ * the first 52 subjects instead of repeating every twelfth.
+ */
+const SHAPE_STRIDE = 5;
 
 export interface PuzzleShapeSpec {
   difficulty: Difficulty;
@@ -27,31 +34,69 @@ export interface PuzzleShapeSpec {
   shape: ShapeName;
 }
 
-/** Below this many tiles a carved silhouette stops reading as a shape. */
-const MIN_TILES_FOR_SHAPE = 16;
 
 /**
  * Difficulty ramps through a category so the first puzzles teach the mechanic
  * before the later ones lean on it. An explicit value in the pack wins.
  */
-export function specFor(subject: Subject, index: number): PuzzleShapeSpec {
-  const hash = hashString(subject.id);
-  const rampedDifficulty: Difficulty = index < 2 ? 'easy' : index < 5 ? 'medium' : 'hard';
-  const difficulty = subject.difficulty ?? rampedDifficulty;
+export function specFor(
+  subject: Subject,
+  index: number,
+  total = 1,
+  categoryId = '',
+): PuzzleShapeSpec {
+  const difficulty = subject.difficulty ?? rampedDifficulty(index, total);
+  const tiles = DIFFICULTY_TUNING.tileCount[difficulty];
 
-  // A leaf or an arch cut out of a dozen cells does not read as a leaf or an
-  // arch; it reads as a board with bits missing. Small boards stay rectangular
-  // unless the pack asked for a shape by name.
-  const roomForShape = DIFFICULTY_TUNING.tileCount[difficulty] >= MIN_TILES_FOR_SHAPE;
-  const derivedShape = roomForShape
-    ? (SHAPE_POOL[(hash >>> 3) % SHAPE_POOL.length] as ShapeName)
-    : 'full';
+  // Position in the category, not a hash of the id. A hash gives each subject a
+  // stable board but says nothing about its neighbours, so across twenty
+  // subjects it collides and the same handful of boards keep coming back.
+  // Walking the lists guarantees the set is varied, which is the property that
+  // actually matters once a category is longer than a few puzzles.
+  //
+  // The category offset stops a second category being a re-run of the first:
+  // without it every category opens with the same square grid, then the same
+  // hexagon, in the same order.
+  const offset = categoryId ? hashString(categoryId) : 0;
 
   return {
     difficulty,
-    latticeKind: subject.latticeKind ?? (LATTICE_KINDS[hash % LATTICE_KINDS.length] as LatticeKind),
-    shape: subject.shape ?? derivedShape,
+    latticeKind:
+      subject.latticeKind ??
+      (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind),
+    shape: subject.shape ?? shapeForTiles(index * SHAPE_STRIDE + offset, tiles),
   };
+}
+
+/**
+ * Step through the shapes that read at this tile count.
+ *
+ * Silhouettes carry their own minimum (see `SHAPE_MIN_TILES`) rather than every
+ * shape waiting on one blanket threshold -- a twelve-tile circle is obviously a
+ * circle, and a twelve-tile star is a smudge.
+ *
+ * The eligible shapes are filtered out *before* indexing rather than scanning
+ * forward from the walk position to the next one that fits. Scanning looks
+ * equivalent and is not: every position that lands on a shape too detailed for
+ * the board slides to the same next fitting one, so a run of easy boards came
+ * out as four crosses and four squircles. Filtering first keeps the stride
+ * coprime with however many shapes are actually available.
+ */
+function shapeForTiles(from: number, tiles: number): ShapeName {
+  const eligible = SHAPE_NAMES.filter((s) => tiles >= SHAPE_MIN_TILES[s]);
+  if (eligible.length === 0) return 'full';
+  return eligible[((from % eligible.length) + eligible.length) % eligible.length] as ShapeName;
+}
+
+/**
+ * Difficulty across a category, as a fraction of the way through rather than at
+ * fixed indices: roughly the first third easy, the middle medium, the last third
+ * hard. Fixed cut-offs were written for a category of four and would have made
+ * fifteen of twenty subjects hard.
+ */
+function rampedDifficulty(index: number, total: number): Difficulty {
+  const through = total <= 1 ? 0 : index / (total - 1);
+  return through < 0.3 ? 'easy' : through < 0.7 ? 'medium' : 'hard';
 }
 
 /**
@@ -84,7 +129,12 @@ export interface PreparedPuzzle {
  * board a player sees is built from exactly the palette that was checked.
  * Sampler artworks are analyzed here on first play.
  */
-export async function preparePuzzle(subject: Subject, index: number): Promise<PreparedPuzzle> {
+export async function preparePuzzle(
+  subject: Subject,
+  index: number,
+  total = 1,
+  categoryId = '',
+): Promise<PreparedPuzzle> {
   const artwork = await loadArtwork(subject.artwork);
 
   let anchors = subject.anchors;
@@ -99,13 +149,14 @@ export async function preparePuzzle(subject: Subject, index: number): Promise<Pr
     }
   }
 
-  const spec = specFor(subject, index);
+  const spec = specFor(subject, index, total, categoryId);
   const puzzle: Puzzle = generatePuzzle({
     id: subject.id,
     anchors,
     difficulty: spec.difficulty,
     latticeKind: spec.latticeKind,
     shape: spec.shape,
+    hue: subject.hue,
     factCount: factCountFor(DIFFICULTY_TUNING.tileCount[spec.difficulty], subject.facts.length),
   });
 
