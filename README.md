@@ -4,15 +4,13 @@ An art-reveal game played through color-sorting puzzles.
 
 Each puzzle takes an artwork, pulls its key shades out, and builds a board of
 large tiles — squares, hexagons, triangles, diamonds, or a carved silhouette —
-running through two or three tone families drawn from that artwork's own
-palette. The tiles are shuffled. You sort them darkest to lightest, holding the
-ordering across the boundary where one tone gives way to the next, with one to
-three starter tiles locked in place to orient you. Solving reflows the board
-into the artwork it came from.
+running through a single colour drawn from that artwork's own palette. The tiles
+are shuffled. You sort them darkest to lightest, with one to three starter tiles
+locked in place to orient you. Solving reflows the board into the artwork it
+came from.
 
-The tone families are what make it readable, and they are blocks rather than a
-blend: pile the cool ones and the warm ones separately first, then order within
-each by lightness.
+One colour is what makes it playable: every tile is one question, *is this
+lighter or darker than that one*, with nothing else to work out first.
 
 Categories are subject-based, so playing one walks you through a topic, and
 certain tiles, unmarked, pop an educational fact when they land correctly. Facts
@@ -108,42 +106,35 @@ not be seen.
 
 So the ramp pulls the lightness range in to 0.30–0.84, giving colour somewhere
 to live, and raises chroma to a floor scaled by how vivid the artwork actually
-is. On all four shipped subjects that recovers a real two- or three-tone board
-with **nothing invented** — the tones were already in the pictures. Invention is
-reserved for an artwork with a single hue, and only ever up to two families:
-a requested tone count is a ceiling, not a quota. See `src/color/tones.ts`.
+is. Each board then takes the most chromatic hue its own artwork offers, with
+**nothing invented** — a hue is fabricated only for an artwork that has none at
+all. The four shipped subjects come out bronze, amber, terracotta and crimson,
+so they stay distinct from each other without anyone choosing that. See
+`src/color/tones.ts`.
 
-**Hue steps between families; it does not sweep between them.** Each family
-owns an equal block of the ramp and the hue changes at the boundary. This was a
-smooth transition first, and the reason it changed is the clearest lesson in the
-project: sweeping 150° between two families means a couple of ramp positions
-land mid-arc, and at 12–30 tiles "a couple of positions" is *one tile*. Saturn
-came out as nine indigo tiles, one magenta, one red, and nine gold — a correct
-sample of a smooth function, and two tiles that looked broken to the person
-holding the phone.
+**One hue, and the sort is a pure value scale.** Two and three tone families
+shipped before this and were too hard to play, which is worth recording because
+the reasoning behind them was sound and still wrong. Extra families make the
+*ends* unmistakable, so they look easier — a glance tells you which pile is
+which. What they cost is the middle. A boundary splits the ramp into groups
+whose internal ordering has to be worked out separately, and it puts the two
+hardest decisions on the board — which indigo is the last indigo, which gold is
+the first gold — right next to each other, at the point where the colour cue is
+weakest by construction.
 
-The tell was Black Hole, the one board where the arc looked deliberate: its red
-is a real third *family*, so it gets ten tiles and reads as a group. A hue that
-appears on one tile and nowhere else reads as a mistake however smooth the
-function behind it is. Widening the sweep instead would have spent the whole
-board on it and turned a two-tone sort into a rainbow — the opposite of making
-it obvious which end is which.
+Two attempts at that middle are recorded in `src/color/tones.ts`, because both
+were reasonable and neither was enough. Sweeping the hue between families put
+one tile at a hue appearing nowhere else — Saturn shipped nine indigos, a lone
+magenta, a lone red, nine golds — which is a correct sample of a smooth function
+and reads as two broken tiles. Stepping the hue instead, with chroma fading to a
+tint at the seam so the change lands where colour is weakest, fixed the broken
+look and kept the boundary legible. It was still a second thing to reason about.
+One colour removes the question rather than answering it.
 
-A bare step was not enough on its own. Ten near-identical indigos meeting ten
-near-identical golds gives the middle of the board nothing to say — you cannot
-tell which indigo is the last one, and lightness alone steps about 0.03 a tile
-there, near the limit of what anyone can order by eye. So chroma fades toward a
-tint at each boundary and swells back to full inside each block. The step then
-lands where colour is weakest, and the tiles either side read as a dusty blue
-and a soft tan: genuinely in-between, without either taking a hue that belongs
-to neither family. It also gives the sort a second cue — the further a tile sits
-from the middle, the stronger its colour.
-
-The fade is bounded and never reaches neutral, which is the distinction that
-matters: a *controlled* dip at one seam is a diverging scale, while the washed-
-out board this whole system replaced was low chroma everywhere. Tests pin down
-the seam, the no-orphan-hue property, and that hue changes exactly at the chroma
-minimum.
+The machinery still handles any number of families and is still tested for it,
+so `DIFFICULTY_TUNING.toneCount` is one constant to raise if a category ever
+wants a harder board. The count is a ceiling either way: an artwork with one hue
+yields one whatever it says.
 
 **The field is one-dimensional.** Every cell projects onto a single oriented
 axis and takes its colour from that position along the ramp. This replaced a
@@ -166,7 +157,7 @@ many things a person can hold in their head and put in order.
 
 Sizing by count also makes the boards easier to read, not just smaller: the same
 palette across fewer tiles puts the shades further apart. The four shipped
-puzzles now step by 0.161–0.293 in Oklab, against 0.023–0.057 before.
+puzzles now step by 0.104–0.138 in Oklab, against 0.023–0.057 before.
 
 The old calibration survives as a safety net, which is what it was always good
 for: an image whose shades barely separate gets a smaller board, so a blind pack
@@ -278,10 +269,10 @@ Supernova Remnant, Black Hole. The artwork lives in `public/artwork/` and is
 referenced by URL, so it goes through exactly the same palette extraction a
 loaded pack does, with no special case for being built in.
 
-The four run easy to hard — 12, 19, 21 and 30 tiles — and the progression
-happens to teach the mechanic well: the galaxy is a dozen tiles in two blocks,
-so it is close to a pure lightness sort, while the black hole spans three
-families 280° apart and asks you to hold the ordering across two seams.
+The four run easy to hard — 12, 19, 21 and 30 tiles — in bronze, amber,
+terracotta and crimson respectively, each hue taken from its own artwork. The
+progression is purely how finely you have to judge lightness: the galaxy's
+twelve tiles step by 0.049 in Oklab, the black hole's thirty by 0.019.
 
 ## Current limits
 
@@ -296,5 +287,9 @@ families 280° apart and asks you to hold the ordering across two seams.
   own palette supplies both.
 - A fact card is a fixed panel over the board. Only one shows at a time now,
   but on a twelve-tile board at phone width it still covers a row while it is up.
+- Thirty tiles in one hue is the finest judgement the game asks for, at 0.019
+  Oklab between neighbours. It is above the legibility floor and inside the
+  correctness tolerance, so no placement is unfair, but it is the first board to
+  shrink if the hard tier still feels too hard.
 - Packs loaded in-game live in memory for the session only. Reloading returns to
   the shipped content.

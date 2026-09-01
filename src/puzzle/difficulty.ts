@@ -47,14 +47,31 @@ export const DIFFICULTY_TUNING = {
   } satisfies Record<Difficulty, number>,
 
   /**
-   * Hue families the board travels through, so which end is which is obvious
-   * at a glance. Twelve tiles split three ways leaves four per family, too few
-   * to hold a gradient within each; twenty and thirty carry three comfortably.
+   * Hue families the board travels through.
+   *
+   * One. The sort is then a pure value scale -- a single colour running dark to
+   * light -- and every tile can be placed by asking one question, "is this
+   * lighter or darker than that one", with no second judgement about which
+   * family it belongs to first.
+   *
+   * Two and three were tried and were too hard to play, which is worth
+   * recording because the reasoning for them was sound and still wrong. Extra
+   * families make the *ends* unmistakable, so they look easier: a glance tells
+   * you which pile is which. What they cost is the middle. A family boundary
+   * splits the ramp into groups whose internal ordering has to be worked out
+   * separately, and it puts the two hardest decisions on the board -- which
+   * indigo is the last indigo, which gold is the first gold -- right next to
+   * each other, where the colour cue is weakest by construction.
+   *
+   * `src/color/tones.ts` still handles any number of families and is still
+   * tested for it, so this is one constant to change if a category ever wants
+   * a harder board. The count is a ceiling either way: an artwork with one hue
+   * yields one whatever this says.
    */
   toneCount: {
-    easy: 2,
-    medium: 3,
-    hard: 3,
+    easy: 1,
+    medium: 1,
+    hard: 1,
   } satisfies Record<Difficulty, number>,
 
   /**

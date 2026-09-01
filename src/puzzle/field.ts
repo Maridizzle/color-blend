@@ -43,7 +43,7 @@ export function orientUv(u: number, v: number, symmetry: number): [number, numbe
 export interface FieldOptions {
   /** Which of the eight square symmetries to orient the gradient by. */
   symmetry?: number;
-  /** Hue families the ramp travels through. Two reads as cool-to-warm. */
+  /** Hue families the ramp travels through. One is a single-colour value scale. */
   toneCount?: number;
   /** Reuse a plan already made, so a board and its report agree. */
   tones?: ToneSpec;
@@ -69,7 +69,7 @@ export function buildField(
   anchors: readonly Oklab[],
   options: FieldOptions = {},
 ): Oklab[] {
-  const { symmetry = 0, toneCount = 2, tones } = options;
+  const { symmetry = 0, toneCount = 1, tones } = options;
   const spec = tones ?? planTones(anchors, toneCount);
 
   // Normalise over the positions actually present. A masked silhouette may not
