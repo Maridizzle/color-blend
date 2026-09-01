@@ -161,6 +161,33 @@ describe('ingesting a pack', () => {
     expect(report.subjects[0]?.notes).toContain('no facts; puzzle will have no fact tiles');
   });
 
+  it('gives every board in a pack a colour of its own', async () => {
+    // A pack of images of the same sort of thing shares a dominant hue, so
+    // without assignment it comes out as one board repeated. The README has
+    // claimed this happened at ingest for a while; it did not until now.
+    const shades = [VIVID[0]!, VIVID[1]!, VIVID[2]!, VIVID[3]!];
+    const zip = zipSync({
+      'a.png': await png(bandedImage(shades, 96)),
+      'b.png': await png(bandedImage(shades, 96)),
+      'c.png': await png(bandedImage(shades, 96)),
+      'd.png': await png(bandedImage(shades, 96)),
+    });
+
+    const { category } = await ingestPack(zip, { packName: 'samey.zip', decode });
+    const hues = category?.subjects.map((s) => s.hue) ?? [];
+    expect(hues).toHaveLength(4);
+    expect(hues.every((h) => typeof h === 'number')).toBe(true);
+
+    // Four identical images: nothing but the assignment could separate them.
+    const spacing = 360 / hues.length;
+    for (let i = 0; i < hues.length; i++) {
+      for (let j = i + 1; j < hues.length; j++) {
+        const apart = Math.abs(((((hues[j] as number) - (hues[i] as number)) % 360) + 540) % 360 - 180);
+        expect(apart, `${i} vs ${j}`).toBeGreaterThan(spacing - 1e-6);
+      }
+    }
+  });
+
   it('uses the manifest when there is one', async () => {
     const zip = zipSync({
       'pack.json': new TextEncoder().encode(

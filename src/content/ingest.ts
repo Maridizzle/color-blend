@@ -2,6 +2,8 @@ import type { ImageData8 } from '../color/image';
 import { type Palette, extractPalette } from '../color/palette';
 import type { Category, Subject } from './types';
 import { parseManifest, slugify, titleFromFilename, type PackSubjectManifest } from './pack';
+import { assignDistinctHues, type HueCandidate } from './hues';
+import { oklabToOklch } from '../color/oklab';
 import { isImageName, mimeFor, readZip } from './zip';
 
 /**
@@ -204,6 +206,27 @@ export async function ingestPack(
       palette,
     });
   }
+
+  // Give every board in the pack a colour of its own.
+  //
+  // Without this a pack of forty photographs of the same sort of thing comes out
+  // as forty boards in one hue, because a board takes its colour from its own
+  // artwork and artworks in a set tend to agree. `assignDistinctHues` spreads
+  // them round the wheel instead, matching each to the closest colour it
+  // actually contains. The palettes are already in hand here, which is why this
+  // is the right place for it and why the shipped content has its hues recorded
+  // rather than recomputed.
+  const claims: HueCandidate[][] = subjects.map((subject) =>
+    (subject.anchors ?? []).map((anchor) => {
+      const { h, C } = oklabToOklch(anchor);
+      return { hue: h, chroma: C };
+    }),
+  );
+  const packHues = assignDistinctHues(claims);
+  subjects.forEach((subject, i) => {
+    // A manifest may still name a hue itself; assignment only fills the gaps.
+    if (subject.hue === undefined) subject.hue = packHues[i];
+  });
 
   const category: IngestedCategory | null =
     subjects.length > 0

@@ -1,6 +1,13 @@
 import { type Oklab, deltaE } from '../color/oklab';
-import { type ToneSpec, planTones, sampleToneRamp } from '../color/tones';
+import {
+  type ToneSpec,
+  planHuePlane,
+  planTones,
+  sampleHuePlane,
+  sampleToneRamp,
+} from '../color/tones';
 import type { Lattice } from './lattice';
+import type { ToneFamily } from '../color/tones';
 import type { Rng } from '../util/rng';
 
 /**
@@ -88,7 +95,86 @@ export function buildField(
   return positions.map((p) => sampleToneRamp(spec, span > 1e-9 ? (p - lo) / span : 0.5));
 }
 
+/** Normalise a list of positions to 0..1 over the values actually present. */
+function spread(values: readonly number[]): number[] {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const span = hi - lo;
+  return values.map((v) => (span > 1e-9 ? (v - lo) / span : 0.5));
+}
+
+/**
+ * The two-colour board: a plane rather than a longer ramp.
+ *
+ * Lightness runs down one axis at constant hue; hue runs across the other at
+ * constant lightness and chroma. That separation is the whole design, and it is
+ * what two previous attempts at a second colour lacked.
+ *
+ * Both of those attempts put two hues on the *same* axis as the lightness, so
+ * hue and lightness competed for one ordering and the player had to reconcile
+ * two cues into a single sequence -- with the two hardest calls on the board
+ * ("which indigo is the last indigo") landing side by side, exactly where the
+ * hue cue said least. Given an axis of its own, hue stops arguing with
+ * lightness: every cell has one home, read off two independent readings, and
+ * neither reading is ambiguous.
+ *
+ * It also disposes of the Helmholtz-Kohlrausch problem rather than compensating
+ * for it. Saturated colours look lighter than Oklab says, by an amount that
+ * peaks at blue and vanishes at yellow, so a ramp that changes hue *while*
+ * changing lightness has its apparent order pulled away from its real one. Here
+ * hue is constant down a column, so the distortion is a constant offset that
+ * cannot reorder anything; and across a row the task is to order hues, where a
+ * lightness shift is not what is being judged. The one comparison it would
+ * corrupt -- diagonal, changing both at once -- is one the grid never asks for.
+ *
+ * This is how the genre does it. I Love Hue's later levels lock only the four
+ * corner tiles and have the player interpolate the plane between them.
+ */
+export function buildPlaneField(
+  lattice: Lattice,
+  anchors: readonly Oklab[],
+  options: FieldOptions = {},
+): Oklab[] {
+  const { symmetry = 0, tones, hue } = options;
+  const spec = tones ?? planTones(anchors, 1, hue);
+
+  const oriented = lattice.cells.map((cell) => orientUv(cell.u, cell.v, symmetry));
+  const first = spread(oriented.map(([u]) => u));
+  const second = spread(oriented.map(([, v]) => v));
+  const count = (values: number[]) =>
+    new Set(values.map((v) => Math.round(v * 1e6))).size;
+
+  // Hue always takes the axis with fewer positions, whichever way the symmetry
+  // happened to land. Four of the eight symmetries transpose, and without this
+  // half the boards came out with the hue and lightness axes swapped -- eight
+  // hue columns instead of four, which is the whole arc spent again and the
+  // board back to reading as a rainbow. Flips and rotation still vary freely;
+  // only the roles are pinned.
+  const acrossIsHue = count(first) <= count(second);
+  const across = acrossIsHue ? first : second;
+  const down = acrossIsHue ? second : first;
+
+  const columns = count(across);
+  const rows = count(down);
+  const centre = spec.families.length > 0 ? (spec.families[0] as ToneFamily).hue : 0;
+  const plan = planHuePlane(centre, columns, rows, spec.chroma);
+
+  return lattice.cells.map((_, i) =>
+    sampleHuePlane(plan, across[i] as number, down[i] as number),
+  );
+}
+
 export interface FieldStats {
+  /**
+   * Smallest difference between two neighbours that differ at all.
+   *
+   * The median-max below describes a one-dimensional board well and a plane
+   * badly: on a plane it reports the lightness step, which is much the larger of
+   * the two axes, so a tolerance derived from it would swallow the hue axis
+   * whole and make a whole row interchangeable. This is the step that has to
+   * stay visible.
+   */
+  minPositiveNeighborDeltaE: number;
   /**
    * Median over cells of each cell's largest neighbor difference.
    *
@@ -105,12 +191,16 @@ export interface FieldStats {
 
 export function fieldStats(lattice: Lattice, field: readonly Oklab[]): FieldStats {
   const perCell: number[] = [];
+  let smallest = Infinity;
   for (const cell of lattice.cells) {
     const own = field[cell.id] as Oklab;
     let max = 0;
     for (const n of cell.neighbors) {
       const other = field[n];
-      if (other) max = Math.max(max, deltaE(own, other));
+      if (!other) continue;
+      const d = deltaE(own, other);
+      max = Math.max(max, d);
+      if (d > 1e-9) smallest = Math.min(smallest, d);
     }
     if (cell.neighbors.length > 0) perCell.push(max);
   }
@@ -125,7 +215,12 @@ export function fieldStats(lattice: Lattice, field: readonly Oklab[]): FieldStat
     }
   }
 
-  return { medianMaxNeighborDeltaE: median, range, tileCount: lattice.cells.length };
+  return {
+    medianMaxNeighborDeltaE: median,
+    minPositiveNeighborDeltaE: Number.isFinite(smallest) ? smallest : 0,
+    range,
+    tileCount: lattice.cells.length,
+  };
 }
 
 /** Pick one of the eight orientations for this puzzle. */

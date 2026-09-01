@@ -1,5 +1,6 @@
 import { type Oklab, type Oklch, oklabToOklch, oklchToOklab } from './oklab';
 import { fitToGamut } from './gamut';
+import { inSrgbGamut } from './oklab';
 
 /**
  * Turning an artwork's palette into a board a person can read.
@@ -92,6 +93,60 @@ export const TONE_TUNING = {
    * artwork asked for. A requested tone count is a ceiling, not a quota.
    */
   minFamilies: 2,
+} as const;
+
+/**
+ * A two-colour board is a *plane*, not a longer ramp: lightness down one axis,
+ * hue across the other. These tune the hue axis.
+ *
+ * Sizing it is a question about people, not about Oklab. At fixed lightness and
+ * chroma the Oklab hue circle is an actual circle, so the distance between two
+ * hues is the chord `2 * C * sin(dh / 2)` -- which depends only on the size of
+ * the step, not on where round the wheel it sits. Equal degrees are therefore
+ * already equal delta-E, and "spacing by delta-E" would be the same operation
+ * under a longer name. What is left to decide is how wide the arc is, and that
+ * follows from the step each column should carry.
+ *
+ * Human hue discrimination is *not* uniform round the wheel, though, which is
+ * the part Oklab does not capture: it is sharpest around yellow-orange and
+ * dullest around blue-indigo. So an arc sitting in the blue is widened to buy
+ * back the same perceived step, rather than the board being nudged towards
+ * yellow -- the hue is assigned per category to keep boards distinct from each
+ * other, and moving it would undo that.
+ */
+export const ARC_TUNING = {
+  /**
+   * Oklab distance each column should differ from the next.
+   *
+   * The scale comes from the Farnsworth-Munsell 100 hue test, which is this
+   * exact task -- caps at constant lightness and chroma, ordered by hue. Its
+   * caps sit about 4.2 degrees apart and observers with normal colour vision
+   * score 0 to 128 errors on it, not zero. So the clinical threshold is a floor
+   * to clear by a wide margin, not a target: this lands around 30 degrees a
+   * column, roughly seven times that spacing, and comfortably over the board's
+   * own legibility floor of 0.04.
+   */
+  hueStepDeltaE: 0.045,
+  /** Extra arc, as a fraction, where hue discrimination is at its worst. */
+  blueWidening: 0.35,
+  /** Hue where discrimination is sharpest, and the widening is zero. */
+  sharpestHue: 90,
+  /** Below this the two ends do not read as two colours at all. */
+  minArc: 55,
+  /** Above this the ends stop reading as related and it is a rainbow again. */
+  maxArc: 175,
+  /**
+   * Lightness a plane spans -- narrower than the ramp's 0.30-0.84.
+   *
+   * Both ends of the full range are where the sRGB gamut pinches to nothing, so
+   * holding one chroma across a wide hue arc *and* the full lightness range
+   * leaves about 0.05 chroma, too little for the hue axis to clear the
+   * legibility floor. The lightness axis has slack the hue axis does not, so it
+   * gives some up: over this range a plane holds around 0.077 chroma flat, and
+   * both axes land near 0.06 delta-E a step.
+   */
+  planeMinLightness: 0.44,
+  planeMaxLightness: 0.78,
 } as const;
 
 export interface ToneFamily {
@@ -341,4 +396,126 @@ export function buildToneRamp(
     sampleToneRamp(spec, steps === 1 ? 0 : i / (steps - 1)),
   );
   return { ...spec, stops };
+}
+
+
+/**
+ * How much wider an arc has to be, here on the wheel, to carry the same
+ * *perceived* step. 1 at yellow-orange where hue discrimination is sharpest,
+ * rising towards blue where it is dullest.
+ */
+export function hueSensitivityPenalty(hue: number): number {
+  const away = 1 - Math.cos((hue - ARC_TUNING.sharpestHue) * (Math.PI / 180));
+  return 1 + (ARC_TUNING.blueWidening * away) / 2;
+}
+
+/** Lightnesses and hues a plane of this size will use, given an arc. */
+function planeGrid(centreHue: number, arc: number, columns: number, rows: number) {
+  const at = (a: number, b: number, n: number, i: number) =>
+    n <= 1 ? (a + b) / 2 : a + ((b - a) * i) / (n - 1);
+  return {
+    lightnesses: Array.from({ length: rows }, (_, i) =>
+      at(ARC_TUNING.planeMinLightness, ARC_TUNING.planeMaxLightness, rows, i),
+    ),
+    hues: Array.from({ length: columns }, (_, i) => {
+      const h = at(centreHue - arc / 2, centreHue + arc / 2, columns, i);
+      return ((h % 360) + 360) % 360;
+    }),
+  };
+}
+
+/** The largest chroma every cell of this grid can hold, so none has to be clipped. */
+function flatChroma(lightnesses: number[], hues: number[], cap: number): number {
+  let lo = 0;
+  let hi = cap;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    const fits = lightnesses.every((L) =>
+      hues.every((h) => inSrgbGamut(oklchToOklab({ L, C: mid, h }), 1e-4)),
+    );
+    if (fits) lo = mid;
+    else hi = mid;
+  }
+  return lo;
+}
+
+export interface PlanePlan {
+  centreHue: number;
+  /** Degrees of hue the board spans. */
+  arc: number;
+  /** One chroma for the whole plane. Never clipped, so never varying. */
+  chroma: number;
+  /** Oklab distance between neighbouring columns, for reporting and tests. */
+  hueStep: number;
+}
+
+/**
+ * Choose the arc and the chroma for a two-colour board together, because
+ * neither can be picked first.
+ *
+ * They pull against each other. A wide arc needs some hue in it to survive the
+ * narrow parts of the sRGB gamut, which caps the chroma; and a low chroma needs
+ * a wider arc to reach the same perceptual step, because the step is the chord
+ * `2 * C * sin(dh / 2)`. Solving one at a time spirals. So this scans candidate
+ * arcs, works out the chroma each one actually allows, and takes the narrowest
+ * that reaches the target step -- falling back to whichever gets furthest.
+ *
+ * The chroma is flat across the entire plane, and that is the point of doing it
+ * this way rather than letting `fitToGamut` clip each cell. Clipping varies
+ * chroma with lightness and hue, and because saturated colours read as lighter
+ * than they measure (Helmholtz-Kohlrausch, which Oklab does not model), varying
+ * chroma is varying *perceived* lightness -- a wobble laid over the axis whose
+ * whole job is to rise cleanly. Constant chroma is also what the
+ * Farnsworth-Munsell hue test holds fixed, for the same reason.
+ */
+export function planHuePlane(
+  centreHue: number,
+  columns: number,
+  rows: number,
+  chromaCap: number,
+): PlanePlan {
+  const gaps = Math.max(1, columns - 1);
+  const wanted = ARC_TUNING.hueStepDeltaE * hueSensitivityPenalty(centreHue);
+
+  let best: PlanePlan | null = null;
+  for (let arc = ARC_TUNING.minArc; arc <= ARC_TUNING.maxArc; arc += 5) {
+    const { lightnesses, hues } = planeGrid(centreHue, arc, columns, rows);
+    const chroma = flatChroma(lightnesses, hues, chromaCap);
+    const hueStep = 2 * chroma * Math.sin(((arc / gaps) * (Math.PI / 180)) / 2);
+    const plan = { centreHue, arc, chroma, hueStep };
+    if (!best || hueStep > best.hueStep) best = plan;
+    // Narrowest arc that clears the target wins: a wider one only spends hue
+    // the board does not need, and starts reading as a rainbow.
+    if (hueStep >= wanted) return plan;
+  }
+  return best as PlanePlan;
+}
+
+/**
+ * A cell of a two-colour board: hue from `x`, lightness from `y`.
+ *
+ * The lightness range is narrower than a one-colour board's, and deliberately.
+ * A plane has slack there -- its lightness step is comfortably above the
+ * legibility floor even across a short range -- while the ends of the full
+ * range are exactly where the gamut pinches and the chroma the hue axis depends
+ * on disappears. Trading lightness the board does not need for chroma it does
+ * is what lets both axes clear the floor at once.
+ */
+export function sampleHuePlane(plan: PlanePlan, x: number, y: number): Oklab {
+  const across = Math.min(1, Math.max(0, x));
+  const down = Math.min(1, Math.max(0, y));
+  const h = plan.centreHue - plan.arc / 2 + plan.arc * across;
+  // fitToGamut must be a no-op here: `planHuePlane` already chose a chroma every
+  // cell of the grid can hold. It stays as a guard for a caller sampling
+  // positions off the grid, and a test pins the chroma flat on a real board so
+  // this cannot start silently clipping.
+  return fitToGamut(
+    oklchToOklab({
+      L:
+        ARC_TUNING.planeMinLightness +
+        (ARC_TUNING.planeMaxLightness - ARC_TUNING.planeMinLightness) * down,
+      C: plan.chroma,
+      h: ((h % 360) + 360) % 360,
+    }),
+  );
 }

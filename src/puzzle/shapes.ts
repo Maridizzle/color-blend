@@ -6,7 +6,11 @@
  * circle, a leaf or an arch while still resolving to a square artwork on solve.
  */
 
+import type { LatticeKind } from './lattice';
+
 export type ShapeMask = (u: number, v: number) => boolean;
+
+const ALL_LATTICES: LatticeKind[] = ['square', 'hex', 'triangle', 'diamond'];
 
 export type ShapeName =
   | 'full'
@@ -176,4 +180,37 @@ export const SHAPE_MIN_TILES: Record<ShapeName, number> = {
   ring: 18,
   crescent: 18,
   star: 22,
+};
+
+/**
+ * Lattices each shape actually reads on.
+ *
+ * A tile count is not the only thing a silhouette needs. Whether an outline
+ * survives being carved out of a grid depends on how that grid is packed, and
+ * some pairings simply do not work: a crescent cut from triangles came out as a
+ * zigzag S, a leaf cut from squares as a ragged diagonal staircase, and a cross
+ * cut from diamonds as a shapeless blob. All three were the right tile count and
+ * the right aspect ratio, and all three looked like a board with bits missing.
+ *
+ * This is a table of observations rather than a rule -- it was written by
+ * rendering all twenty-seven boards and striking out the pairs that did not
+ * read. A new shape should be added optimistically and then looked at.
+ */
+export const SHAPE_LATTICES: Record<ShapeName, LatticeKind[]> = {
+  full: ALL_LATTICES,
+  circle: ALL_LATTICES,
+  squircle: ALL_LATTICES,
+  hexagon: ALL_LATTICES,
+  diamond: ALL_LATTICES,
+  ring: ALL_LATTICES,
+  // Needs rows that line up: a triangle lattice staggers them and the straight
+  // edge turns into a saw.
+  triangle: ['square', 'hex', 'triangle'],
+  octagon: ['square', 'hex', 'diamond'],
+  // Thin arms, so the packing has to be dense and regular or they break up.
+  cross: ['square', 'hex'],
+  arch: ['square', 'hex'],
+  leaf: ['hex', 'diamond'],
+  crescent: ['square', 'hex'],
+  star: ['square', 'triangle'],
 };

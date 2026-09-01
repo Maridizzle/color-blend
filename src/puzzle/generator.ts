@@ -3,7 +3,7 @@ import { type Rng, hashString, makeRng, shuffleInPlace } from '../util/rng';
 import type { Cell, Lattice, LatticeKind } from './lattice';
 import type { ShapeName } from './shapes';
 import { pickSymmetry } from './field';
-import { DIFFICULTY_TUNING, type Difficulty, calibrate } from './difficulty';
+import { DIFFICULTY_TUNING, type Difficulty, calibrate, isTwoColour } from './difficulty';
 import { type Arrangement, countCorrect, isCellCorrect, isSolved, swap } from './solve';
 
 export const GENERATOR_TUNING = {
@@ -229,7 +229,14 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
 
   const rng = makeRng(seed);
   const symmetry = pickSymmetry(rng);
-  const { lattice, field, tileCount, targetTileCount, measuredNeighborDeltaE } = calibrate(
+  const {
+    lattice,
+    field,
+    tileCount,
+    targetTileCount,
+    measuredNeighborDeltaE,
+    toleranceBasis,
+  } = calibrate(
     anchors,
     latticeKind,
     shape,
@@ -242,13 +249,15 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
   const tileColors = [...field];
   const tolerance = Math.max(
     1e-4,
-    GENERATOR_TUNING.toleranceFraction * measuredNeighborDeltaE,
+    GENERATOR_TUNING.toleranceFraction * toleranceBasis,
   );
 
   // Starter anchors: the corner cells, which are the extremes of the gradient
   // and so the most useful thing a player can be handed for free.
   const starterCount = Math.min(
-    DIFFICULTY_TUNING.lockedStarters[difficulty],
+    isTwoColour(difficulty)
+      ? DIFFICULTY_TUNING.planeStarters
+      : DIFFICULTY_TUNING.lockedStarters[difficulty],
     Math.max(1, lattice.cells.length - 2),
   );
   // Corners can collide on very small or heavily masked boards, so dedupe

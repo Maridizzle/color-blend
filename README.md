@@ -114,47 +114,44 @@ all. The four shipped subjects come out bronze, amber, terracotta and crimson,
 so they stay distinct from each other without anyone choosing that. See
 `src/color/tones.ts`.
 
-**One hue, and the sort is a pure value scale.** Two and three tone families
-shipped before this and were too hard to play, which is worth recording because
-the reasoning behind them was sound and still wrong. Extra families make the
-*ends* unmistakable, so they look easier — a glance tells you which pile is
-which. What they cost is the middle. A boundary splits the ramp into groups
-whose internal ordering has to be worked out separately, and it puts the two
-hardest decisions on the board — which indigo is the last indigo, which gold is
-the first gold — right next to each other, at the point where the colour cue is
-weakest by construction.
+**One hue on easy and medium; two on hard.** Two and three tone families
+shipped twice and were rejected twice as too hard, and the reason turned out to
+be structural rather than a matter of tuning: both attempts put two hues on the
+*same axis as the lightness*, so the two competed for one ordering and the
+board's two hardest judgements — which indigo is the last indigo, which gold is
+the first gold — landed side by side, exactly where the hue cue says least.
 
-Two attempts at that middle are recorded in `src/color/tones.ts`, because both
-were reasonable and neither was enough. Sweeping the hue between families put
-one tile at a hue appearing nowhere else — Saturn shipped nine indigos, a lone
-magenta, a lone red, nine golds — which is a correct sample of a smooth function
-and reads as two broken tiles. Stepping the hue instead, with chroma fading to a
-tint at the seam so the change lands where colour is weakest, fixed the broken
-look and kept the boundary legible. It was still a second thing to reason about.
-One colour removes the question rather than answering it.
+The fix is to give hue an axis of its own. A hard board is a **separable
+plane**: lightness down one axis at constant hue, hue across the other at
+constant lightness and chroma, four locked corners, on a plain rectangular grid.
+Every cell then has one home, read off two independent readings.
 
-The machinery still handles any number of families and is still tested for it,
-so `DIFFICULTY_TUNING.toneCount` is one constant to raise if a category ever
-wants a harder board. The count is a ceiling either way: an artwork with one hue
-yields one whatever it says.
+This is what the genre does. I Love Hue's later levels lock only the four
+corners and have you interpolate the plane between them; a row of that plane is
+exactly the Farnsworth–Munsell 100 hue test's construction, caps at fixed value
+and chroma. It also disposes of the Helmholtz–Kohlrausch problem rather than
+correcting for it — saturated colours look lighter than Oklab says, by an amount
+peaking at blue and vanishing at yellow, so a ramp that changes hue *while*
+changing lightness has its apparent order pulled off its real one. Down a column
+hue is constant, so the distortion is an offset that cannot reorder anything.
 
-Raising it without more work would reproduce a board already rejected twice,
-though. There is a second, perceptual reason those boards were hard, and it took
-reading up to find: **Oklab does not model the Helmholtz–Kohlrausch effect** —
-saturated colours look lighter than their measured lightness, by an amount that
-peaks around blue and vanishes around yellow. An indigo-to-gold ramp is
-therefore the worst available pairing: the dark end gets nearly the maximum
-perceived-lightness boost and the light end almost none, so the board's apparent
-order was not its actual order. It also explains why one colour works so well —
-a constant hue at constant chroma shifts every tile by the same amount, and a
-constant offset cannot change an ordering. `docs/two-colour.md` records the
-finding and the four rules a correct two-colour mode would have to follow.
+Two-colour boards also open with a brief look at the solved plane before it
+scrambles, lifted from the same place. A one-colour board's target follows from
+the rule; a plane's does not.
 
-**No two boards in a category are the same colour.** Hue is assigned across the
-whole category rather than per subject, because per subject it collapses:
-fourteen of the twenty shipped images have a dominant hue between 43° and 87°,
-since lit dust and starlight are warm. Played end to end that is one puzzle
-wearing twenty titles.
+`docs/two-colour.md` has the research, the sources, and three assumptions the
+implementation had to correct along the way — including that "space hue by ΔE
+rather than by degrees" is a distinction without a difference, since at fixed
+lightness and chroma the Oklab hue circle is a circle and the step is the chord
+`2·C·sin(Δh/2)` wherever on the wheel it sits.
+
+The cost is that the hard tier is rectangles, so it loses its silhouettes.
+`DIFFICULTY_TUNING.toneCount.hard` back to `1` reverts all of it.
+
+**No two boards in a category are the same colour.** Hue is assigned across a
+category rather than per subject, because per subject it collapses: most of the
+shipped images have a dominant hue between 43° and 87°, since lit dust and
+starlight are warm. Played end to end that is one puzzle wearing many titles.
 
 So `src/content/hues.ts` lays out *n* evenly spaced slots around the wheel and
 hands them out so each artwork gets the slot closest to a colour it actually
@@ -163,15 +160,20 @@ the choice tied to the pictures rather than being a palette someone picked. Each
 artwork nominates *every* chromatic cluster it has, not just its strongest,
 which is the part that makes it worth doing — an image that is mostly gold but
 holds a real blue can take a blue slot cheaply and leave the gold to an image
-with nothing else. Across the twenty shipped subjects the average rotation is
-34°, and the ones that barely move are the ones with a genuine claim.
+with nothing else. The ones that barely move are the ones with a genuine claim.
+
+Assigned **per category**, not once across everything. Twenty-seven subjects on
+one wheel sit 13° apart, which is not a difference anyone can see; per category
+they get 33°, 40° and 51°. The trade is that a hue can recur between categories
+— never within a list you are looking at, which is the only place it would read
+as a repeat. A pack loaded from a zip runs the same assignment during ingest.
 
 The search is greedy plus pairwise repair rather than exhaustive, so its quality
 is a claim rather than an assertion: there is a test that checks it matches a
 brute-force optimum on every category small enough to enumerate.
 
-**The field is one-dimensional.** Every cell projects onto a single oriented
-axis and takes its colour from that position along the ramp. This replaced a
+**A one-colour field is one-dimensional.** Every cell projects onto a single
+oriented axis and takes its colour from that position along the ramp. This replaced a
 two-dimensional bilinear blend of four corner colours, which was right when
 boards ran to hundreds of tiles and wrong at twelve: nobody infers a 2D
 arrangement from a dozen swatches. One axis makes the rule literal — dark at one
@@ -267,8 +269,8 @@ src/
   ui/       screens
 tools/      pack-cli.ts (build-time ingest), verify.mjs (browser check)
 tests/      vitest
-docs/       two-colour.md — why two-tone boards were hard, and what a correct
-            version would need
+docs/       two-colour.md — the colour and game-design research behind the
+            two-colour boards, and what it corrected
 ```
 
 The engine speaks plain `{ width, height, data: Uint8ClampedArray }` — no DOM,
@@ -278,10 +280,10 @@ testable against synthetic pixel buffers.
 ## Verifying
 
 ```sh
-npm test                       # 112 unit tests: color math, tone ramps, lattices,
-                               # board shape, hue assignment, content and board
-                               # variety, generation, hints, zip safety,
-                               # ingest fallbacks
+npm test                       # 124 unit tests: color math, tone ramps, the
+                               # two-colour plane, lattices, board shape, hue
+                               # assignment, content and board variety,
+                               # generation, hints, zip safety, ingest
 npm run dev &                  # then, against a running server:
 npm run verify                 # drives a real browser through a whole playthrough
 ```
@@ -302,7 +304,7 @@ reveal honors `prefers-reduced-motion`.
 
 ## Shipped content
 
-Twenty artworks across two categories. The images live in `public/artwork/` and
+Twenty-seven artworks across three categories. The images live in `public/artwork/` and
 are referenced by URL, so they go through exactly the same palette extraction a
 loaded pack does, with no special case for being built in.
 
@@ -312,6 +314,10 @@ loaded pack does, with no special case for being built in.
   are human-scale scenes, and a fact about spiral arms would be pasted on, so
   the category is about scale, deep time and what we are made of instead. The
   split is about the facts, not the pictures.
+- **Patterns in Nature** (7) — a soap film, an ammonite, phyllotaxis, a falling
+  drop. Spirals, ripples, and colour made from structure rather than pigment,
+  which is an unusually good fit for a colour game: several of these are about
+  how physics makes colour with no pigment involved at all.
 
 Each category ramps easy to hard across its own length, and boards are assigned
 by position rather than by a hash of the subject id — a hash gives each board
@@ -322,7 +328,10 @@ property that actually matters once a category is longer than a few puzzles.
 
 Silhouettes carry their own minimum tile count rather than all waiting on one
 threshold: a twelve-tile circle is obviously a circle, and a twelve-tile star is
-a smudge.
+a smudge. They also carry the lattices they read on, which is a table of
+observations rather than a rule — a crescent cut from triangles came out as a
+zigzag, a leaf cut from squares as a ragged staircase. Both were the right tile
+count and the right aspect, and both looked like a board with bits missing.
 
 ## Current limits
 

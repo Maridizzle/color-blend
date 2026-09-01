@@ -19,6 +19,7 @@ import {
   boardForTileCount,
   calibrate,
   type Difficulty,
+  isTwoColour,
 } from '../src/puzzle/difficulty';
 import { arrangementOf, generatePuzzle } from '../src/puzzle/generator';
 import {
@@ -222,7 +223,11 @@ describe('difficulty calibration', () => {
       const target = DIFFICULTY_TUNING.tileCount[difficulty];
       const result = calibrate(PALETTE.anchors, 'square', 'full', difficulty, 0);
       expect(result.targetTileCount).toBe(target);
-      expect(Math.abs(result.tileCount - target)).toBeLessThanOrEqual(1);
+      // A two-colour board has a chosen number of hue columns, so its tile count
+      // is a multiple of that and can miss by up to half a column. Thirty tiles
+      // over four columns is 28 or 32; there is no 30.
+      const slack = isTwoColour(difficulty) ? DIFFICULTY_TUNING.planeColumns / 2 : 1;
+      expect(Math.abs(result.tileCount - target), difficulty).toBeLessThanOrEqual(slack);
     }
   });
 
@@ -265,10 +270,28 @@ describe('difficulty calibration', () => {
     // Fewer tiles over the same range means bigger steps, so a real palette
     // should never come near the floor -- that is the whole reason the boards
     // got easier to read as well as smaller.
+    //
+    // Measured on the median-max, which describes a ramp. A plane is checked in
+    // plane.test.ts on the *smallest* step instead: its median-max reports the
+    // lightness axis alone, and the hue axis is the one that can run out of
+    // room.
     for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      if (isTwoColour(difficulty)) continue;
       const result = calibrate(PALETTE.anchors, 'square', 'full', difficulty, 0);
-      expect(result.measuredNeighborDeltaE).toBeGreaterThan(
+      expect(result.measuredNeighborDeltaE, difficulty).toBeGreaterThan(
         DIFFICULTY_TUNING.minNeighborDeltaE * 1.5,
+      );
+    }
+  });
+
+  it('keeps both axes of a two-colour board above the floor', () => {
+    const hard = (['easy', 'medium', 'hard'] as const).filter(isTwoColour);
+    expect(hard.length).toBeGreaterThan(0);
+    for (const difficulty of hard) {
+      const result = calibrate(PALETTE.anchors, 'square', 'full', difficulty, 0);
+      const smallest = fieldStats(result.lattice, result.field).minPositiveNeighborDeltaE;
+      expect(smallest, difficulty).toBeGreaterThanOrEqual(
+        DIFFICULTY_TUNING.minNeighborDeltaE,
       );
     }
   });
@@ -402,9 +425,27 @@ describe('puzzle generation', () => {
     for (const difficulty of ['easy', 'medium', 'hard'] as const) {
       const puzzle = make({ difficulty });
       const lockedIds = puzzle.locked.flatMap((l, i) => (l ? [i] : []));
-      expect(lockedIds.length).toBe(DIFFICULTY_TUNING.lockedStarters[difficulty]);
+      // A two-colour board locks all four corners regardless of tier. They are
+      // not a hint on a plane, they are what fixes the ends of both axes.
+      const promised = isTwoColour(difficulty)
+        ? DIFFICULTY_TUNING.planeStarters
+        : DIFFICULTY_TUNING.lockedStarters[difficulty];
+      expect(lockedIds.length, difficulty).toBe(promised);
       const arrangement = arrangementOf(puzzle);
       for (const id of lockedIds) expect(isCellCorrect(arrangement, id)).toBe(true);
+    }
+  });
+
+  it('locks all four corners of a two-colour board, one per grid corner', () => {
+    // Both axes need both of their ends visible, so the four have to be four
+    // distinct corners rather than four cells that happen to be extreme.
+    const puzzle = make({ difficulty: 'hard', latticeKind: 'square', shape: 'full' });
+    expect(isTwoColour('hard')).toBe(true);
+    const locked = puzzle.locked.flatMap((l, i) => (l ? [puzzle.lattice.cells[i]!] : []));
+    expect(locked).toHaveLength(4);
+    for (const [u, v] of [[0, 0], [0, 1], [1, 0], [1, 1]] as const) {
+      const nearest = Math.min(...locked.map((c) => Math.hypot(c.u - u, c.v - v)));
+      expect(nearest, `corner ${u},${v}`).toBeLessThan(0.35);
     }
   });
 

@@ -12,16 +12,24 @@ import type { Category } from '../types';
  * ramps difficulty across each category.
  *
  * `hue` is the one thing set here rather than derived, and it is not a taste
- * decision: fourteen of these twenty images have a dominant hue between 43 and
- * 87 degrees, because lit dust and starlight are warm. Left alone almost every
- * board would be the same amber. The values below were computed by
- * `assignDistinctHues` in `src/content/hues.ts` over all twenty at once, which
- * spaces them 18 degrees apart around the wheel and gives each artwork the slot
- * closest to a colour it actually contains. They are recorded rather than
- * recomputed at load time because working them out means clustering twenty
- * images, and nobody should wait for that to open a menu. A pack loaded from a
- * zip runs the same function during ingest, where the palettes are already in
- * hand.
+ * decision: most of these images have a dominant hue between 43 and 87 degrees,
+ * because lit dust and starlight are warm. Left alone almost every board would
+ * be the same amber. The values below were computed by `assignDistinctHues` in
+ * `src/content/hues.ts`, which spaces a category's boards evenly around the
+ * wheel and gives each artwork the slot closest to a colour it actually
+ * contains.
+ *
+ * Assigned **per category**, not once across everything. Twenty-seven subjects
+ * on one wheel sit 13 degrees apart, which is not a difference anyone can see;
+ * per category they are 33, 40 and 51 degrees apart, better than the 18 the
+ * single pass gave. The trade is that a hue can recur between categories --
+ * never within a list you are looking at, which is the only place it would
+ * read as a repeat.
+ *
+ * They are recorded rather than recomputed at load time because working them
+ * out means clustering every image in the category, and nobody should wait for
+ * that to open a menu. A pack loaded from a zip runs the same function during
+ * ingest, where the palettes are already in hand.
  *
  * The split into two categories is about the facts, not the pictures. Half
  * these images are astronomical objects and can carry astronomy; the rest are
@@ -40,7 +48,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'spiral-galaxy',
         title: 'Spiral Galaxy',
         blurb: 'A hundred billion suns, held in a turning disc.',
-        hue: 272,
+        hue: 267,
         artwork: { kind: 'url', url: './artwork/spiral-galaxy.jpg' },
         facts: [
           'A spiral galaxy’s arms look blue and its centre gold for the same reason: the arms are where new stars are still forming, and the hottest, bluest of those burn out fastest, while the core is left holding older, cooler, redder ones.',
@@ -54,7 +62,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'andromeda',
         title: 'Andromeda',
         blurb: 'The nearest big galaxy, and the furthest thing you can see unaided.',
-        hue: 326,
+        hue: 333,
         artwork: { kind: 'url', url: './artwork/andromeda.jpg' },
         facts: [
           'Andromeda is about 2.5 million light years away, and is the most distant object most people can see with the naked eye. The light reaching you tonight left before our species existed.',
@@ -68,7 +76,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'pinwheel-galaxy',
         title: 'Pinwheel Galaxy',
         blurb: 'Two clean arms, which is rarer than it looks.',
-        hue: 290,
+        hue: 300,
         artwork: { kind: 'url', url: './artwork/pinwheel-galaxy.jpg' },
         facts: [
           'A “grand design” spiral has two clear arms running unbroken around the disc. Only about one spiral in ten is this tidy; the rest are flocculent — patchy and many-armed.',
@@ -82,7 +90,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'barred-spiral',
         title: 'Barred Spiral',
         blurb: 'A straight span of stars across the core, with the arms trailing from its ends.',
-        hue: 254,
+        hue: 202,
         artwork: { kind: 'url', url: './artwork/barred-spiral.jpg' },
         facts: [
           'Roughly two thirds of spiral galaxies have a bar — a straight structure through the centre, with the spiral arms starting at its tips rather than at the core.',
@@ -96,7 +104,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'galaxy-cluster',
         title: 'Galaxy Cluster',
         blurb: 'The largest things gravity has managed to hold together.',
-        hue: 344,
+        hue: 136,
         artwork: { kind: 'url', url: './artwork/galaxy-cluster.jpg' },
         facts: [
           'A rich cluster can hold a thousand galaxies bound together by gravity. They are the largest structures in the universe that are held together at all — everything bigger is still expanding apart.',
@@ -110,7 +118,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'saturn',
         title: 'Saturn',
         blurb: 'The solar system’s great ringed world.',
-        hue: 20,
+        hue: 104,
         artwork: { kind: 'url', url: './artwork/saturn.jpg' },
         facts: [
           'Saturn’s rings are almost entirely water ice, in pieces ranging from specks of dust to chunks the size of a house.',
@@ -124,7 +132,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'gas-giant-clouds',
         title: 'Cloud Tops',
         blurb: 'A world with weather and no ground.',
-        hue: 74,
+        hue: 71,
         artwork: { kind: 'url', url: './artwork/gas-giant-clouds.jpg' },
         facts: [
           'A gas giant has no surface. Descending, the atmosphere simply thickens until it behaves as a liquid, and there is no line anywhere to call the ground.',
@@ -138,7 +146,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'crab-nebula',
         title: 'The Crab Nebula',
         blurb: 'Wreckage from an explosion people watched in 1054.',
-        hue: 218,
+        hue: 235,
         artwork: { kind: 'url', url: './artwork/crab-nebula.jpg' },
         facts: [
           'The Crab is the debris of a star seen to explode in 1054. Chinese astronomers recorded a “guest star” bright enough to be visible in daylight for over three weeks.',
@@ -166,7 +174,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'accretion-disc',
         title: 'Accretion Disc',
         blurb: 'Matter falling in, and glowing on the way down.',
-        hue: 92,
+        hue: 169,
         artwork: { kind: 'url', url: './artwork/accretion-disc.jpg' },
         facts: [
           'Material falling towards a compact object almost never falls straight in. It arrives with sideways motion, so it settles into a disc and spirals inward instead.',
@@ -180,7 +188,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'black-hole',
         title: 'Black Hole',
         blurb: 'A boundary in spacetime, not an object.',
-        hue: 2,
+        hue: 5,
         artwork: { kind: 'url', url: './artwork/black-hole.jpg' },
         facts: [
           'The glow in an image of a black hole is not the hole. It is the accretion disk: matter torn apart and heated to millions of degrees as it spirals inward.',
@@ -201,7 +209,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'meadow-galaxy',
         title: 'Night Over a Meadow',
         blurb: 'The view most people have lost.',
-        hue: 56,
+        hue: 320,
         artwork: { kind: 'url', url: './artwork/meadow-galaxy.jpg' },
         facts: [
           'About a third of humanity can no longer see the Milky Way from where they live, and roughly 80% of people in North America cannot.',
@@ -215,7 +223,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'mountain-night',
         title: 'Peaks Under Starlight',
         blurb: 'Why observatories are built where the air runs out.',
-        hue: 110,
+        hue: 40,
         artwork: { kind: 'url', url: './artwork/mountain-night.jpg' },
         facts: [
           'Great telescopes sit on mountains to get above as much of the atmosphere as possible — above its water vapour, and above much of its turbulence.',
@@ -229,7 +237,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'cloud-sea',
         title: 'Above the Clouds',
         blurb: 'How thin the air actually is.',
-        hue: 200,
+        hue: 80,
         artwork: { kind: 'url', url: './artwork/cloud-sea.jpg' },
         facts: [
           'In photographs of Earth from orbit the atmosphere is a thin bright line. Most of its mass sits within about 16 km of the ground — thinner, proportionally, than the skin on an apple.',
@@ -243,7 +251,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'the-ascent',
         title: 'The Ascent',
         blurb: 'Leaving is a problem of speed, not height.',
-        hue: 164,
+        hue: 120,
         artwork: { kind: 'url', url: './artwork/the-ascent.jpg' },
         facts: [
           'Reaching orbit is about going sideways fast enough — roughly 28,000 km/h — not about going up. Straight up and you simply come back down.',
@@ -257,7 +265,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'alien-sky',
         title: 'Another World’s Sky',
         blurb: 'Daylight elsewhere probably looks nothing like ours.',
-        hue: 236,
+        hue: 280,
         artwork: { kind: 'url', url: './artwork/alien-sky.jpg' },
         facts: [
           'More than five thousand planets around other stars have been confirmed, and most were found without ever being seen — detected by the tiny dip in a star’s light as a planet crosses in front of it.',
@@ -271,7 +279,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'young-sun',
         title: 'A Sun Being Born',
         blurb: 'Where planets come from.',
-        hue: 128,
+        hue: 160,
         artwork: { kind: 'url', url: './artwork/young-sun.jpg' },
         facts: [
           'Stars form inside cold clouds of gas and dust that collapse under their own gravity until the centre is hot and dense enough for fusion to start.',
@@ -285,7 +293,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'star-stuff',
         title: 'Star Stuff',
         blurb: 'You are made of the ash.',
-        hue: 308,
+        hue: 240,
         artwork: { kind: 'url', url: './artwork/star-stuff.jpg' },
         facts: [
           'Every element heavier than helium was assembled inside a star, or in the collision of two dead ones. There is no other significant source.',
@@ -299,7 +307,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'the-machine',
         title: 'The Machine',
         blurb: 'Almost everything we know, something else went and looked at.',
-        hue: 146,
+        hue: 0,
         artwork: { kind: 'url', url: './artwork/the-machine.jpg' },
         facts: [
           'Nearly everything known about other worlds was sent back by robots. No human being has yet travelled further than the Moon.',
@@ -313,7 +321,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
         id: 'the-ruins',
         title: 'What We Leave',
         blurb: 'The orbits are getting crowded.',
-        hue: 182,
+        hue: 200,
         artwork: { kind: 'url', url: './artwork/the-ruins.jpg' },
         facts: [
           'Tens of thousands of debris objects larger than 10 cm are tracked in orbit around Earth, and there are many millions too small to track but still fast enough to destroy a satellite.',
@@ -321,6 +329,111 @@ export const SAMPLER_CATEGORIES: Category[] = [
           'Altitude decides how long junk lasts. Below about 600 km the thin remaining air drags things down within decades; above 1,000 km, objects can stay up for centuries.',
           'Debris hits at closing speeds around 10 km per second, where a fleck of paint carries the energy of a bullet.',
           'The footprints left on the Moon have no wind or water to erase them. Barring an unlucky impact, they will still be there in a million years.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'patterns',
+    title: 'Patterns in Nature',
+    blurb: 'Spirals, ripples, and colour made from structure rather than pigment.',
+    subjects: [
+      {
+        id: 'seedling',
+        title: 'Seedling',
+        blurb: 'Built almost entirely out of air.',
+        hue: 261,
+        artwork: { kind: 'url', url: './artwork/seedling.jpg' },
+        facts: [
+          'Leaves are green because chlorophyll absorbs red and blue light strongly and reflects the green. The colour you see is the part the plant is throwing away.',
+          'Nearly every carbon atom in a plant came out of the air as carbon dioxide. A tree is mostly built from a gas.',
+          'Almost all the oxygen in the atmosphere was put there by photosynthesis. Before it began, the air had essentially none.',
+          'Photosynthesis converts only a few per cent of the light that falls on a leaf, far less than a solar panel — but it has been running for over three billion years and it rebuilt the planet.',
+          'Living things everywhere on Earth are made of the same handful of elements, and every one of them heavier than hydrogen was made inside a star.',
+        ],
+      },
+      {
+        id: 'the-drop',
+        title: 'The Drop',
+        blurb: 'Surface tension, caught in the act.',
+        hue: 210,
+        artwork: { kind: 'url', url: './artwork/the-drop.jpg' },
+        facts: [
+          'A drop is a drop because water molecules pull on one another. A sphere is the shape with the least surface for a given volume, so that is what the pulling produces.',
+          'A drop landing on still water can rebound as a thin column and pinch off a second droplet on the way up. That is the moment the classic photograph catches.',
+          'The rings spreading outwards are capillary waves, ruled by surface tension rather than gravity — so the shorter ones travel *faster*, the opposite of waves at sea.',
+          'A water strider stands on the surface rather than in it. Its weight is simply less than the force holding the surface together.',
+          'Water’s surface tension is unusually high for a liquid because its molecules hydrogen-bond to each other. The same bonding is why it stays liquid at temperatures where similar molecules are gases.',
+        ],
+      },
+      {
+        id: 'thin-film',
+        title: 'Thin Film',
+        blurb: 'Every colour here, and not a drop of pigment.',
+        hue: 313,
+        artwork: { kind: 'url', url: './artwork/thin-film.jpg' },
+        facts: [
+          'A soap bubble contains no pigment at all. Light reflects off both surfaces of a film a few hundred nanometres thick, and the two reflections interfere — reinforcing some wavelengths and cancelling others.',
+          'Which colour appears depends on how thick the film is at that point. As it drains under gravity the bands drift downwards, which is why a bubble’s colours are always moving.',
+          'Just before it pops, the top of a bubble turns black. The film there is thinner than a wavelength of light, and the two reflections cancel almost exactly.',
+          'The rainbow on a wet road is the same effect in a film of oil, and so is the sheen on a beetle’s back.',
+          'A bubble is the smallest surface that can enclose its air. It is the same rule that makes a falling drop spherical, working from the inside out.',
+        ],
+      },
+      {
+        id: 'phyllotaxis',
+        title: 'Phyllotaxis',
+        blurb: 'The angle a plant uses to avoid shading itself.',
+        hue: 159,
+        artwork: { kind: 'url', url: './artwork/phyllotaxis.jpg' },
+        facts: [
+          'New leaves emerge about 137.5 degrees around from the last — the golden angle. Nothing packs more evenly: any simpler fraction of a turn eventually lines new growth up with old and wastes the light.',
+          'Count the spirals in a sunflower head or a pine cone and you get consecutive Fibonacci numbers, 34 and 55 or 55 and 89, because those fractions come closest to that angle.',
+          'No plant is doing arithmetic. Each bud forms wherever there is most room, and the angle falls out of that one local rule.',
+          'The same spirals turn up in unrelated species, because the pattern belongs to the process — anything added one piece at a time around a growing centre does it.',
+          'Growth like this is self-similar: the arrangement looks the same whether the plant has ten leaves or a thousand.',
+        ],
+      },
+      {
+        id: 'structural-colour',
+        title: 'Structural Colour',
+        blurb: 'Grind it to powder and the colour disappears.',
+        hue: 107,
+        artwork: { kind: 'url', url: './artwork/structural-colour.jpg' },
+        facts: [
+          'An iridescent feather holds no green or blue pigment. Its colour comes from layers of keratin and melanin spaced to reinforce particular wavelengths of light.',
+          'Grind such a feather to powder and the colour vanishes with the structure. Grind a pigmented feather and the powder keeps its colour.',
+          'Because it depends on the angle you look from, structural colour shifts as the bird turns. Pigment looks the same from everywhere.',
+          'Almost no bird makes blue pigment. Nearly every blue feather in the world is structural.',
+          'Butterfly wings, beetle shells and a few berries use the same trick. It has evolved independently many times, which suggests it is an easy thing for biology to find.',
+        ],
+      },
+      {
+        id: 'ammonite',
+        title: 'The Logarithmic Spiral',
+        blurb: 'The only curve that keeps its shape as it grows.',
+        hue: 4,
+        artwork: { kind: 'url', url: './artwork/ammonite.jpg' },
+        facts: [
+          'A shell grows only at its opening, adding material without changing proportion. That produces a logarithmic spiral — the one curve that stays the same shape however large it gets.',
+          'Ammonites swam the seas for more than 300 million years and died out alongside the dinosaurs, having already outlasted almost everything else.',
+          'The chambers coiled inside were ballast. Flooding them or filling them with gas let the animal sink or rise, much as a submarine does.',
+          'The shimmer on a fossil shell is nacre: microscopic plates of aragonite stacked about a wavelength of light apart. Structural colour again, from an animal that died before there were flowers.',
+          'Nacre is also extraordinarily tough for something made of chalk. Its brick-and-mortar layering stops cracks from running.',
+        ],
+      },
+      {
+        id: 'refraction',
+        title: 'Refraction',
+        blurb: 'Light bending because it changed speed.',
+        hue: 56,
+        artwork: { kind: 'url', url: './artwork/refraction.jpg' },
+        facts: [
+          'Refraction is nothing more than light changing speed. It travels about a quarter slower through water than through air, and bends at the boundary as a result.',
+          'A sphere of glass or water makes an image of whatever is behind it, upside down, because the bending brings rays to a focus.',
+          'Past a certain angle, light cannot leave water at all and reflects back inside. That total internal reflection is what carries signals along a fibre-optic cable.',
+          'Different colours bend by slightly different amounts, which is what splits white light in a prism.',
+          'A rainbow is that splitting, inside raindrops. It is always centred on the point directly opposite the sun from where you stand, so no two people ever see quite the same one.',
         ],
       },
     ],

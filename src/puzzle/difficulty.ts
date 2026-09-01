@@ -1,7 +1,13 @@
 import type { Oklab } from '../color/oklab';
-import { type Lattice, type LatticeKind, makeLattice, maskLattice } from './lattice';
+import {
+  type Lattice,
+  type LatticeKind,
+  makeLattice,
+  maskLattice,
+  squareLattice,
+} from './lattice';
 import { SHAPES, type ShapeName } from './shapes';
-import { buildField, fieldStats } from './field';
+import { buildField, buildPlaneField, fieldStats } from './field';
 
 /**
  * How big a board gets.
@@ -47,6 +53,32 @@ export const DIFFICULTY_TUNING = {
   } satisfies Record<Difficulty, number>,
 
   /**
+   * Locked starters on a two-colour board: all four corners, always.
+   *
+   * This runs the opposite way to the table above, where harder means fewer
+   * anchors, and it is deliberate. Four corners is not a generous hint on a
+   * plane, it is the *definition* of one -- they are what fix the ends of both
+   * axes, and without them there is nothing to interpolate between. It is also
+   * where I Love Hue's difficulty curve ends up: its later levels lock the four
+   * corners and nothing else.
+   */
+  planeStarters: 4,
+
+  /**
+   * Hue columns on a two-colour board -- few, and fewer than the lightness rows.
+   *
+   * Every extra column is another step of arc the board has to span, and the arc
+   * is what decides whether it reads as two colours or as a rainbow. At five
+   * columns the arc ran to the full 175 degrees, which is near-complementary:
+   * the solved board went gold, rose, violet, blue, and that is four colours by
+   * anyone's count. Four columns spans about 90, which is a journey between two.
+   *
+   * Trading columns for rows costs nothing, because the lightness axis has room
+   * to spare and a taller board suits a phone anyway.
+   */
+  planeColumns: 4,
+
+  /**
    * Hue families the board travels through.
    *
    * One. The sort is then a pure value scale -- a single colour running dark to
@@ -71,7 +103,7 @@ export const DIFFICULTY_TUNING = {
   toneCount: {
     easy: 1,
     medium: 1,
-    hard: 1,
+    hard: 2,
   } satisfies Record<Difficulty, number>,
 
   /**
@@ -121,6 +153,8 @@ export interface CalibrationResult {
   /** What the difficulty asked for, before the legibility floor. */
   targetTileCount: number;
   measuredNeighborDeltaE: number;
+  /** The step the correctness tolerance is a fraction of. */
+  toleranceBasis: number;
 }
 
 /**
@@ -211,9 +245,20 @@ export function calibrate(
   const targetTileCount = DIFFICULTY_TUNING.tileCount[difficulty];
   const toneCount = DIFFICULTY_TUNING.toneCount[difficulty];
 
+  // A second colour is a second *axis*, not a longer ramp -- see
+  // `buildPlaneField`. Which builder runs is the only difference between a
+  // one-colour board and a two-colour one.
+  const build = (l: Lattice) =>
+    toneCount >= 2
+      ? buildPlaneField(l, anchors, { symmetry, hue })
+      : buildField(l, anchors, { symmetry, toneCount, hue });
+
+  const board = (t: number) =>
+    toneCount >= 2 ? planeBoard(t) : boardForTileCount(kind, shape, t);
+
   let target = targetTileCount;
-  let lattice = boardForTileCount(kind, shape, target);
-  let field = buildField(lattice, anchors, { symmetry, toneCount, hue });
+  let lattice = board(target);
+  let field = build(lattice);
   let measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
 
   while (
@@ -226,18 +271,51 @@ export function calibrate(
     if (next < DIFFICULTY_TUNING.minTiles) break;
 
     target = next;
-    lattice = boardForTileCount(kind, shape, target);
-    // Same options as the first build: dropping them here once left the retry
-    // measuring a different board from the one it was about to return.
-    field = buildField(lattice, anchors, { symmetry, toneCount, hue });
+    lattice = board(target);
+    // Same builder as the first pass: dropping the options here once left the
+    // retry measuring a different board from the one it was about to return.
+    field = build(lattice);
     measured = fieldStats(lattice, field).medianMaxNeighborDeltaE;
   }
 
+  const stats = fieldStats(lattice, field);
   return {
     lattice,
     field,
     tileCount: lattice.cells.length,
     targetTileCount,
     measuredNeighborDeltaE: measured,
+    // On a plane the median-max reports the lightness axis, which is much the
+    // larger of the two; a tolerance from it would make a whole row
+    // interchangeable and the hue axis decorative.
+    toleranceBasis: toneCount >= 2 ? stats.minPositiveNeighborDeltaE : measured,
   };
+}
+
+/**
+ * The grid for a two-colour board: a fixed few hue columns, and as many
+ * lightness rows as the tile count then asks for.
+ *
+ * Deliberately not the general search, which optimises for a squarish board.
+ * Here the shape of the grid *is* the difficulty setting -- columns decide how
+ * much hue the board spans -- so it is chosen rather than discovered.
+ */
+export function planeBoard(targetTileCount: number): Lattice {
+  const cols = DIFFICULTY_TUNING.planeColumns;
+  const rows = Math.max(
+    3,
+    Math.min(12, Math.round(targetTileCount / cols)),
+  );
+  return squareLattice(cols, rows);
+}
+
+/**
+ * Whether this difficulty plays as a plane rather than a ramp.
+ *
+ * A two-colour board needs straight rows and columns to be read as two axes, so
+ * it is always a plain rectangle on a square lattice. That does cost the hard
+ * tier its silhouettes; a leaf or a ring has no rows to read.
+ */
+export function isTwoColour(difficulty: Difficulty): boolean {
+  return DIFFICULTY_TUNING.toneCount[difficulty] >= 2;
 }

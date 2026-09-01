@@ -1,5 +1,6 @@
 import { PuzzleSession } from '../game/session';
 import { preparePuzzle } from '../game/prepare';
+import { isTwoColour } from '../puzzle/difficulty';
 import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
 import type { Category, Subject } from '../content/types';
 import { button, clear, el } from './dom';
@@ -16,6 +17,16 @@ export interface PuzzleScreenHost {
  * Owns the DOM around the board; the session owns the board itself. Kept apart
  * so the game loop never has to know how the page is laid out.
  */
+/**
+ * How long a two-colour board shows its solved state before scrambling.
+ *
+ * Long enough to take in the shape of the plane, short enough not to be a wait
+ * on a board you are replaying. Skipped entirely under reduced motion, where an
+ * unrequested animated change of the whole board is exactly what the setting is
+ * asking not to happen.
+ */
+const PREVIEW_MS = 1400;
+
 export function puzzleScreen(
   host: PuzzleScreenHost,
   category: Category,
@@ -227,6 +238,17 @@ export function puzzleScreen(
         },
       );
       canvas.focus({ preventScroll: true });
+
+      // Two-colour boards open with a look at the finished plane. A player can
+      // infer a one-colour board's target from the rule alone -- darkest to
+      // lightest -- but a plane has a hue axis as well, and no amount of
+      // staring at a shuffle tells you where its ends are. Showing it first
+      // turns the puzzle into putting back what you just saw, which is how the
+      // genre makes its hardest boards fair rather than merely hard.
+      if (isTwoColour(prepared.spec.difficulty) && !reducedMotion) {
+        session.preview(PREVIEW_MS);
+        flash('Remember this.');
+      }
     } catch (error) {
       status.className = 'loading loading-error';
       status.textContent = (error as Error).message;

@@ -1,9 +1,14 @@
 import type { Oklab } from '../color/oklab';
 import { type Palette, extractPalette } from '../color/palette';
 import { hashString } from '../util/rng';
-import { DIFFICULTY_TUNING, type Difficulty } from '../puzzle/difficulty';
+import { DIFFICULTY_TUNING, type Difficulty, isTwoColour } from '../puzzle/difficulty';
 import type { LatticeKind } from '../puzzle/lattice';
-import { SHAPE_MIN_TILES, SHAPE_NAMES, type ShapeName } from '../puzzle/shapes';
+import {
+  SHAPE_LATTICES,
+  SHAPE_MIN_TILES,
+  SHAPE_NAMES,
+  type ShapeName,
+} from '../puzzle/shapes';
 import { type Puzzle, generatePuzzle } from '../puzzle/generator';
 import { loadArtwork } from '../content/artwork';
 import type { Artwork, Subject } from '../content/types';
@@ -48,6 +53,14 @@ export function specFor(
   const difficulty = subject.difficulty ?? rampedDifficulty(index, total);
   const tiles = DIFFICULTY_TUNING.tileCount[difficulty];
 
+  // A two-colour board is read as rows and columns, so it has to have them: a
+  // plain rectangle on a square lattice. A leaf or a ring has no rows. This
+  // overrides a pack's own choice rather than deferring to it, because the
+  // alternative is a board whose two axes cannot be seen.
+  if (isTwoColour(difficulty)) {
+    return { difficulty, latticeKind: 'square', shape: 'full' };
+  }
+
   // Position in the category, not a hash of the id. A hash gives each subject a
   // stable board but says nothing about its neighbours, so across twenty
   // subjects it collides and the same handful of boards keep coming back.
@@ -59,12 +72,20 @@ export function specFor(
   // hexagon, in the same order.
   const offset = categoryId ? hashString(categoryId) : 0;
 
+  const latticeKind =
+    subject.latticeKind ??
+    (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind);
+
   return {
     difficulty,
-    latticeKind:
-      subject.latticeKind ??
-      (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind),
-    shape: subject.shape ?? shapeForTiles(index * SHAPE_STRIDE + offset, tiles),
+    latticeKind,
+    shape:
+      subject.shape ??
+      // `tiles` joins the walk position because each difficulty tier has its own
+      // set of eligible shapes, and without it two subjects on the same lattice
+      // in different tiers can walk to the same one -- Andromeda and Saturn both
+      // came out as a squircle of triangles.
+      shapeForTiles(index * SHAPE_STRIDE + offset + tiles, tiles, latticeKind),
   };
 }
 
@@ -75,6 +96,9 @@ export function specFor(
  * shape waiting on one blanket threshold -- a twelve-tile circle is obviously a
  * circle, and a twelve-tile star is a smudge.
  *
+ * Eligibility is both a tile count and the lattice: some outlines only survive
+ * being carved out of certain packings (see `SHAPE_LATTICES`).
+ *
  * The eligible shapes are filtered out *before* indexing rather than scanning
  * forward from the walk position to the next one that fits. Scanning looks
  * equivalent and is not: every position that lands on a shape too detailed for
@@ -82,8 +106,10 @@ export function specFor(
  * out as four crosses and four squircles. Filtering first keeps the stride
  * coprime with however many shapes are actually available.
  */
-function shapeForTiles(from: number, tiles: number): ShapeName {
-  const eligible = SHAPE_NAMES.filter((s) => tiles >= SHAPE_MIN_TILES[s]);
+function shapeForTiles(from: number, tiles: number, kind: LatticeKind): ShapeName {
+  const eligible = SHAPE_NAMES.filter(
+    (s) => tiles >= SHAPE_MIN_TILES[s] && SHAPE_LATTICES[s].includes(kind),
+  );
   if (eligible.length === 0) return 'full';
   return eligible[((from % eligible.length) + eligible.length) % eligible.length] as ShapeName;
 }

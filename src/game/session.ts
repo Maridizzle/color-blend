@@ -52,6 +52,9 @@ export class PuzzleSession {
   private activeSwap: PendingSwap | null = null;
   private pulses = new Map<number, number>();
 
+  private previewTimer: ReturnType<typeof setTimeout> | null = null;
+  private previewing = false;
+
   private revealPlan: RevealPlan | null = null;
   private revealStart: number | null = null;
   private revealDone = false;
@@ -87,8 +90,47 @@ export class PuzzleSession {
 
   destroy(): void {
     this.destroyed = true;
+    if (this.previewTimer !== null) clearTimeout(this.previewTimer);
     cancelAnimationFrame(this.frame);
     this.detach();
+  }
+
+  /**
+   * Show the finished board for a moment, then let it fall back to the shuffle.
+   *
+   * This is lifted from I Love Hue, which does it on every level, and it is a
+   * large part of why its hardest boards are fair rather than merely hard: it
+   * turns "work out what this is supposed to look like" into "put back what you
+   * just saw". Two-colour boards need it, because a plane has a target a player
+   * cannot infer from a corner or two. One-colour boards do not -- "darkest to
+   * lightest" says everything.
+   *
+   * Deliberately display-only. It swaps the colours being drawn and leaves the
+   * arrangement alone, so nothing downstream can mistake the preview for a
+   * solved board and fire the reveal.
+   */
+  preview(ms: number): void {
+    if (this.previewing || ms <= 0) return;
+    const shuffled = { colors: this.colors, lightness: this.lightness };
+
+    this.colors = this.puzzle.lattice.cells.map((c) =>
+      oklabToHex(this.puzzle.targets[c.id] as Oklab),
+    );
+    this.lightness = this.puzzle.lattice.cells.map(
+      (c) => (this.puzzle.targets[c.id] as Oklab).L,
+    );
+    this.previewing = true;
+    this.selection = null;
+    this.dirty = true;
+
+    this.previewTimer = setTimeout(() => {
+      this.previewTimer = null;
+      if (this.destroyed) return;
+      this.colors = shuffled.colors;
+      this.lightness = shuffled.lightness;
+      this.previewing = false;
+      this.dirty = true;
+    }, ms);
   }
 
   setLightnessAssist(on: boolean): void {
@@ -104,7 +146,7 @@ export class PuzzleSession {
   // ---------------------------------------------------------------- input
 
   private onPointerDown = (event: PointerEvent) => {
-    if (this.solved) return;
+    if (this.solved || this.previewing) return;
     const cellId = this.renderer.pickAtClient(event.clientX, event.clientY);
     if (cellId === null) {
       this.selection = null;
@@ -158,7 +200,7 @@ export class PuzzleSession {
   };
 
   private onKeyDown = (event: KeyboardEvent) => {
-    if (this.solved) return;
+    if (this.solved || this.previewing) return;
     const directions: Record<string, [number, number]> = {
       ArrowLeft: [-1, 0],
       ArrowRight: [1, 0],
