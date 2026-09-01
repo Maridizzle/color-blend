@@ -49,8 +49,29 @@ export const TONE_TUNING = {
   /**
    * How much the target relaxes toward the lightness ends, where less chroma is
    * available. Without this the fit does the tapering anyway, but unevenly.
+   * Kept small: the ends are where the ramp should be at its most vivid, so
+   * that the further a tile sits from the middle the stronger its colour.
    */
-  endChromaFalloff: 0.45,
+  endChromaFalloff: 0.2,
+
+  /**
+   * Chroma at a family boundary, as a fraction of the ramp's peak, and how much
+   * of the ramp the fade spans.
+   *
+   * This is what gives the middle of the board something to say. Two families
+   * meeting at full chroma is a cliff -- ten near-identical indigos, ten
+   * near-identical golds, and no way to tell which indigo is the last one. So
+   * chroma eases down to a muted tint at the seam and back up, and the hue
+   * changes exactly where colour is weakest, which is why no alien in-between
+   * hue is ever visible: the tiles either side of the seam read as a dusty blue
+   * and a soft tan rather than as magenta.
+   *
+   * It also gives the sort a second cue. Inside a block, lightness alone steps
+   * about 0.03 a tile, which is near the limit of what anyone can order by eye;
+   * now saturation rises as well the further a tile sits from the middle.
+   */
+  seamChroma: 0.34,
+  seamWidth: 0.34,
 
   /** Two hue centres closer than this are the same tone as far as a player is concerned. */
   minHueSeparation: 40,
@@ -194,6 +215,14 @@ export function selectToneFamilies(anchors: readonly Oklab[], count: number): To
  * the board splits into groups you can pile up by eye, and the fine ordering
  * inside each group is lightness -- which is the actual rule of the game and
  * runs monotonically across the step untouched.
+ *
+ * A bare step was not enough on its own, though: ten near-identical indigos
+ * meeting ten near-identical golds gives the middle of the board nothing to
+ * say, and no way to tell which indigo is the last one. `chromaAt` fades
+ * saturation toward a tint at the boundary, so the step lands where colour is
+ * weakest and the tiles either side read as a dusty blue and a soft tan --
+ * genuinely in-between, without either taking a hue that belongs to neither
+ * family.
  */
 export function hueAt(families: readonly ToneFamily[], t: number): number {
   if (families.length === 0) return 0;
@@ -202,11 +231,30 @@ export function hueAt(families: readonly ToneFamily[], t: number): number {
   return (families[block] as ToneFamily).hue;
 }
 
-/** Chroma at ramp position t, easing off where the gamut cannot hold it. */
-function chromaAt(peak: number, t: number): number {
+const smoothstep = (t: number) => {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+};
+
+/**
+ * Chroma at ramp position t: eased off where the gamut cannot hold it, and
+ * faded toward neutral wherever one family gives way to the next.
+ */
+export function chromaAt(peak: number, t: number, families: readonly ToneFamily[]): number {
   // Distance from the middle of the ramp, 0 at centre and 1 at either end.
   const fromCentre = Math.abs(t - 0.5) * 2;
-  return peak * (1 - TONE_TUNING.endChromaFalloff * fromCentre * fromCentre);
+  const ends = 1 - TONE_TUNING.endChromaFalloff * fromCentre * fromCentre;
+
+  let seam = 1;
+  for (let i = 1; i < families.length; i++) {
+    const distance = Math.abs(t - i / families.length) / (TONE_TUNING.seamWidth / 2);
+    const eased =
+      TONE_TUNING.seamChroma +
+      (1 - TONE_TUNING.seamChroma) * smoothstep(Math.min(1, distance));
+    seam = Math.min(seam, eased);
+  }
+
+  return peak * ends * seam;
 }
 
 /**
@@ -246,7 +294,7 @@ export function sampleToneRamp(spec: ToneSpec, t: number): Oklab {
     L:
       TONE_TUNING.minLightness +
       (TONE_TUNING.maxLightness - TONE_TUNING.minLightness) * clamped,
-    C: chromaAt(spec.chroma, clamped),
+    C: chromaAt(spec.chroma, clamped, spec.families),
     h: hueAt(spec.families, clamped),
   };
   // fitToGamut reduces chroma at fixed lightness and hue until it fits, which

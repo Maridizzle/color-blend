@@ -129,10 +129,21 @@ function behind it is. Widening the sweep instead would have spent the whole
 board on it and turned a two-tone sort into a rainbow — the opposite of making
 it obvious which end is which.
 
-Chroma is held across the step rather than dipped, which is why hue is still an
-*angle* in OKLCH: softening the seam by blending in Oklab would pass through
-grey halfway and put a band of mud through the centre of every board. There are
-tests pinning down both the seam and the no-orphan-hue property.
+A bare step was not enough on its own. Ten near-identical indigos meeting ten
+near-identical golds gives the middle of the board nothing to say — you cannot
+tell which indigo is the last one, and lightness alone steps about 0.03 a tile
+there, near the limit of what anyone can order by eye. So chroma fades toward a
+tint at each boundary and swells back to full inside each block. The step then
+lands where colour is weakest, and the tiles either side read as a dusty blue
+and a soft tan: genuinely in-between, without either taking a hue that belongs
+to neither family. It also gives the sort a second cue — the further a tile sits
+from the middle, the stronger its colour.
+
+The fade is bounded and never reaches neutral, which is the distinction that
+matters: a *controlled* dip at one seam is a diverging scale, while the washed-
+out board this whole system replaced was low chroma everywhere. Tests pin down
+the seam, the no-orphan-hue property, and that hue changes exactly at the chroma
+minimum.
 
 **The field is one-dimensional.** Every cell projects onto a single oriented
 axis and takes its colour from that position along the ramp. This replaced a

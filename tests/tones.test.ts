@@ -3,6 +3,7 @@ import { type Oklab, inSrgbGamut, oklabToOklch, oklchToOklab, rgbToOklab } from 
 import {
   TONE_TUNING,
   buildToneRamp,
+  chromaAt,
   hueAt,
   hueDelta,
   mixHue,
@@ -107,24 +108,57 @@ describe('the ramp', () => {
     expect(light.L).toBeCloseTo(TONE_TUNING.maxLightness, 5);
   });
 
-  it('keeps every stop visibly coloured', () => {
-    // The actual fix. Source chroma here is 0.01-0.05, which reads as grey.
+  it('keeps every stop a tint rather than a neutral', () => {
+    // The original fix: source chroma here is 0.01-0.05, which reads as grey.
+    // The seam deliberately dips below that, but only to a muted tint -- a
+    // dusty blue and a soft tan, never an actual neutral.
     for (let i = 0; i <= 20; i++) {
       const { C } = oklabToOklch(sampleToneRamp(spec, i / 20));
-      expect(C, `stop ${i}`).toBeGreaterThan(0.05);
+      expect(C, `stop ${i}`).toBeGreaterThan(0.03);
     }
+    // And somewhere it has to be properly vivid, or the board is all seam.
+    const peak = Math.max(
+      ...Array.from({ length: 21 }, (_, i) => oklabToOklch(sampleToneRamp(spec, i / 20)).C),
+    );
+    expect(peak).toBeGreaterThan(TONE_TUNING.minChroma * 0.9);
   });
 
-  it('has no grey seam between near-complementary hues', () => {
-    // The trap this design exists to avoid. Blending two opposed hues as a
-    // straight line in Oklab passes through grey at the midpoint, which would
-    // put a band of mud through the centre of every board -- reintroducing the
-    // exact washed-out look the tones are meant to fix. Holding chroma across
-    // the step avoids it: both sides stay coloured right up to the seam.
+  it('fades the seam so the middle of the board reads as the middle', () => {
+    // What a player actually needs from the centre of the board. Two families
+    // meeting at full chroma is a cliff: ten near-identical indigos, ten
+    // near-identical golds, and nothing saying which indigo is the last one.
+    // Chroma easing down to a tint at the seam and back up gives the middle
+    // tiles a look of their own, and gives the sort a second cue besides
+    // lightness -- the further from the middle, the stronger the colour.
     const opposed = planTones([at(0.3, 0.12, 270), at(0.8, 0.12, 90)], 2);
-    for (const t of [0.4, 0.45, 0.5, 0.55, 0.6]) {
-      const { C } = oklabToOklch(sampleToneRamp(opposed, t));
-      expect(C, `midpoint ${t}`).toBeGreaterThan(0.08);
+    const seam = oklabToOklch(sampleToneRamp(opposed, 0.5)).C;
+    const block = oklabToOklch(sampleToneRamp(opposed, 0.25)).C;
+
+    expect(seam).toBeLessThan(block * 0.6);
+    expect(seam).toBeGreaterThan(0.03); // muted, never neutral
+    // Rising away from the seam in both directions, so distance from the middle
+    // is legible as saturation.
+    expect(oklabToOklch(sampleToneRamp(opposed, 0.42)).C).toBeGreaterThan(seam);
+    expect(oklabToOklch(sampleToneRamp(opposed, 0.58)).C).toBeGreaterThan(seam);
+  });
+
+  it('changes hue exactly where chroma is weakest', () => {
+    // Why stepping the hue does not produce a visible alien colour. The two
+    // families are 150 degrees apart, so a tile taking any hue between them
+    // would read as a mistake -- Saturn shipped with a lone magenta and a lone
+    // red doing exactly that. The step happens at the chroma minimum instead,
+    // so the tiles either side are a dusty version of their own family rather
+    // than a vivid version of something else.
+    for (const families of [2, 3]) {
+      const s = planTones([at(0.3, 0.12, 279), at(0.55, 0.13, 1), at(0.8, 0.12, 69)], families);
+      for (let i = 1; i < s.families.length; i++) {
+        const boundary = i / s.families.length;
+        const atSeam = chromaAt(s.chroma, boundary, s.families);
+        for (const offset of [0.1, 0.2]) {
+          expect(chromaAt(s.chroma, boundary - offset, s.families)).toBeGreaterThan(atSeam);
+          expect(chromaAt(s.chroma, boundary + offset, s.families)).toBeGreaterThan(atSeam);
+        }
+      }
     }
   });
 
