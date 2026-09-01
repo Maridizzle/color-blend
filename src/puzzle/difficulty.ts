@@ -74,6 +74,22 @@ export const DIFFICULTY_TUNING = {
 
 /** Widest column/row counts the board search will consider. */
 const SEARCH_LIMIT = 14;
+/** Narrowest. A two-wide board cannot be any of the silhouettes on offer. */
+const SEARCH_MIN = 3;
+
+/**
+ * How far from square a board may be, as width/height.
+ *
+ * A gate rather than a scoring term. This began as a small penalty added after
+ * the count difference, capped below one tile's worth, which meant any board
+ * hitting the target exactly beat every squarer board that missed by one. A
+ * twenty-tile "circle of hexagons" came out as a two-wide zigzag eleven rows
+ * tall, because hexLattice(2, 11) minus two clipped corners is exactly twenty.
+ * Landing within a tile or two of the target matters far less than the board
+ * being the shape it says it is.
+ */
+const ASPECT_MIN = 0.62;
+const ASPECT_MAX = 1.6;
 
 export function buildBoard(kind: LatticeKind, shape: ShapeName, cols: number, rows: number): Lattice {
   const base = makeLattice(kind, cols, rows);
@@ -105,29 +121,46 @@ export function boardForTileCount(
   shape: ShapeName,
   target: number,
 ): Lattice {
+  // Widen the gate if a lattice-and-shape pair cannot make anything square
+  // enough, rather than returning nothing.
+  for (const slack of [1, 1.35, 1.8, 4]) {
+    const found = searchBoards(kind, shape, target, ASPECT_MIN / slack, ASPECT_MAX * slack);
+    if (found) return found;
+  }
+  return buildBoard(kind, shape, 4, 4);
+}
+
+function searchBoards(
+  kind: LatticeKind,
+  shape: ShapeName,
+  target: number,
+  aspectMin: number,
+  aspectMax: number,
+): Lattice | null {
   let best: Lattice | null = null;
   let bestScore = Infinity;
 
-  for (let cols = 2; cols <= SEARCH_LIMIT; cols++) {
-    for (let rows = 2; rows <= SEARCH_LIMIT; rows++) {
+  for (let cols = SEARCH_MIN; cols <= SEARCH_LIMIT; cols++) {
+    for (let rows = SEARCH_MIN; rows <= SEARCH_LIMIT; rows++) {
       const lattice = buildBoard(kind, shape, cols, rows);
       const count = lattice.cells.length;
       if (count < 3 || count > DIFFICULTY_TUNING.maxTiles) continue;
 
-      // Hitting the count dominates; squareness only settles ties. The aspect
-      // term is scaled to stay below one tile's worth of penalty.
-      const aspect = Math.abs(Math.log(lattice.width / lattice.height));
-      const score = Math.abs(count - target) + Math.min(aspect, 2) * 0.4;
+      // Shape first: a board outside the band is not a candidate at all, however
+      // exactly it hits the count.
+      const aspect = lattice.width / lattice.height;
+      if (aspect < aspectMin || aspect > aspectMax) continue;
 
+      // Among boards that are the right shape, take the closest count, with
+      // squareness settling ties.
+      const score = Math.abs(count - target) + Math.abs(Math.log(aspect)) * 0.25;
       if (score < bestScore) {
         bestScore = score;
         best = lattice;
       }
     }
   }
-
-  // Only reachable if every candidate was rejected, which the bounds prevent.
-  return best ?? buildBoard(kind, shape, 4, 4);
+  return best;
 }
 
 /**

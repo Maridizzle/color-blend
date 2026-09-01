@@ -245,7 +245,28 @@ export function maskLattice(
   lattice: Lattice,
   keep: (u: number, v: number) => boolean,
 ): Lattice {
-  const survivors = lattice.cells.filter((c) => keep(c.u, c.v));
+  // Hand the mask *square* coordinates, not the lattice's own normalized ones.
+  //
+  // `u` and `v` are normalized independently over the bounding box, so passing
+  // them straight through means a circle mask is really "the unit circle
+  // stretched to whatever shape this board happens to be" -- an ellipse. On a
+  // tall narrow board that ellipse is the board, and the shape name means
+  // nothing.
+  //
+  // The square is sized to the *shorter* side and centred, so the silhouette is
+  // inscribed rather than overflowing. Scaling to the longer side instead only
+  // clips the corners off an oblong board and leaves it oblong, which is not
+  // what anyone means by "circle".
+  const shortest = Math.min(lattice.width, lattice.height);
+  const originU = (lattice.width - shortest) / 2;
+  const originV = (lattice.height - shortest) / 2;
+  const squareKeep = (cell: Cell) =>
+    keep(
+      (cell.u * lattice.width - originU) / shortest,
+      (cell.v * lattice.height - originV) / shortest,
+    );
+
+  const survivors = lattice.cells.filter(squareKeep);
   if (survivors.length === 0) return lattice;
 
   const kept = new Set(survivors.map((c) => c.id));

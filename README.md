@@ -6,12 +6,13 @@ Each puzzle takes an artwork, pulls its key shades out, and builds a board of
 large tiles — squares, hexagons, triangles, diamonds, or a carved silhouette —
 running through two or three tone families drawn from that artwork's own
 palette. The tiles are shuffled. You sort them darkest to lightest, holding the
-ordering as the colour walks from one tone into the next, with one to three
-starter tiles locked in place to orient you. Solving reflows the board into the
-artwork it came from.
+ordering across the boundary where one tone gives way to the next, with one to
+three starter tiles locked in place to orient you. Solving reflows the board
+into the artwork it came from.
 
-The two tones are what makes it readable: group the cool ones and the warm ones
-first, then order within each.
+The tone families are what make it readable, and they are blocks rather than a
+blend: pile the cool ones and the warm ones separately first, then order within
+each by lightness.
 
 Categories are subject-based, so playing one walks you through a topic, and
 certain tiles, unmarked, pop an educational fact when they land correctly. Facts
@@ -112,12 +113,26 @@ with **nothing invented** — the tones were already in the pictures. Invention 
 reserved for an artwork with a single hue, and only ever up to two families:
 a requested tone count is a ceiling, not a quota. See `src/color/tones.ts`.
 
-**Hue is interpolated around the wheel, never straight through Oklab.** A
-straight line between two near-complementary hues passes through grey at its
-midpoint, which would put a band of mud through the centre of every board and
-reintroduce the exact washed-out look the tones exist to fix. Going around the
-wheel at a held chroma gives indigo → violet → gold instead. There is a test
-pinning this down.
+**Hue steps between families; it does not sweep between them.** Each family
+owns an equal block of the ramp and the hue changes at the boundary. This was a
+smooth transition first, and the reason it changed is the clearest lesson in the
+project: sweeping 150° between two families means a couple of ramp positions
+land mid-arc, and at 12–30 tiles "a couple of positions" is *one tile*. Saturn
+came out as nine indigo tiles, one magenta, one red, and nine gold — a correct
+sample of a smooth function, and two tiles that looked broken to the person
+holding the phone.
+
+The tell was Black Hole, the one board where the arc looked deliberate: its red
+is a real third *family*, so it gets ten tiles and reads as a group. A hue that
+appears on one tile and nowhere else reads as a mistake however smooth the
+function behind it is. Widening the sweep instead would have spent the whole
+board on it and turned a two-tone sort into a rainbow — the opposite of making
+it obvious which end is which.
+
+Chroma is held across the step rather than dipped, which is why hue is still an
+*angle* in OKLCH: softening the seam by blending in Oklab would pass through
+grey halfway and put a band of mud through the centre of every board. There are
+tests pinning down both the seam and the no-orphan-hue property.
 
 **The field is one-dimensional.** Every cell projects onto a single oriented
 axis and takes its colour from that position along the ramp. This replaced a
@@ -140,7 +155,7 @@ many things a person can hold in their head and put in order.
 
 Sizing by count also makes the boards easier to read, not just smaller: the same
 palette across fewer tiles puts the shades further apart. The four shipped
-puzzles now step by 0.076–0.196 in Oklab, against 0.023–0.057 before.
+puzzles now step by 0.161–0.293 in Oklab, against 0.023–0.057 before.
 
 The old calibration survives as a safety net, which is what it was always good
 for: an image whose shades barely separate gets a smaller board, so a blind pack
@@ -224,8 +239,9 @@ testable against synthetic pixel buffers.
 ## Verifying
 
 ```sh
-npm test                       # 71 unit tests: color math, lattices, generation,
-                               # hints, zip safety, ingest fallbacks
+npm test                       # 96 unit tests: color math, tone ramps, lattices,
+                               # board shape, generation, hints, zip safety,
+                               # ingest fallbacks
 npm run dev &                  # then, against a running server:
 npm run verify                 # drives a real browser through a whole playthrough
 ```
@@ -251,21 +267,23 @@ Supernova Remnant, Black Hole. The artwork lives in `public/artwork/` and is
 referenced by URL, so it goes through exactly the same palette extraction a
 loaded pack does, with no special case for being built in.
 
-The four run easy to hard — 12, 20, 20 and 30 tiles — and the progression
-happens to teach the mechanic well: the galaxy is a dozen tiles and a nearly
-monochrome palette, so it is a pure lightness sort, while the black hole's
-anchors span 276 degrees of hue and demand you hold the ordering while the color
-walks right around the wheel.
+The four run easy to hard — 12, 19, 21 and 30 tiles — and the progression
+happens to teach the mechanic well: the galaxy is a dozen tiles in two blocks,
+so it is close to a pure lightness sort, while the black hole spans three
+families 280° apart and asks you to hold the ordering across two seams.
 
 ## Current limits
 
 - Whether 12 / 20 / 30 are the *right* counts is a judgement about how it feels
   to play, which no test settles. They come from what a person said they could
-  actually sort. Changing them is one constant.
-- Palette extraction takes the artwork as it finds it. Dark astronomical images
-  cluster into fairly desaturated shades, so their boards read as tonal ramps
-  with color pushing out sideways rather than as vivid hue journeys. That is
-  faithful rather than broken: the anchor selection already picks the most
-  chromatic clusters an image offers.
+  actually sort. Changing them is one constant. (A masked silhouette lands near
+  rather than on its count — a 20-tile circle of hexagons carves to 19.)
+- Palette extraction takes the artwork as it finds it, and it only ever chooses
+  *which* hues a board uses — how vivid they end up is the ramp's decision, not
+  the image's. A picture with one real hue therefore yields a two-block board
+  with one invented partner, which is honest but less interesting than one whose
+  own palette supplies both.
+- A fact card is a fixed panel over the board. Only one shows at a time now,
+  but on a twelve-tile board at phone width it still covers a row while it is up.
 - Packs loaded in-game live in memory for the session only. Reloading returns to
   the shipped content.

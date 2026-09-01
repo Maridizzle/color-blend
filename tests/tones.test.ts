@@ -115,12 +115,12 @@ describe('the ramp', () => {
     }
   });
 
-  it('has no grey midpoint between near-complementary hues', () => {
-    // The trap this design exists to avoid. Interpolating two opposed hues as a
+  it('has no grey seam between near-complementary hues', () => {
+    // The trap this design exists to avoid. Blending two opposed hues as a
     // straight line in Oklab passes through grey at the midpoint, which would
     // put a band of mud through the centre of every board -- reintroducing the
-    // exact washed-out look the tones are meant to fix. Going around the hue
-    // wheel at held chroma avoids it.
+    // exact washed-out look the tones are meant to fix. Holding chroma across
+    // the step avoids it: both sides stay coloured right up to the seam.
     const opposed = planTones([at(0.3, 0.12, 270), at(0.8, 0.12, 90)], 2);
     for (const t of [0.4, 0.45, 0.5, 0.55, 0.6]) {
       const { C } = oklabToOklch(sampleToneRamp(opposed, t));
@@ -137,21 +137,41 @@ describe('the ramp', () => {
     }
   });
 
-  it('holds each hue steady, then swings between families', () => {
-    // Plateaus are what make the families read as groups rather than a smear,
-    // so a player can sort coarsely first and refine after.
+  it('gives every family an equal block and steps between them', () => {
+    // Blocks are what make the families read as groups rather than a smear, so
+    // a player can pile coarsely first and order by lightness after.
     const families = selectToneFamilies(FAINT_TWO_TONE, 2);
     const cool = families[0]!;
     const warm = families[families.length - 1]!;
 
-    // Near each end the hue should barely move.
-    expect(Math.abs(hueDelta(hueAt(families, 0), hueAt(families, 0.2)))).toBeLessThan(5);
-    expect(Math.abs(hueDelta(hueAt(families, 0.8), hueAt(families, 1)))).toBeLessThan(5);
-    // And each end should be its own family's hue.
-    expect(Math.abs(hueDelta(hueAt(families, 0), cool.hue))).toBeLessThan(1);
-    expect(Math.abs(hueDelta(hueAt(families, 1), warm.hue))).toBeLessThan(1);
-    // The swing happens in between.
-    expect(Math.abs(hueDelta(hueAt(families, 0.4), hueAt(families, 0.6)))).toBeGreaterThan(30);
+    for (const t of [0, 0.2, 0.4, 0.49]) {
+      expect(Math.abs(hueDelta(hueAt(families, t), cool.hue)), `t=${t}`).toBeLessThan(1);
+    }
+    for (const t of [0.5, 0.6, 0.8, 1]) {
+      expect(Math.abs(hueDelta(hueAt(families, t), warm.hue)), `t=${t}`).toBeLessThan(1);
+    }
+  });
+
+  it('never puts a tile on a hue that belongs to no family', () => {
+    // The defect this replaced a smooth transition to fix. Sweeping between two
+    // families 150 degrees apart is a correct sample of a smooth function and
+    // still wrong on a real board: at 12-30 tiles only one or two land mid-arc,
+    // so Saturn came out with a lone magenta and a lone red among nine indigos
+    // and nine golds, and they read as broken tiles rather than as progression.
+    // Sample at tile positions, not continuously -- tiles are what a player
+    // sees.
+    for (const anchors of [FAINT_TWO_TONE, [at(0.3, 0.12, 279), at(0.75, 0.13, 69)]]) {
+      for (const tones of [2, 3]) {
+        const spec = planTones(anchors, tones);
+        for (const n of [12, 20, 30]) {
+          for (let i = 0; i < n; i++) {
+            const { h } = oklabToOklch(sampleToneRamp(spec, i / (n - 1)));
+            const owner = spec.families.some((f) => Math.abs(hueDelta(f.hue, h)) < 30);
+            expect(owner, `tone ${tones}, tile ${i}/${n} at hue ${h.toFixed(0)}`).toBe(true);
+          }
+        }
+      }
+    }
   });
 
   it('scales vividness with the artwork rather than flattening every board', () => {

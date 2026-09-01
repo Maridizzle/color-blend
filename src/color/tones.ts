@@ -54,11 +54,6 @@ export const TONE_TUNING = {
 
   /** Two hue centres closer than this are the same tone as far as a player is concerned. */
   minHueSeparation: 40,
-  /**
-   * Fraction of the ramp spent moving between families rather than sitting in
-   * one. Small, so the families read as groups rather than a continuous wash.
-   */
-  transitionWidth: 0.34,
 
   /**
    * A cluster below this chroma has no reliable hue to read off it.
@@ -110,11 +105,6 @@ export function hueDelta(a: number, b: number): number {
 export function mixHue(a: number, b: number, t: number): number {
   return (((a + hueDelta(a, b) * t) % TAU) + TAU) % TAU;
 }
-
-const smoothstep = (t: number) => {
-  const x = Math.min(1, Math.max(0, t));
-  return x * x * (3 - 2 * x);
-};
 
 /**
  * Pick the hue families the ramp travels through.
@@ -182,32 +172,34 @@ export function selectToneFamilies(anchors: readonly Oklab[], count: number): To
   return chosen.sort((a, b) => a.sourceLightness - b.sourceLightness);
 }
 
-/** Hue at ramp position t: flat across each family, quick between them. */
+/**
+ * Hue at ramp position t: each family owns an equal block of the ramp, and the
+ * hue steps between blocks rather than sweeping through them.
+ *
+ * This was a smooth transition, and it was wrong. Interpolating between two
+ * families 150 degrees apart means a handful of positions land mid-arc, and at
+ * twelve to thirty tiles a "handful of positions" is *one tile*. Saturn came
+ * out as nine indigo tiles, one magenta, one red, and nine gold. The magenta
+ * and the red were a correct sample of a smooth function and they read, to the
+ * person holding the phone, as two broken tiles.
+ *
+ * The tell is Black Hole, the one board where the arc looked deliberate: its
+ * red is a real third *family*, so it gets ten tiles and reads as a group. A
+ * hue that appears on one tile and nowhere else reads as a mistake however
+ * smooth the function behind it is. Widening the band instead would spend the
+ * whole board on the sweep and turn a two-tone sort into a rainbow, which is
+ * the opposite of making it obvious which end is which.
+ *
+ * So the boundary is a step. Every tile belongs unambiguously to one family,
+ * the board splits into groups you can pile up by eye, and the fine ordering
+ * inside each group is lightness -- which is the actual rule of the game and
+ * runs monotonically across the step untouched.
+ */
 export function hueAt(families: readonly ToneFamily[], t: number): number {
   if (families.length === 0) return 0;
-  if (families.length === 1) return (families[0] as ToneFamily).hue;
-
-  // Family i sits at the centre of its share of the ramp.
-  const span = 1 / families.length;
-  const centres = families.map((_, i) => (i + 0.5) * span);
-
-  if (t <= (centres[0] as number)) return (families[0] as ToneFamily).hue;
-  const last = families.length - 1;
-  if (t >= (centres[last] as number)) return (families[last] as ToneFamily).hue;
-
-  for (let i = 0; i < last; i++) {
-    const from = centres[i] as number;
-    const to = centres[i + 1] as number;
-    if (t < from || t > to) continue;
-
-    // Hold the hue steady either side, and swing across the middle band. The
-    // width is a fraction of the gap, so families read as groups.
-    const local = (t - from) / (to - from);
-    const half = TONE_TUNING.transitionWidth / 2;
-    const eased = smoothstep((local - (0.5 - half)) / TONE_TUNING.transitionWidth);
-    return mixHue((families[i] as ToneFamily).hue, (families[i + 1] as ToneFamily).hue, eased);
-  }
-  return (families[last] as ToneFamily).hue;
+  const clamped = Math.min(1, Math.max(0, t));
+  const block = Math.min(families.length - 1, Math.floor(clamped * families.length));
+  return (families[block] as ToneFamily).hue;
 }
 
 /** Chroma at ramp position t, easing off where the gamut cannot hold it. */
@@ -240,12 +232,13 @@ export function planTones(anchors: readonly Oklab[], toneCount: number): ToneSpe
 /**
  * The colour at position t along the ramp, 0 dark to 1 light.
  *
- * Built in OKLCH and interpolated by hue *angle*, never as a straight line in
- * Oklab. That distinction is the whole design: a straight line between two
- * near-complementary hues passes through grey at its midpoint, which would put
- * a band of mud in the centre of every board and reintroduce exactly the
- * washed-out look this is meant to fix. Going around the wheel at a held chroma
- * gives indigo to teal to gold instead.
+ * Built in OKLCH, so lightness, chroma and hue each move independently and hue
+ * is an *angle*. That matters even now that hue steps rather than sweeps: a
+ * blend between two near-complementary colours taken as a straight line in
+ * Oklab passes through grey halfway, so any softening of the boundary in Oklab
+ * would put a band of mud through the centre of every board and reintroduce
+ * exactly the washed-out look this is meant to fix. Chroma is held across the
+ * step instead, so both sides stay fully coloured right up to the seam.
  */
 export function sampleToneRamp(spec: ToneSpec, t: number): Oklab {
   const clamped = Math.min(1, Math.max(0, t));

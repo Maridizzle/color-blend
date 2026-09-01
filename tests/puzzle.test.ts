@@ -293,6 +293,39 @@ describe('difficulty calibration', () => {
     );
   });
 
+  it('never builds a board that is the wrong shape, on any combination', () => {
+    // The check whose absence shipped a twenty-tile "circle of hexagons" as a
+    // two-tile-wide zigzag eleven rows tall. Aspect used to be a scoring term
+    // capped below one tile's worth, so any board hitting the count exactly beat
+    // every squarer board that missed by one. It is a gate now, and this sweeps
+    // every lattice and shape rather than only the handful that ship.
+    for (const kind of ['square', 'hex', 'triangle', 'diamond'] as const) {
+      for (const shape of SHAPE_NAMES) {
+        for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+          const lattice = boardForTileCount(
+            kind,
+            shape,
+            DIFFICULTY_TUNING.tileCount[difficulty],
+          );
+          const aspect = lattice.width / lattice.height;
+          const label = `${kind}/${shape}/${difficulty} came out ${aspect.toFixed(2)}:1`;
+          expect(aspect, label).toBeGreaterThan(0.6);
+          expect(aspect, label).toBeLessThan(1.7);
+        }
+      }
+    }
+  });
+
+  it('carves a round circle even when the lattice is not square', () => {
+    // Masks used to take the lattice's own normalized coordinates, so a circle
+    // was really an ellipse stretched to the board's proportions. On an oblong
+    // board it clipped the corners and nothing else.
+    const oblong = maskLattice(squareLattice(14, 7), SHAPES.circle);
+    const aspect = oblong.width / oblong.height;
+    expect(aspect).toBeGreaterThan(0.8);
+    expect(aspect).toBeLessThan(1.25);
+  });
+
   it('finds a near-square board rather than a long strip', () => {
     const lattice = boardForTileCount('square', 'full', 12);
     expect(lattice.cells.length).toBe(12);
@@ -488,15 +521,30 @@ describe('correctness and hints', () => {
   it('hints a swap that makes progress, and solves the board when followed', () => {
     const puzzle = generatePuzzle({ id: 'hintable', anchors: PALETTE.anchors, seed: 11 });
     const arrangement = arrangementOf(puzzle);
+    const atHome = () => puzzle.order.filter((tile, cell) => tile === cell).length;
 
+    // "Progress" is the two-part argument the hint search is built on, not
+    // simply a rising tally. Correct cells never fall, and *either* the tally
+    // rises or another tile lands home -- both bounded, so the loop has to end.
+    //
+    // Asserting the tally alone rises is stronger than the design promises and
+    // passed only by luck of the seed: correctness is judged within a delta-E
+    // tolerance and tolerance is not transitive, so a board can reach a state
+    // where every tile that would fix a wrong cell sits in a cell that is
+    // already correct, and taking it nets zero. This seed reaches exactly that
+    // -- two cells wrong, each wanting a shade the other does not hold -- and
+    // spends three home-reunion steps escaping it. That branch is the one that
+    // guarantees termination, and the old assertion never reached it.
     let guard = 0;
     const limit = puzzle.lattice.cells.length * 4;
     while (!isSolved(arrangement) && guard++ < limit) {
       const hint = findHintSwap(arrangement, puzzle.locked);
       expect(hint).not.toBeNull();
-      const before = countCorrect(arrangement);
+      const correctBefore = countCorrect(arrangement);
+      const homeBefore = atHome();
       swap(puzzle.order, hint!.from, hint!.to);
-      expect(countCorrect(arrangement)).toBeGreaterThan(before);
+      expect(countCorrect(arrangement)).toBeGreaterThanOrEqual(correctBefore);
+      expect(countCorrect(arrangement) > correctBefore || atHome() > homeBefore).toBe(true);
     }
     expect(isSolved(arrangement)).toBe(true);
     expect(findHintSwap(arrangement, puzzle.locked)).toBeNull();

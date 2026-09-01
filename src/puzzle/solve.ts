@@ -108,17 +108,28 @@ export function findHintSwap(
 
   if (best && best.gain > 0) return { from: best.from, to: best.to };
 
-  // Nothing gains outright. Reunite some wrong cell with its own tile: tile i
-  // is by construction the tile whose color is cell i's target, so this always
-  // makes that cell correct and can never un-correct more than one other, and
-  // it strictly increases the number of tiles sitting at home.
+  // Nothing gains outright. Reunite a wrong cell with its own tile: tile i is by
+  // construction the tile whose color is cell i's target, so this always makes
+  // that cell correct, and it strictly increases the number of tiles sitting at
+  // home -- which is what guarantees termination.
+  //
+  // Take the *best* such reunion rather than the first. A home swap can never
+  // lose ground (the cell it fixes was wrong, and the cell it displaces can
+  // only stay put, break, or happen to be fixed), so scoring them costs one
+  // pass and sometimes turns a hint that visibly does nothing into one that
+  // moves the counter. A player pressing Hint and watching the tally sit still
+  // has no way to tell a subtle correct move from a broken button.
+  let bestHome: { from: number; to: number; gain: number } | null = null;
   for (const cell of wrong) {
     const source = a.order.indexOf(cell);
     // Locked cells always hold their own tile, so `source` is never locked.
-    if (source >= 0 && source !== cell && !locked[source]) {
-      return { from: cell, to: source };
-    }
+    if (source < 0 || source === cell || locked[source]) continue;
+    const displaced = deltaE(colors[cell] as Oklab, a.targets[source] as Oklab) <= a.tolerance;
+    const gain = 1 + Number(displaced) - Number(correct[source]);
+    if (!bestHome || gain > bestHome.gain) bestHome = { from: cell, to: source, gain };
+    if (gain === 2) break;
   }
+  if (bestHome) return { from: bestHome.from, to: bestHome.to };
 
   return best ? { from: best.from, to: best.to } : null;
 }

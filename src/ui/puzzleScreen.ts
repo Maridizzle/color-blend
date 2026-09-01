@@ -107,10 +107,14 @@ export function puzzleScreen(
       ],
     });
     toasts.appendChild(toast);
-    // Two at a time. Several tiles can land in quick succession near the end of
-    // a board, and a stack of five cards is a wall of text over the puzzle
-    // rather than something anyone reads. The reveal panel lists them all anyway.
-    while (toasts.childElementCount > 2) toasts.firstElementChild?.remove();
+    // One at a time. Several tiles can land in quick succession near the end of
+    // a board, and every card is a fixed panel sitting over the puzzle. This
+    // allowed two, which on a twelve-tile board at phone width covers more than
+    // half the tiles -- you cannot sort what you cannot see. One card still
+    // hides a row, but the board stays legible around it, and the reveal panel
+    // lists every fact at the end regardless, so nothing is lost by dropping
+    // the older card early.
+    while (toasts.childElementCount > 1) toasts.firstElementChild?.remove();
 
     // Long enough to actually read; this is the educational payload, not a nag.
     setTimeout(() => {
