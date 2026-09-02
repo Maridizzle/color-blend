@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <title>Mockup · The Reveal</title>
+    <style>
+      /* Mockup-only stand-in for the solved board: the game draws the artwork
+         here on a canvas. The artwork is deliberately not shown in mockups. */
+      .mock-board {
+        width: min(100%, 420px);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        border: 1px solid rgb(156 156 152 / 35%);
+        background: linear-gradient(160deg, oklch(0.3 0.12 104), oklch(0.84 0.09 104));
+        box-shadow: inset 0 0 0 3px rgb(5 5 7 / 80%), 0 12px 36px rgb(0 0 0 / 40%);
+        display: grid;
+        place-items: end center;
+        padding-bottom: 12px;
+        color: rgb(0 0 0 / 55%);
+        font-size: 11px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <section class="screen screen-puzzle revealed">
+        <header class="sub-header">
+          <button class="button button-icon" type="button" aria-label="Back">←</button>
+          <div class="sub-heading-copy">
+            <span class="sub-kicker puzzle-kicker">The Cosmos · Folio VI</span>
+            <h1 class="sub-title">Saturn</h1>
+          </div>
+        </header>
+
+        <div class="mock-board">(artwork revealed here — not shown in mockup)</div>
+
+        <div class="reveal-panel reveal-panel-in">
+          <span class="reveal-sigil" aria-hidden="true">✦</span>
+          <span class="reveal-kicker">The Cosmos</span>
+          <h2 class="reveal-title">Saturn</h2>
+          <div class="reveal-rule" aria-hidden="true"></div>
+          <p class="reveal-blurb">The solar system’s great ringed world.</p>
+          <p class="reveal-moves">Solved in 14 moves.</p>
+          <ul class="reveal-facts">
+            <li class="reveal-fact-found">Saturn’s rings are almost entirely water ice, in pieces ranging from specks of dust to chunks the size of a house.</li>
+            <li>The rings span about 280,000 km but are only tens of metres thick through most of that. Scaled to the width of a football pitch, they would be thinner than a sheet of paper.</li>
+            <li class="reveal-fact-found">They may be young. Measurements from the Cassini mission suggest the rings formed perhaps 10 to 100 million years ago — long after the first dinosaurs.</li>
+            <li>Saturn is less dense than water. Given an ocean big enough to hold it, the planet would float.</li>
+            <li>All four giant planets have rings. Saturn’s are simply the only ones bright enough to pick out through a small telescope.</li>
+          </ul>
+          <p class="reveal-hint">You uncovered 2 of these while sorting.</p>
+
+          <blockquote class="reveal-tale tale-passage">
+            <span class="tale-kicker">The Archivist</span>
+            <p>The Complete had told it grand things are old things. Saturn’s rings — thinner than paper, younger than the dinosaurs — said otherwise. It struck the assumption out and, for the first time, went looking for the others it had never checked.</p>
+          </blockquote>
+
+          <div class="reveal-actions">
+            <button class="button button-primary" type="button">Next: Cloud Tops</button>
+            <button class="button" type="button">Back to category</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/mockups/boot.ts"></script>
+  </body>
+</html>
