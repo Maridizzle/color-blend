@@ -16,6 +16,8 @@
     "verify": "node tools/verify.mjs"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/unifrakturcook": "^5.3.0",
     "fflate": "^0.8.2"
   },
   "devDependencies": {

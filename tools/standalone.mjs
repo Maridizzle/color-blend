@@ -30,8 +30,34 @@ if (!cssRef || !jsRef) {
   process.exit(1);
 }
 
-const css = readFileSync(join(DIST, cssRef[1]), 'utf8');
+let css = readFileSync(join(DIST, cssRef[1]), 'utf8');
 let js = readFileSync(join(DIST, jsRef[1]), 'utf8');
+
+// Material textures are public assets in a normal build. Inline them into the
+// CSS here so the standalone page keeps the same engraved surfaces offline.
+const textureDir = join(DIST, 'textures');
+const textureNames = existsSync(textureDir) ? readdirSync(textureDir) : [];
+for (const name of textureNames) {
+  const base64 = readFileSync(join(textureDir, name)).toString('base64');
+  const data = `data:image/webp;base64,${base64}`;
+  for (const ref of [`../textures/${name}`, `./textures/${name}`, `/textures/${name}`]) {
+    css = css.split(ref).join(data);
+  }
+}
+
+// Fontsource emits local font files next to the built stylesheet. Preserve the
+// promise that this output is truly one file by folding those references into
+// the CSS as well.
+const assetDir = join(DIST, 'assets');
+const fontNames = readdirSync(assetDir).filter((name) => /\.woff2?$/.test(name));
+for (const name of fontNames) {
+  const base64 = readFileSync(join(assetDir, name)).toString('base64');
+  const mime = name.endsWith('.woff2') ? 'font/woff2' : 'font/woff';
+  const data = `data:${mime};base64,${base64}`;
+  for (const ref of [`./${name}`, `../assets/${name}`, `/assets/${name}`]) {
+    css = css.split(ref).join(data);
+  }
+}
 
 // Swap every artwork reference for the image itself. Loading these through an
 // <img> rather than fetch (see src/content/artwork.ts) is what lets a data URL

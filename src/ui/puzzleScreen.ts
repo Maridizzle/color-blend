@@ -47,6 +47,7 @@ export function puzzleScreen(
       el('div', {
         class: 'puzzle-heading',
         children: [
+          el('span', { class: 'puzzle-kicker', text: category.title }),
           title,
           el('div', {
             class: 'puzzle-stats',
@@ -65,7 +66,13 @@ export function puzzleScreen(
       'aria-label': `${subject.title}. Sort the tiles from darkest to lightest. Use arrow keys to move and Enter to pick up or place a tile.`,
     },
   });
-  const boardWrap = el('div', { class: 'board-wrap', children: [canvas] });
+  const boardWrap = el('div', {
+    class: 'board-wrap',
+    children: [
+      canvas,
+      el('div', { class: 'board-tracery', attrs: { 'aria-hidden': 'true' } }),
+    ],
+  });
 
   const status = el('p', {
     class: 'loading',
@@ -147,8 +154,10 @@ export function puzzleScreen(
     const panel = el('div', {
       class: 'reveal-panel',
       children: [
+        el('span', { class: 'reveal-sigil', attrs: { 'aria-hidden': 'true' }, text: '✦' }),
         el('span', { class: 'reveal-kicker', text: category.title }),
         el('h2', { class: 'reveal-title', text: subject.title }),
+        el('div', { class: 'reveal-rule', attrs: { 'aria-hidden': 'true' } }),
         subject.blurb ? el('p', { class: 'reveal-blurb', text: subject.blurb }) : null,
         el('p', { class: 'reveal-moves', text: `Solved in ${moves} moves.` }),
         // Every fact, not just the ones found. Fact tiles are seeded, so a
