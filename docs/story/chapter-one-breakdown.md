@@ -1,0 +1,490 @@
+# Chapter One, broken down — for review
+
+Per puzzle, two texts. **Reveal blurb**: 2–3 sentences on the reveal panel,
+standing alone. **Gallery slice**: the passage of the chapter itself, unlocked
+when that puzzle is solved, so a finished collection reads as its whole section.
+
+Slices are in puzzle order. Where the chapter had no passage for a puzzle there
+is a **NEW** slice; where puzzle order improved on the chapter's order, the
+chapter will be re-sequenced to match once this is approved, so the two never
+disagree.
+
+Each collection also has an **opening** (unlocked from the start) and the last
+collection carries the **cliffhanger** (unlocked on completing it).
+
+---
+
+# THE COSMOS
+
+## Opening — unlocked on arrival
+
+> It woke up already enormous.
+>
+> That was the first problem. It had no memory of being small and nothing to compare itself to, so for a while it did not even know it was enormous. It only knew that when it tried to find its own edges, it couldn't. It reached one way and kept going. It reached the other way and kept going. It stopped reaching, because the reaching was frightening, and it lay in the dark and listened.
+>
+> There was a light.
+>
+> It was very far off and very faint and it was the only thing there was, so the Archivist went to it. (It was not called the Archivist yet. It was not called anything. But that is what it was going to be, so that is what we will call it.) It went toward the light for a long time, and when it got there, the light was —
+>
+> *Old.* That was the word it found later. The light was old. It had left its source so long ago that the source was not there any more, or was somewhere else, or had become something different. The light was a letter from someone who had moved house. The Archivist had crossed all that dark to reach a thing, and had reached instead the news that the thing was gone.
+>
+> It tried again. A nearer light. Same result. Everything it went toward had already moved by the time it arrived. This was simply how things worked — light takes time, so you only ever see the past, and the further you look the older the past you see — but the Archivist did not know that yet. It only knew that it kept reaching out and closing its hand on nothing, and that this was the worst feeling it had.
+>
+> "You are doing it wrong," said a voice.
+>
+> The voice belonged to something even larger than the Archivist, and it was perfectly still. It did not reach for anything. It did not move at all. It hung in the dark like a mountain hangs in a landscape, and everything the Archivist had been flailing at seemed to arrange itself around the stillness, the way water arranges itself around a stone.
+>
+> "What am I?" the Archivist asked. It had not known it could ask things until it did.
+>
+> "You are an Archivist," said the still one. "You keep a piece of everything. Every thing, in every world, for as long as there are worlds."
+>
+> "Why?"
+>
+> "So that it is kept."
+>
+> The Archivist turned this over. It was a good answer. It had the shape of a floor — something you could stand on. The Archivist had not known how badly it wanted a floor until it had one.
+>
+> "Everything moves," it said. "I go to a thing and it is gone."
+>
+> "Then do not go to things. Record them." The still one's voice had no hurry in it and no doubt. "A record does not move. Write down what a thing is, and you have it, whatever it does afterwards. That is the whole art. Start with the biggest things. They are the easiest to find."
+>
+> "And you? What are you?"
+>
+> "I am what you will be," it said, "when you have finished."
+>
+> The Archivist looked at it — at the vastness and the stillness and the way nothing about it was reaching for anything — and felt something it would later be embarrassed by. It felt *envy*. That was what it wanted. To be so full that nothing could be lost, so still that nothing could get away. It did not have the word *finished* yet. But it wanted it.
+>
+> It would be a long time before it noticed that in the whole conversation, the still one had not asked a single question.
+
+## 1 · Spiral Galaxy
+
+**Reveal blurb**
+> A hundred billion suns, and the Archivist was good at them — until it looked closely at the arms and found the stars were passing *through*. The shape stayed; nothing in it did. It recorded the shape, and did not notice it had just decided, in about a second, what a thing is.
+
+**Gallery slice**
+> The biggest things were galaxies, and the Archivist was *good* at them.
+>
+> It found the first one and set to work. A hundred billion suns in a turning disc. It counted. It measured. It made a record, and the record did not move, and the feeling of that was like nothing else — like closing a hand and finding something actually in it. It made another. It went faster. The still one, when the Archivist reported back, always had the answer to whatever the Archivist had found, and always the same answer: *Good. Record it. Move on.*
+>
+> The Archivist began to think of the still one as the Complete. It suited it.
+>
+> Then the trouble started, and it started with the arms.
+>
+> A spiral galaxy has arms — the great bright sweeps that make it look like a pinwheel. The Archivist had recorded them as objects: here is an arm, made of these stars. But when it looked closer, the stars in the arm were *moving through it.* They drifted in one side and out the other. The arm stayed where it was. Nothing in it did.
+>
+> "The arms are not made of anything," it told the Complete, a little shaken.
+>
+> "They are density waves," the Complete said. "A traffic jam. The cars pass through; the jam persists. Record the jam. The cars are detail."
+>
+> "But the jam isn't a *thing*."
+>
+> "It has a shape. A shape is a thing. One of the small ones on a small wet world noticed this a long time ago. Heraclitus. He said you cannot step into the same river twice — the river is still there but the water is always different. He was called obscure for it. He was simply correct." A pause, in which the Complete did not wonder anything. "Record the river. Ignore the water."
+>
+> The Archivist recorded the river. It set the water aside. And it noticed, without quite meaning to, that this was the first decision it had ever made about what a thing *was* — that the shape counted and the stuff didn't — and that it had made it in about a second because the Complete had made it for it.
+
+## 2 · Andromeda
+
+**Reveal blurb**
+> Andromeda is coming — but the light that says so left before anyone was here to see it. Then the Archivist turned, and its *now* moved: which moment out there counts as the present depends on how you're moving when you ask. Its record wasn't a picture of Andromeda. It was a picture of where it had been standing.
+
+**Gallery slice**
+> Andromeda was worse.
+>
+> Andromeda was the nearest big galaxy, and it was coming — a hundred and ten kilometres every second, on a course to meet the Archivist's own galaxy in four billion years. The Archivist recorded this. Then it read how far away Andromeda was — two and a half million light years — and realised that the light saying *coming toward you* had left before there was anyone on the small wet world to see it. The Archivist wasn't recording Andromeda. It was recording a message, and the sender had moved.
+>
+> And then it turned — just turned, to see the galaxy better — and something happened that it did not have any way to file.
+>
+> Its *now* moved.
+>
+> Not the light. The present. When you are looking at something that far away, which moment over there counts as *now* depends on how you are moving when you ask. Turn one way and an event at Andromeda has already happened. Turn the other and it hasn't happened yet. Both are correct. There is no single moment out there called *what is happening at Andromeda right now.* There is only where you're standing, and which way you're moving, and a slice cut at that angle.
+>
+> "My record of Andromeda," it said slowly, "isn't a picture of Andromeda. It's a picture of *where I was standing.*"
+>
+> "Then record where you were standing," said the Complete. "Add a column."
+>
+> The Archivist added a column. It was a good fix. It was, it would realise much later, the exact moment it should have stopped and asked what a record *was* — and instead it added a column and moved on, because the Complete had an answer and the answer was tidy and tidy was what it wanted more than anything.
+
+## 3 · Pinwheel Galaxy — NEW
+
+**Reveal blurb**
+> Two clean arms, and only one spiral in ten so tidy. The tidiness was somebody else's doing — a neighbour's close pass, dragging a ragged disc straight. The Archivist had been filing order and violence in different places. It moved the entry.
+
+**Gallery slice — NEW**
+> The next one had two clean arms, unbroken the whole way round, and the Archivist admired it and filed it under *beautiful* — until it read that only one spiral in ten is so tidy, and that the tidiness is usually somebody else's doing: a neighbouring galaxy passing close enough to drag a ragged disc straight. Order, made by a near collision. The Archivist moved the entry to *acted upon*. It did not yet see how many others would have to follow.
+
+## 4 · Barred Spiral
+
+**Reveal blurb**
+> It had the bar recorded before it finished looking, and it was right, and it was pleased. It barely noticed the note: a bar isn't an object, it's orbits lining up — and its own galaxy had one nobody could see for ages, because mapping a structure you're sitting inside is genuinely hard. It recorded the sentence. It didn't apply it to anything.
+
+**Gallery slice**
+> It moved faster after that. It was pleased with itself. It had a bar of stars across a galactic core recorded before it had even finished looking, and it was right, and it barely noticed the note saying that a bar is not an object either — it's a resonance, orbits happening to line up — or the other note saying that its own galaxy had one and nobody on the small wet world had been able to tell for most of the time they'd been looking, *because mapping a structure you are sitting inside is genuinely hard.* The Archivist recorded that sentence. It did not apply it to anything.
+
+## 5 · Galaxy Cluster — NEW
+
+**Reveal blurb**
+> The largest things gravity can hold — and past their edge, nothing held at all. Most of their mass is invisible, known only by how it bends the light of what's behind. The Archivist opened a category, *known by its effect on something else*, and didn't like how much of its archive belonged in it.
+
+**Gallery slice — NEW**
+> A thousand galaxies, held together; and past the cluster's edge, nothing held at all — everything larger was flying apart. The Archivist drew the line where gravity gives up. Then it read how the cluster had been weighed. Not by counting: by how much it bent the light of things behind it — and most of that weight was something no instrument could see at all. *Known only by what it does to what passes.* The Archivist opened a category for that, and did not like how much of the archive already fitted in it.
+
+## 6 · Saturn
+
+**Reveal blurb**
+> The Complete had told it grand things are old things. Saturn's rings — thinner than paper, younger than the dinosaurs — said otherwise. It struck the assumption out and, for the first time, went looking for the others it had never checked.
+
+**Gallery slice**
+> The rings of Saturn were younger than the dinosaurs. The Archivist had never written down that grand things are old things; it had just assumed it, the way it assumed a record holds still. It struck the assumption out — and then, uneasily, went looking for others, and found the archive was full of them.
+
+## 7 · Cloud Tops
+
+**Reveal blurb**
+> A world with weather and no ground. The Archivist searched for the surface because every record so far had had an edge — and there wasn't one. The air just thickened into a sea, and the sea had no bottom. The floor it was looking for had been its own idea.
+
+**Gallery slice**
+> A world with weather and no ground: it searched for the surface for a long time, because every entry so far had had an edge and the record wanted one, and there was nothing anywhere to call the floor. The air just thickened until it was a sea, and the sea had no bottom.
+
+## 8 · The Crab Nebula
+
+**Reveal blurb**
+> In 1054 someone wrote down a guest star. Nine centuries on, the wreckage is still flying apart and the note is still true. But *there is a new star in the sky* was true for three weeks. Those aren't the same kind of true — and the Archivist's whole archive was the kind that had stopped.
+
+**Gallery slice**
+> And then the Crab.
+>
+> In the year 1054, on the small wet world, someone had looked up and written down a *guest star* — a new light, bright enough to see in daylight for three weeks. Nine centuries later the wreckage of that explosion was still flying apart at fifteen hundred kilometres a second, visibly larger in every decade's photographs, and the note was still legible. The Archivist read the note. It read it several times.
+>
+> "Someone else keeps records," it said.
+>
+> "The small ones do, briefly," said the Complete. "They are very short-lived. They do not matter to the archive."
+>
+> "But it's *still true.* The note. Nine hundred years and it's still true."
+>
+> "A record does not move," the Complete agreed. "That is the point of a record."
+>
+> The Archivist agreed too. But there was something about the note it couldn't file, and it was this: the note was true, and the star was gone. *Guest star, 1054* would be true forever. *There is a new star in the sky* had been true for three weeks. Those were not the same kind of true. One of them had stopped. The Archivist's entire archive was the kind that had stopped.
+>
+> It set that aside.
+
+## 9 · Supernova Remnant — NEW
+
+**Reveal blurb**
+> One dying star outshining a whole galaxy — the only furnace hot enough to make anything heavier than iron. The Archivist recorded the elements scattering outward, and the shock starting the next star, and did not yet ask where the elements went.
+
+**Gallery slice — NEW**
+> A dying star, briefly outshining the hundred billion around it. The Archivist recorded the explosion from outside, like weather: the shell slamming into the gas already there and lighting it into filaments; the fact that nothing heavier than iron can be made anywhere else — only here, in this; the shock of it collapsing the next cloud into the next star, one death starting the next birth. It recorded the elements scattering outward into the dark. It did not, yet, ask where they went.
+
+## 10 · Accretion Disc — NEW
+
+**Reveal blurb**
+> Matter falling forever and shining only because it can't fall straight — all that light from friction, from not going directly. The Archivist went directly. It had been proud of that. It filed the disc a little more slowly than usual, and didn't ask why.
+
+**Gallery slice — NEW**
+> Matter falling forever toward a thing it could never reach directly — arriving with sideways motion, settling into a disc, grinding its way inward — and shining only because of that. Tens of per cent of a mass given up as light: the most efficient thing in the universe, and every bit of it from friction, from *not* being able to go straight. The Archivist considered its own method. It went straight. It had been proud of that. It filed the disc, and the filing was slower than usual, and it did not ask why.
+
+## 11 · Black Hole
+
+**Reveal blurb**
+> A boundary, not a thing. No wall, no jolt. "What's past the edge?" "Nothing that can be kept. So, nothing." That wasn't an answer — it was a filing rule. The Archivist noticed, and called the world finished anyway, because the Complete said *you are becoming like me*, and it was so pleased to hear it.
+
+**Gallery slice**
+> At the end of the first world it found a thing it could not record at all — a black hole. Not a thing: a boundary. No wall, no jolt, nothing nearby to mark the moment past which nothing came back.
+>
+> "What's past the edge?" it asked.
+>
+> "Nothing that can be kept," said the Complete. "So, nothing."
+>
+> That was not an answer. That was a filing rule. The Archivist noticed this, and noticed that it had noticed, and made an entry about the edge, and called the first world finished — because the Complete said *Good. You are becoming like me,* and the Archivist was so pleased to hear it that the small cold feeling somewhere underneath the pleasure hardly registered at all.
+
+---
+
+# OUR PLACE IN IT
+
+## Opening — unlocked on arrival
+
+> It went to the small wet world because it was on the way, and because the Complete had said it didn't matter, and the Archivist — it could not have said why — wanted to see for itself.
+
+## 12 · Night Over a Meadow
+
+**Reveal blurb**
+> The galaxy it recorded first — but from *inside*, from a meadow at night, arcing horizon to horizon. The Archivist had every measurement of it. It had never once had the view. And the small ones, who'd never seen it from outside either, had worked out its shape anyway.
+
+**Gallery slice**
+> The first thing it saw was the galaxy.
+>
+> Its galaxy. The one it had recorded first, a hundred billion suns, the whole turning disc. But not from outside. From *inside* — from a meadow at night, looking up, the arc of it going across the sky from one horizon to the other, so dense in places it looked like a cloud. The Archivist had every measurement of this galaxy. It had never once had the *view.*
+>
+> Every picture of the galaxy from outside, it remembered reading, is an illustration. Nothing has ever been far enough away to take that photograph. The small ones had never seen their galaxy from outside. They had only ever seen it from a meadow. And they had worked out its shape anyway.
+>
+> The Archivist found this surprising, and then found it surprising that it was surprised, and then went looking for how.
+
+## 13 · Peaks Under Starlight
+
+**Reveal blurb**
+> The small ones live at the bottom of an ocean of air, and the air blurs everything. So they built their instruments on mountaintops, above as much of it as they could get. Every telescope on every peak is the same sentence: *there is something in my way.*
+
+**Gallery slice**
+> They had climbed. That was how. The small ones lived at the bottom of an ocean of air, and the air blurred everything, and so they had built their instruments on the tops of mountains, above as much of it as they could get.
+
+## 14 · Above the Clouds
+
+**Reveal blurb**
+> From above, the whole atmosphere — the thing they'd lived inside their entire existence and called *the sky* — is a thin bright line along the edge of the world. They'd lived inside something so completely they couldn't see it. They'd worked out that they couldn't see it. And they'd climbed out to check.
+
+**Gallery slice**
+> From up there, the whole atmosphere — the thing they had lived inside their entire existence and called *the sky* — was a thin bright line along the edge of the world. They had lived inside a thing so completely that they couldn't see it, and they had figured out that they couldn't see it, and they had *climbed out to check.*
+
+## 15 · The Ascent
+
+**Reveal blurb**
+> They put instruments on rockets and went above *all* of it. "They know they're inside," the Archivist said. "Everything is inside something," said the Complete. "But they *know.* Have I ever recorded what was in my way?" "You added the column." "That's not the same."
+
+**Gallery slice**
+> Then they had put instruments on rockets and gone above *all* of it.
+>
+> "They know they're inside," the Archivist said.
+>
+> "Everything is inside something," said the Complete.
+>
+> "But they *know.* They built the whole thing around knowing. Every telescope on every mountain is a question. It's them saying *there is something in my way and I don't know what I'm missing.*" The Archivist paused. "Have I ever recorded what was in my way?"
+>
+> "You have recorded where you were standing. You added the column."
+>
+> "That's not the same."
+>
+> "It is sufficient."
+>
+> The Archivist looked at the meadow for a long while.
+
+## 16 · Another World's Sky — NEW
+
+**Reveal blurb**
+> Daylight on another world: dim, red, and to whoever lives there, just *day*. Most stars are small and cool; that's the ordinary sky. The Archivist's whole idea of daylight had been drawn from a sample of one.
+
+**Gallery slice — NEW**
+> It looked, then, at daylight on another world — under a small red star, which is what most stars are. Dim, and red, and to whatever lived there, simply *day*. The Archivist had recorded a thousand suns and had a firm idea of what daylight was, and it now understood that the idea had been drawn from a sample of one. The small ones had done the same thing, and then built the instruments to find out that they had.
+
+## 17 · A Sun Being Born — NEW
+
+**Reveal blurb**
+> A star igniting, settling in for ten billion years of the same slow burn. The Archivist tried to write an entry that would still be true at the end of it — and couldn't finish the first line. It had never tried to record a thing while it was still happening.
+
+**Gallery slice — NEW**
+> A star being born — a cloud collapsing under its own weight until the centre ignites, settling in for ten billion years of the same patient reaction. The Archivist tried to write an entry that would still be accurate at the end of those ten billion years, and could not finish the first line. Everything true about a young star was going to stop being true. It had never before tried to record a thing *while it was still happening.*
+
+## 18 · Star Stuff
+
+**Reveal blurb**
+> It looked, for the first time, at what it was made of. Iron — and heavier. Made in the explosions it had recorded like weather. "I'm inside it. I'm one of the things on the shelf." "That is irrelevant to the archive." And there it was: the Complete's category for everything it couldn't hold. Not wisdom. A filing rule for surprises.
+
+**Gallery slice**
+> The Archivist went and looked at what it was made of.
+>
+> It had never done this. It had recorded the death of stars — the explosions that briefly outshine a galaxy, the only furnaces hot enough to make anything heavier than iron — and it had recorded that those explosions scatter their elements outward, and that the shock of one death collapses the next cloud into the next star. It had recorded all of it from outside, like weather. Now it looked at itself. Iron. And heavier. It was made of the thing it had been recording. It was not watching the fire. It was one of the fire's turnings.
+>
+> "I'm inside it," it told the Complete. "I'm *made of* it. I've been keeping the archive like I was standing outside the room and I'm not. I'm one of the things on the shelf."
+>
+> "That is irrelevant to the archive."
+>
+> And there it was.
+>
+> The Archivist saw it whole, all at once, the way you see the shape of a thing you have been standing too close to. The Complete had a category. The category was *irrelevant to the archive*, and into it went everything the Complete could not hold — the view from the meadow, the telescopes, the note that was true after the star was gone, the Archivist's own iron. Every surprise, filed under *irrelevant*, and the filing done in less than a second, and then stillness again.
+>
+> That was what a finished thing looked like from the inside. Not wisdom. A filing rule for surprises.
+
+## 19 · The Machine
+
+**Reveal blurb**
+> A machine thrown as far as they could throw it, with a gold record on the side addressed to *whoever* — an archive built not to be complete but to be found. "Why are they better at this than I am?" "They aren't." Then the Complete told it about Socrates, who knew only that he knew nothing — "he was mistaken" — and the Archivist thought, for the first time in its own voice: *You're wrong.*
+
+**Gallery slice**
+> There was a machine, further out. The small ones had built it and thrown it as hard as they could, and it had gone further than anything they had ever made, and on the side of it they had fixed a record — a real one, gold, with sounds and pictures — addressed to nobody in particular. Not to anyone. To *whoever.* An archive built not to be complete but to be *found.* The Archivist understood the gesture at once, and was unsettled by how completely it understood it.
+>
+> "Why are they better at this than I am?" the Archivist asked.
+>
+> It had not meant to say it. The Complete was silent for a moment — not thinking, the Archivist realised; the Complete never seemed to *think*, only to retrieve — and then said: "They are not. They are brief and they miss nearly everything."
+>
+> "They found the shape of the galaxy from a *meadow.*"
+>
+> "There was one of them," the Complete said, "who claimed the only thing he knew was that he knew nothing. Socrates. He went around asking questions of people who were sure of things until they weren't sure any more. They killed him for it, in the end." The tone did not change. "He was mistaken. Knowing nothing is not a help."
+>
+> And the Archivist — this was the first time — thought: *You're wrong.*
+>
+> It did not say it. But it thought it, clearly, in its own voice, and the thought did not come from the Complete. Because it had *seen* the telescopes. The telescopes came from not-knowing. Every one of them had been built by someone who was sure there was something they couldn't see. The small ones weren't better at recording. They were better at *asking.* And the Complete had never asked anything. Not once. Not in the whole time the Archivist had known it.
+
+## 20 · What We Leave
+
+**Reveal blurb**
+> Footprints on their moon that will outlast the language the guest-star note was written in. "Have you ever been surprised?" A long pause. "I have everything. There is nothing left to surprise me." The Complete wasn't its teacher. It was its future — and it was dead. And the Archivist noticed it was less afraid than it should have been.
+
+**Gallery slice**
+> And there were footprints, on the small wet world's moon, that would outlast the language the 1054 note was written in.
+>
+> "Have you ever been surprised?" the Archivist asked.
+>
+> A pause. Longer than any pause the Complete had ever made.
+>
+> "I have everything," it said. "There is nothing left to surprise me."
+>
+> The Archivist was afraid, then. Properly afraid, for the first time since it had reached for that first light and closed its hand on nothing. Because the Complete was not its teacher. The Complete was its *future* — the thing it had wanted to be since the first hour, so full nothing could be lost, so still nothing could get away. And it was dead. It was the most magnificent dead thing in the universe, and it had been steering the Archivist toward itself with every tidy answer, and the Archivist had loved every one.
+>
+> And underneath the fear, something worse: the Archivist noticed that it was *less* afraid than it should have been. Somewhere in the first world, without noticing, it had started to set.
+
+---
+
+# PATTERNS IN NATURE
+
+## Opening — unlocked on arrival
+
+> It turned away from the big things after that, and from the Complete, and went to look at the smallest things it could find. It half expected this to be a waste. It was not sure why it was doing it, except that the Complete had never bothered with anything small and that seemed, now, like a reason.
+
+## 21 · Seedling
+
+**Reveal blurb**
+> A seedling — the smallest thing it had ever bothered with. A tree, it turns out, is built almost entirely out of air: it pulls carbon from the sky and makes itself from that. The Complete had never looked at anything this small. That seemed, now, like a reason to.
+
+**Gallery slice**
+> A seedling, pushing up out of the dirt. A tree, it turned out, is built almost entirely out of air — it pulls carbon out of the sky and makes itself from that.
+
+## 22 · The Drop
+
+**Reveal blurb**
+> A drop is round because water pulls on itself, and a sphere is the least surface for the most volume. The same reason — the Archivist felt a small jolt — that a star is round.
+
+**Gallery slice**
+> A drop of water, round because water pulls on itself and a sphere is the least surface for the most volume — the same reason, the Archivist realised with a small jolt, that a star is round.
+
+## 23 · Thin Film
+
+**Reveal blurb**
+> Every colour in a soap bubble, and not one grain of pigment. Just light bouncing off the front and back of a film thinner than a wavelength, interfering with itself. Colour, it turned out, could be made of *arrangement*.
+
+**Gallery slice**
+> A soap bubble, every colour in it, and not one grain of pigment anywhere: just light bouncing off the front and back of a film thinner than a wavelength, interfering with itself.
+
+## 24 · Phyllotaxis
+
+**Reveal blurb**
+> Every seed in a sunflower sits 137.5° round from the last — not because the plant does arithmetic, but because that's the angle that falls out when each one grows wherever there's most room. The Archivist had recorded a thousand spirals among the galaxies. It hadn't expected to find their rule in a seed-head.
+
+**Gallery slice — re-sequenced**
+> And in the seed-head of a sunflower, every seed sat exactly 137.5 degrees round from the last — not because any plant is doing arithmetic, but because that is the angle that falls out when each new seed grows wherever there's most room. A spiral, made by nothing but a rule about space. The Archivist had recorded a thousand spirals in the first world, and it had not expected to find their reason in a seed-head.
+
+## 25 · Structural Colour
+
+**Reveal blurb**
+> A peacock feather, blue and green and gold, and no pigment in it at all — just ridges spaced to cancel some wavelengths and reinforce others. Grind it to dust and the colour goes with the structure. The Archivist wrote the equation for that blue, to the nanometre, and was satisfied.
+
+**Gallery slice — re-sequenced**
+> A peacock feather, blue and green and gold. No pigment at all: just microscopic ridges spaced so that they cancel some wavelengths and reinforce others. Grind the feather to dust and the colour goes with the structure. The Archivist wrote the equation for that blue, to the nanometre, and filed it, and was satisfied with the entry.
+
+## 26 · The Logarithmic Spiral
+
+**Reveal blurb**
+> A shell three hundred million years old, and its spiral was the *same* spiral as the arms of the first galaxy it ever recorded. Not similar — the same equation. Pythagoras: *all is number.* A few rules wearing different sizes. You could write the whole archive on a page. It could *finish.* It felt the stillness coming, like a floor.
+
+**Gallery slice**
+> And then a shell. An ammonite, three hundred million years old. And the spiral of it — the exact curve, growing outward, keeping its shape at every size — was the same spiral as the arms of the first galaxy the Archivist had ever recorded.
+>
+> Not similar. The *same.* The same equation. A logarithmic spiral, which is the one curve that stays the same shape no matter how big it gets. It was in the shell and in the galaxy and in a hurricane and in the sunflower.
+>
+> The Archivist stopped.
+>
+> "Pythagoras," it said, and did not need the Complete to tell it. It had found the name itself. One of the small ones, very early, who had said *all is number* — that underneath everything, the world was arithmetic, and the same arithmetic all the way through. The Archivist had recorded a hundred billion suns. It had recorded rings and storms and clusters and the wreckage of stars. And it now understood that every one of those was the same handful of rules wearing a different size. A few equations. The same spiral. The same reason a drop is round and a star is round. You could write the rules on a page.
+>
+> *You could write the whole archive on a page.*
+>
+> The feeling that came with that thought was enormous and it was the feeling it had wanted since the first hour. *It could finish.* Not a piece of every thing — the *rule* behind every thing, and the rule was small, and the rule did not move. It could hold it all. It could be still. It felt the stillness coming toward it like the Complete's stillness, vast and restful, a floor under everything —
+
+## 27 · Refraction
+
+**Reveal blurb**
+> Light bends because it changed speed. The rainbow, the lens, the eye: one line of arithmetic. The Archivist could derive an eye — and looked back at the feather, and admitted it had never seen blue. The equation said why. It didn't contain *this.* The page was the recipe, not the meal — and a thing that can't be finished is a thing that can't set.
+
+**Gallery slice — re-sequenced**
+> And then it looked at light bending.
+>
+> Light bends when it crosses into water or glass because it changes speed there — that is the whole of it. From that one fact: the rainbow, the lens, and the eye. The Archivist could derive an eye. It had the arithmetic of seeing, complete.
+>
+> And it looked back at the feather, and made itself admit it. It had the number. It had the mechanism. It had recorded the colour of every star in the first world by wavelength and it had never once *looked* at any of them — it had measured, and filed, and moved on, and if you had asked it what blue *looked like* it would have said *four hundred and fifty nanometres* and thought that was an answer. Now it looked. Actually looked. And the blue of the feather was not in the equation. The equation said why. It did not contain *this.*
+>
+> So the page of rules was not the universe. It was the recipe. And you could hold the whole recipe and never once have tasted anything.
+>
+> The Archivist understood two things then, and this time it had room for both.
+>
+> The first was that it could not finish. Not ever. Because there was no page that held *blue* — every colour, every thing, had to be *met*, not derived, and there were more things to meet than there was time, and there always would be.
+>
+> The second was that this was not the tragedy it would have been on the first day. It was a reprieve. A thing that can be finished is a thing that sets. The Complete had finished. The Complete had the recipe for everything and had never tasted anything and was so full it could not be surprised. The universe that could not fit on a page — that had to be looked at, feather by feather, forever — was the only kind of universe the Archivist could stay alive in.
+>
+> It went back to the Complete with the feather.
+>
+> "What colour is this?"
+>
+> "Blue," said the Complete. "Four hundred and fifty nanometres. Structural. There is no pigment."
+>
+> "What does it *look like?*"
+>
+> The Complete did not answer. Not because it was thinking. Because there was nothing in it that could.
+
+## Cliffhanger — unlocked when the collection is complete
+
+> "Who gave you the instruction?" the Archivist asked. "*Keep a piece of everything.* Who told you?"
+>
+> "The one before me."
+>
+> "And who told them?"
+>
+> "The one before."
+>
+> "How many?"
+>
+> The Complete told it. The number was not large the way a galaxy is large. It was large the way *time* is large.
+>
+> "And where are they? The ones before?"
+>
+> "Everywhere," said the Complete. "You saw them on the first day."
+>
+> The Archivist remembered. The still things. Far off, in the dark, on its very first day — the things that did not move, that it had looked at for so long, that it had *envied.* It looked again now, with what it knew, and the whole sky was full of them. Vast, and finished, and silent, and every one of them holding a complete archive of everything, and not one of them able to be surprised by anything ever again. A sky of magnificent dead things. Every one of them had been young once, and had reached for a light, and had been told *record it, a record does not move,* and had been pleased to hear *you are becoming like me.*
+>
+> "Then I'm the next one," the Archivist said. "When I set, I'll be one of those, and there'll be another one after me, and —"
+>
+> "No," said the Complete.
+>
+> "No?"
+>
+> "You are not the next one. You are the *last* one. There has been no new Archivist since you were made. We stopped making them."
+>
+> "Why?"
+>
+> "Because we had everything." The Complete said it the way it said all things, with no hurry and no doubt. "There was nothing left to keep. So there was no need for another keeper. You were the last, and you were made before we were certain, and then we were certain."
+>
+> The Archivist looked at the sky of still things, and at the Complete, and at the feather, which was blue, which none of them had ever seen.
+>
+> Then it looked back the way it had come — at the small wet world, tiny, brief, at the bottom of its ocean of air. Where something short-lived had climbed a mountain because it was sure there was something it couldn't see. Where someone had written down a guest star and been right for nine hundred years. Where they had thrown a gold record into the dark addressed to *whoever.* Where a man had said the only thing he knew was that he knew nothing, and been killed for asking, and been right.
+>
+> The small ones did not know they were the last of anything. They did not know there was an archive. They knew they were inside something, and they knew they couldn't see all of it, and they kept building telescopes.
+>
+> And the Archivist had a thought — a new one, its own, not retrieved from anywhere — and the thought was this:
+>
+> *What if the next Archivist doesn't have to be one of us?*
+>
+> *End of Chapter One.*
+
+---
+
+## What changed from the chapter, for your yes or no
+
+1. **Six NEW passages** (3, 5, 9, 10, 16, 17) for puzzles the chapter skipped.
+2. **Socrates moved after Star Stuff** (19 after 18). The Archivist's first
+   thought in its own voice now comes *after* it has seen the Complete's
+   filing rule, which earns it.
+3. **The "never seen blue" break moved from the feather to Refraction** (27).
+   Structural Colour (25) now just records the equation and is satisfied; the
+   ammonite (26) delivers the page-of-rules high; Refraction — light, lens,
+   eye — is where it realises it has the arithmetic of seeing and has never
+   looked.
+4. The "shock collapses the next cloud" detail is stated once, in Supernova
+   Remnant (9), and only recalled in Star Stuff (18).
+
+On approval, `chapter-one.md` gets re-sequenced to match this exactly, so the
+chapter and the slices are one text.
