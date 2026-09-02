@@ -74,6 +74,30 @@ published, and that panel is how to tell the difference.
 It needs no server and no network, so it can simply be sent to someone, and it
 keeps the repository private.
 
+## Opening it
+
+The title card is not a logo on a colour: it is eight tiles that arrive
+scrambled and sort themselves, which is the whole game played once in a second
+and a half. It is built from the real ramp — `TONE_TUNING`'s own lightness
+window at a real hue — so the first thing you see is what the boards are made
+of. It sits over a home screen that is already built, so the game is
+interactive the instant it clears, and a tap clears it early.
+
+The scramble is a derangement rather than a shuffle. A shuffle leaves swatches
+in place often enough at eight tiles to matter, and a title card that opens
+half-sorted reads as a bug. See `derange` in `src/ui/intro.ts` — the first
+version was `(i * 3 + 1) % n`, which is a permutation only when the length is
+not a multiple of three, and a test found it.
+
+**How to play** shows itself once, on a first run, and lives on the home screen
+after that. Its examples are generated from the same constants the boards use —
+the ramp, the locked-starter ring, a miniature of the two-colour plane — so the
+instructions cannot drift out of date the way a screenshot would.
+
+Opening a category flashes its name for a moment first. Only on the way in;
+flashing the same card on every Back would turn punctuation into a toll gate.
+Reduced motion shortens or removes all of it.
+
 ## How the puzzle works
 
 A real image is not a monotonic gradient, so "sort darkest to lightest" and "the
@@ -266,7 +290,7 @@ src/
             baked packs, shipped artwork
   render/   canvas board, ID-buffer hit testing, reveal morph
   game/     session (state, input, animation loop), persistence, library
-  ui/       screens
+  ui/       screens, title card and instructions
 tools/      pack-cli.ts (build-time ingest), verify.mjs (browser check)
 tests/      vitest
 docs/       two-colour.md — the colour and game-design research behind the
@@ -280,17 +304,19 @@ testable against synthetic pixel buffers.
 ## Verifying
 
 ```sh
-npm test                       # 124 unit tests: color math, tone ramps, the
+npm test                       # 127 unit tests: color math, tone ramps, the
                                # two-colour plane, lattices, board shape, hue
                                # assignment, content and board variety,
-                               # generation, hints, zip safety, ingest
+                               # generation, hints, zip safety, ingest, intro
 npm run dev &                  # then, against a running server:
 npm run verify                 # drives a real browser through a whole playthrough
 ```
 
-`npm run verify` uses no test hooks: it clicks into a puzzle, taps two tiles to
-check swapping, undoes, then presses Hint until the board solves, and screenshots
-the board, the reveal, and the journal into `screenshots/`. Pass
+`npm run verify` uses no test hooks: it dismisses the title card, checks the
+first-run instructions appear, clicks into a puzzle, taps two tiles to check
+swapping, undoes, then presses Hint until the board solves, and screenshots the
+intro, the instructions, the board, the reveal, and the journal into
+`screenshots/`. Pass
 `--url http://localhost:4173` to check a production build.
 
 ## Accessibility

@@ -24,10 +24,22 @@ export interface Settings {
   /** null follows the OS's prefers-reduced-motion setting. */
   reducedMotion: boolean | null;
   lightnessAssist: boolean;
+  /**
+   * Whether the instructions have been shown once already.
+   *
+   * Lives in settings rather than progress because it is about this device and
+   * this person, not about the game's state: clearing your solved puzzles
+   * should not put the tutorial back.
+   */
+  seenHowToPlay: boolean;
 }
 
 const DEFAULT_PROGRESS: Progress = { solved: {}, facts: {} };
-const DEFAULT_SETTINGS: Settings = { reducedMotion: null, lightnessAssist: false };
+const DEFAULT_SETTINGS: Settings = {
+  reducedMotion: null,
+  lightnessAssist: false,
+  seenHowToPlay: false,
+};
 
 function read<T>(key: string, fallback: T): T {
   try {

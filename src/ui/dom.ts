@@ -5,6 +5,8 @@ export function el<K extends keyof HTMLElementTagNameMap>(
     class?: string;
     text?: string;
     attrs?: Record<string, string>;
+    /** Inline style properties, for values computed at runtime such as a swatch. */
+    style?: Record<string, string>;
     on?: Partial<Record<keyof HTMLElementEventMap, (event: never) => void>>;
     children?: (Node | null | undefined | false)[];
   } = {},
@@ -16,6 +18,9 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   if (options.text !== undefined) node.textContent = options.text;
   for (const [key, value] of Object.entries(options.attrs ?? {})) {
     node.setAttribute(key, value);
+  }
+  for (const [key, value] of Object.entries(options.style ?? {})) {
+    node.style.setProperty(key, value);
   }
   for (const [event, handler] of Object.entries(options.on ?? {})) {
     node.addEventListener(event, handler as EventListener);

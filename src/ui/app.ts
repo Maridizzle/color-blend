@@ -4,6 +4,9 @@ import { addPackCategory, allCategories, findCategory, findSubject } from '../ga
 import { loadProgress, loadSettings, saveSettings, type Settings } from '../game/persistence';
 import { button, clear, el } from './dom';
 import { puzzleScreen } from './puzzleScreen';
+import { categoryFlash, introSplash, type Dismissable } from './intro';
+import { howToPlayContent } from './howToPlay';
+import { prefersReducedMotion } from '../game/persistence';
 
 type Route =
   | { name: 'home' }
@@ -11,7 +14,8 @@ type Route =
   | { name: 'puzzle'; categoryId: string; subjectId: string }
   | { name: 'journal' }
   | { name: 'packs' }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'how' };
 
 /**
  * Screen router and shell.
@@ -24,10 +28,38 @@ export class App {
   private root: HTMLElement;
   private history: Route[] = [{ name: 'home' }];
   private teardown: (() => void) | null = null;
+  /** The splash or flash card currently over the top of everything. */
+  private overlay: Dismissable | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
     this.render();
+
+    // The title card sits over the home screen rather than replacing it, so the
+    // game is already built and interactive the instant it clears.
+    const settings = loadSettings();
+    this.showOverlay(
+      introSplash(prefersReducedMotion(settings), () => {
+        this.clearOverlay();
+        // First run ever: show the instructions rather than leaving someone to
+        // work out a colour-sorting game from a list of category names.
+        if (!settings.seenHowToPlay) {
+          saveSettings({ ...settings, seenHowToPlay: true });
+          this.navigate({ name: 'how' });
+        }
+      }),
+    );
+  }
+
+  private showOverlay(overlay: Dismissable): void {
+    this.overlay?.destroy();
+    this.overlay = overlay;
+    this.root.appendChild(overlay.element);
+  }
+
+  private clearOverlay(): void {
+    this.overlay?.element.remove();
+    this.overlay = null;
   }
 
   private get route(): Route {
@@ -37,6 +69,22 @@ export class App {
   navigate(route: Route): void {
     this.history.push(route);
     this.render();
+
+    // Only on the way in. Flashing the same card again on every Back would turn
+    // a piece of punctuation into a toll gate.
+    if (route.name === 'category') {
+      const category = findCategory(route.categoryId);
+      if (category) {
+        this.showOverlay(
+          categoryFlash(
+            category.title,
+            category.blurb,
+            prefersReducedMotion(loadSettings()),
+            () => this.clearOverlay(),
+          ),
+        );
+      }
+    }
   }
 
   goBack(): void {
@@ -68,6 +116,9 @@ export class App {
   private render(): void {
     this.teardown?.();
     this.teardown = null;
+    // Clearing the root takes any overlay with it; drop the reference so a
+    // timer still in flight cannot try to remove a node twice.
+    this.overlay = null;
     clear(this.root);
 
     const route = this.route;
@@ -94,6 +145,14 @@ export class App {
         break;
       case 'packs':
         this.root.appendChild(this.packsScreen());
+        break;
+      case 'how':
+        this.root.appendChild(
+          el('section', {
+            class: 'screen screen-list',
+            children: [this.subHeader('How to play'), howToPlayContent()],
+          }),
+        );
         break;
       case 'settings':
         this.root.appendChild(this.settingsScreen());
@@ -149,6 +208,7 @@ export class App {
         el('nav', {
           class: 'home-nav',
           children: [
+            button('How to play', () => this.navigate({ name: 'how' })),
             button('Journal', () => this.navigate({ name: 'journal' })),
             button('Load a pack', () => this.navigate({ name: 'packs' })),
             button('Settings', () => this.navigate({ name: 'settings' })),

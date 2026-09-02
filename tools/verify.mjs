@@ -44,12 +44,24 @@ async function main() {
     if (response.status() >= 400) problems.push(`${response.status()} ${response.url()}`);
   });
 
+  // First run: the title card, then the instructions, before any of the game.
   await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.intro');
+  await page.screenshot({ path: `${OUT}/0-intro.png` });
+  await page.locator('.intro').click();
+  await page.waitForSelector('.how');
+  const sections = await page.locator('.how-section').count();
+  console.log(`intro dismissed, how-to-play shown with ${sections} sections`);
+  await page.screenshot({ path: `${OUT}/0-how.png`, fullPage: true });
+  await page.locator('.sub-header .button-icon').click();
+
   await page.waitForSelector('.category-card');
   await page.screenshot({ path: `${OUT}/1-home.png` });
 
-  // Into a category, then the first puzzle in it.
+  // Into a category. A flash card covers the list for a moment on the way in,
+  // so dismiss it rather than racing it.
   await page.locator('.category-card').first().click();
+  await page.locator('.flash').click({ timeout: 3000 }).catch(() => {});
   await page.waitForSelector('.subject-card');
   await page.screenshot({ path: `${OUT}/2-category.png` });
 
