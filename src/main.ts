@@ -1,3 +1,8 @@
+import '@fontsource/unifrakturcook/latin-700.css';
+import '@fontsource/cormorant-garamond/latin-400.css';
+import '@fontsource/cormorant-garamond/latin-500.css';
+import '@fontsource/cormorant-garamond/latin-600.css';
+import '@fontsource/cormorant-garamond/latin-700.css';
 import './styles.css';
 import { loadBakedPacks } from './content/baked';
 import { addPackCategory } from './game/library';

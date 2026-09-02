@@ -166,8 +166,11 @@ export class App {
     const progress = loadProgress();
     const categories = allCategories();
 
-    const cards = categories.map((category) => {
+    const cards = categories.map((category, categoryIndex) => {
       const solved = category.subjects.filter((s) => progress.solved[s.id]).length;
+      const cover = category.subjects.find(
+        (subject) => progress.solved[subject.id] && subject.artwork.kind === 'url',
+      );
       return el('button', {
         class: 'card category-card',
         attrs: { type: 'button' },
@@ -176,8 +179,25 @@ export class App {
         },
         children: [
           el('div', {
+            class: 'category-illumination',
+            attrs: { 'aria-hidden': 'true' },
+            children: [
+              cover?.artwork.kind === 'url'
+                ? el('img', {
+                    class: 'category-image',
+                    attrs: { src: cover.artwork.url, alt: '', loading: 'lazy' },
+                  })
+                : null,
+              el('span', { class: 'category-rose' }),
+            ],
+          }),
+          el('div', {
             class: 'card-body',
             children: [
+              el('span', {
+                class: 'card-kicker',
+                text: category.fromPack ? 'Visiting archive' : `Archive ${roman(categoryIndex + 1)}`,
+              }),
               el('h2', { class: 'card-title', text: category.title }),
               category.blurb ? el('p', { class: 'card-blurb', text: category.blurb }) : null,
               el('p', {
@@ -186,7 +206,7 @@ export class App {
               }),
             ],
           }),
-          category.fromPack ? el('span', { class: 'chip', text: 'pack' }) : null,
+          el('span', { class: 'category-arrow', attrs: { 'aria-hidden': 'true' }, text: '†' }),
         ],
       });
     });
@@ -197,11 +217,22 @@ export class App {
         el('header', {
           class: 'home-header',
           children: [
+            el('div', {
+              class: 'rose-window',
+              attrs: { 'aria-hidden': 'true' },
+              children: [
+                el('span', { class: 'rose-core' }),
+                el('span', { class: 'rose-ring rose-ring-one' }),
+                el('span', { class: 'rose-ring rose-ring-two' }),
+              ],
+            }),
+            el('p', { class: 'brand-kicker', text: 'The Chromatic Reliquary' }),
             el('h1', { class: 'logo', text: 'Color Blend' }),
             el('p', {
               class: 'tagline',
-              text: 'Sort the shades. Reveal the picture. Learn the subject.',
+              text: 'Order the living shades. Unseal the image. Keep what it remembers.',
             }),
+            el('div', { class: 'ornament-rule', attrs: { 'aria-hidden': 'true' } }),
           ],
         }),
         el('div', { class: 'card-list', children: cards }),
@@ -238,9 +269,25 @@ export class App {
           click: (() => this.navigate({ name: 'puzzle', categoryId, subjectId: subject.id })) as never,
         },
         children: [
+          solved && subject.artwork.kind === 'url'
+            ? el('div', {
+                class: 'subject-portrait',
+                attrs: { 'aria-hidden': 'true' },
+                children: [
+                  el('img', {
+                    attrs: { src: subject.artwork.url, alt: '', loading: 'lazy' },
+                  }),
+                ],
+              })
+            : el('div', {
+                class: 'subject-portrait subject-portrait-sealed',
+                attrs: { 'aria-hidden': 'true' },
+                text: '✦',
+              }),
           el('div', {
             class: 'card-body',
             children: [
+              el('span', { class: 'card-kicker', text: `Folio ${roman(index + 1)}` }),
               el('h2', { class: 'card-title', text: subject.title }),
               // Blurbs give away nothing about the picture, only the subject.
               subject.blurb ? el('p', { class: 'card-blurb', text: subject.blurb }) : null,
@@ -252,7 +299,9 @@ export class App {
               }),
             ],
           }),
-          solved ? el('span', { class: 'chip chip-done', text: '✓' }) : null,
+          solved
+            ? el('span', { class: 'chip chip-done', text: 'Revealed' })
+            : el('span', { class: 'subject-seal', attrs: { 'aria-hidden': 'true' }, text: '✦' }),
         ],
       });
     });
@@ -261,6 +310,7 @@ export class App {
       class: 'screen screen-list',
       children: [
         this.subHeader(category.title, category.blurb),
+        el('p', { class: 'list-intro', text: 'Choose a sealed folio and restore its order of light.' }),
         el('div', { class: 'card-list', children: cards }),
       ],
     });
@@ -475,7 +525,9 @@ export class App {
       children: [
         button('←', () => this.goBack(), 'button button-icon'),
         el('div', {
+          class: 'sub-heading-copy',
           children: [
+            el('span', { class: 'sub-kicker', text: 'Color Blend Archive' }),
             el('h1', { class: 'sub-title', text: title }),
             blurb ? el('p', { class: 'sub-blurb', text: blurb }) : null,
           ],
@@ -483,6 +535,25 @@ export class App {
       ],
     });
   }
+}
+
+function roman(value: number): string {
+  const numerals: [number, string][] = [
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I'],
+  ];
+  let rest = value;
+  let result = '';
+  for (const [amount, glyph] of numerals) {
+    while (rest >= amount) {
+      result += glyph;
+      rest -= amount;
+    }
+  }
+  return result;
 }
 
 const EXAMPLE_MANIFEST = `{

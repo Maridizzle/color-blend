@@ -25,8 +25,11 @@ export interface BoardView {
   lightnessAssist: boolean;
 }
 
-const BACKGROUND = '#12131a';
-const EMPTY_CELL = '#1c1e28';
+// Keep the playing field perceptually neutral even though the surrounding UI
+// is richly textured. These are presentation tokens only: tile colors and all
+// correctness calculations remain untouched.
+const BACKGROUND = '#0a090c';
+const EMPTY_CELL = '#17141b';
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
