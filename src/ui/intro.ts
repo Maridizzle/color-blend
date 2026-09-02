@@ -26,8 +26,8 @@ export const INTRO_TIMING = {
   holdMs: 2300,
   /** The little card when you open a category. */
   flashMs: 900,
-  /** Hue the title tiles run through. Teal: distinct from every board hue. */
-  hue: 194,
+  /** Hue the title tiles run through; gold, to sit with the shell's own metal. */
+  hue: 84,
 } as const;
 
 /** A single-hue ramp of `count` swatches, built the way a board is. */
@@ -93,8 +93,11 @@ export function introSplash(reducedMotion: boolean, onDone: () => void): Dismiss
     attrs: { role: 'presentation' },
     children: [
       el('div', { class: 'intro-tiles', children: tiles }),
+      el('p', { class: 'intro-kicker', text: 'The Chromatic Reliquary' }),
       el('h1', { class: 'intro-logo', text: 'Color Blend' }),
-      el('p', { class: 'intro-tagline', text: 'Sort the shades. Reveal the picture.' }),
+      // Half of the home screen's line. The title card is the short version of
+      // the same sentence, not a second, competing one.
+      el('p', { class: 'intro-tagline', text: 'Order the living shades. Unseal the image.' }),
     ],
   });
 
