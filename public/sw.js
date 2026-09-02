@@ -6,7 +6,7 @@
  * Nothing here caches content packs: those live in memory for the session.
  */
 
-const CACHE = 'color-blend-v1';
+const CACHE = 'color-blend-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
