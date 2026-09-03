@@ -445,6 +445,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'small-company',
     title: 'Small Company',
     blurb: 'Six small lives, at the range where you can watch them working.',
+    mosaic: { kind: 'url', url: './artwork/plates/small-company.jpg' },
     subjects: [
       {
         id: 'slime-mould',
@@ -536,6 +537,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'the-rare-hour',
     title: 'The Rare Hour',
     blurb: 'Things that only happen sometimes, and never for very long.',
+    mosaic: { kind: 'url', url: './artwork/plates/the-rare-hour.jpg' },
     subjects: [
       {
         id: 'bioluminescence',
@@ -613,6 +615,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'the-elements',
     title: 'The Elements',
     blurb: 'Seven of the kinds of stuff there are. Everything else is arrangement.',
+    mosaic: { kind: 'url', url: './artwork/plates/the-elements.jpg' },
     subjects: [
       {
         id: 'quicksilver',

@@ -2,11 +2,11 @@
 
 Each archive's gallery uncovers one large image, a share per puzzle solved.
 
-**Plates I to III are installed**, in `public/artwork/plates/`, and wired to
-their categories in `src/content/sampler/index.ts`. **Plates IV to VI are not
-yet made**; their prompts are below, written against the cut each gallery makes.
-`tools/shoot-plates.mjs` renders every gallery fully solved so a new plate can be
-checked for misregistration before it ships:
+**All six are installed**, in `public/artwork/plates/`, and wired to their
+categories in `src/content/sampler/index.ts`. Below are the prompts that made
+them and what to hold a future one to. `tools/shoot-plates.mjs` renders every
+gallery fully solved so a new plate can be checked for misregistration before it
+ships:
 
 ```
 npx vite --port 5175 &
@@ -37,8 +37,8 @@ The grid comes from `mosaicPlan()` — enough cells for one per puzzle, squared 
 | The Rare Hour | 5 | 3 × 2 = 6 | **3:2 landscape** | vertical at 33 / 66%, horizontal at 50% |
 | The Elements | 7 | 3 × 3 = 9 | **1:1 square** | 33 / 66% both axes |
 
-Small Company, The Rare Hour and The Elements have no plate yet; their galleries
-compose the mosaic from their own puzzle artworks until one is made.
+Every shipped archive now has a plate. A pack loaded from a zip composes its
+mosaic from its own puzzle artworks instead, which needs nothing authored.
 
 Three rules follow from that, and they matter more than prettiness:
 
@@ -238,3 +238,26 @@ lands inside the outer cells once cut; reject any candidate that has one.
   colour range, and specimens at genuinely uneven sizes rather than in a grid.
   That last part matters: had the specimens landed one per cell, each piece would
   be a complete object and the mosaic would never resolve into anything.
+- **Small Company** — every candidate came back square, so all three of the
+  later plates are cut from squares. This one is the dark, evenly spread litter:
+  snail, caterpillar, morpho and poppies each inside a cell, with the horizontal
+  cut running through leaves and woodlice, which is what the prompt asked for.
+  Cut to 3:2 with the window sat a little below centre so the butterfly keeps
+  its top and the lower poppy keeps most of its petals; a hair trimmed off every
+  side to lose the vellum edge. The runner-up had a thin gold frame, a large
+  round leaf dead centre, and its grub below the crop.
+- **The Rare Hour** — the frameless one with the Milky Way arching over a town
+  with its windows lit, which is the chapter's last line as a picture, and the
+  eclipse sitting inside the right-hand column. Cut to 3:2 with the window high
+  enough to keep the eclipse whole, at the cost of the beach along the bottom.
+  It carries a faint vertical crease down the middle column, which reads as
+  vellum. Rejected: one with two suns and a painted frame, and the best-drawn
+  candidate of the lot, which sat inside an ornate border that no crop could
+  remove without losing the eclipse.
+- **The Elements** — the alchemist's bench with the hand, the violet vapour and
+  the silver stars, all at uneven sizes and nothing important in the centre
+  cell. It came with a cream vellum border around a dark field, so it is cropped
+  to the field: the crop finds the edge by walking outward from the centre
+  until the columns turn light, which ignores the black beyond the torn edge.
+  The alternative was a uniform grid of jars with one large flask dead centre,
+  safe to cut and dull to uncover.
