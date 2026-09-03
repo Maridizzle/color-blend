@@ -164,9 +164,11 @@ export class App {
           this.goHome();
           return;
         }
-        const index = allCategories().findIndex((c) => c.id === category.id);
+        const road = allCategories();
+        const index = road.findIndex((c) => c.id === category.id);
         const gallery = galleryScreen(category, loadProgress(), {
           onEnter: () => this.navigate({ name: 'category', categoryId: category.id }),
+          road,
         });
         this.teardown = gallery.destroy;
         this.root.appendChild(

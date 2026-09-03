@@ -38,6 +38,33 @@ game to one person, not a way to serve it. That build compiles out
 the service worker and the baked-pack loader, since a file with no siblings
 should not go looking for any.
 
+## The story
+
+`docs/story/the-archivist.md` is the source of the Archivist's tale. Edit it
+there and run `npx tsx tools/build-story.ts` to regenerate `src/content/story.ts`.
+
+The structure is built to be added to:
+
+- **A new collection**: add `## Collection · <category id>` under the chapter it
+  belongs to, an `### Opening`, and one `### n · Subject Title` per puzzle, in the
+  collection's own order.
+- **A new chapter**: add `# Chapter N · Title`, then its collections, then a
+  `## Closing`. The closing is the cliffhanger, and it unlocks only when every
+  collection in that chapter is complete -- so the ending sits at the end of the
+  writing, wherever the road has got to, and adding a collection moves it along
+  rather than stranding it mid-road.
+- A collection with no scenes written yet still plays: it gets a station on the
+  road, a mosaic, and an honest note in its gallery. Packs loaded from a zip are
+  always in that state.
+
+The build refuses a scene that is missing, attached to the wrong picture, names a
+collection that does not exist, or runs under ninety words -- a fragment reads as
+an offcut when it lands on the reveal panel.
+
+The tale is fiction and the facts on each puzzle are real science. They live in
+separate files, are shown in separate places, and are styled in different
+registers, so the game never dresses one as the other.
+
 ## Deploying it
 
 `.github/workflows/deploy.yml` builds the game and publishes it to GitHub Pages

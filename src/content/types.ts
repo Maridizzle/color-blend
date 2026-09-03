@@ -82,12 +82,30 @@ export interface TaleEntry {
  */
 export interface CollectionTale {
   categoryId: string;
+  /** The chapter this collection belongs to. */
+  chapterNumber: number;
   /** Unlocked on arrival. Paragraphs. */
   opening: string[];
   /** One per subject, matched by id. */
   entries: TaleEntry[];
-  /** Unlocked when the collection is complete. Paragraphs. */
-  closing?: string[];
+}
+
+/**
+ * A chapter: some collections, and the cliffhanger that closes them.
+ *
+ * The closing belongs to the chapter rather than to any one collection, so it
+ * unlocks when the chapter's whole story has been played rather than when a
+ * particular collection happens to finish. That is what lets the road keep
+ * growing: add collections to this chapter and the ending moves to the end of
+ * them; start a new chapter and this one keeps its own.
+ */
+export interface Chapter {
+  number: number;
+  title: string;
+  /** In reading order. */
+  collectionIds: string[];
+  /** The cliffhanger. Unlocked when every collection above is complete. */
+  closing: string[];
 }
 
 /** A decoded artwork: a drawable for the reveal, and pixels for analysis. */

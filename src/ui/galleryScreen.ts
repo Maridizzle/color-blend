@@ -1,5 +1,4 @@
 import type { ArtworkSource, Category } from '../content/types';
-import { CHAPTER } from '../content/story';
 import type { Progress } from '../game/persistence';
 import { cellOwners, collectionState } from '../game/story';
 import { button, el } from './dom';
@@ -35,9 +34,9 @@ function cssUrl(source: ArtworkSource | undefined): { url: string; revoke?: () =
 export function galleryScreen(
   category: Category,
   progress: Progress,
-  host: { onEnter: () => void },
+  host: { onEnter: () => void; road: readonly Category[] },
 ): { element: HTMLElement; destroy: () => void } {
-  const state = collectionState(category, progress);
+  const state = collectionState(category, progress, host.road);
   const { plan, tale } = state;
   const revokes: (() => void)[] = [];
 
@@ -113,8 +112,27 @@ export function galleryScreen(
         }),
       );
     }
-    if (state.complete && tale.closing) {
-      passages.push(talePassage({ paragraphs: tale.closing, cite: `End of Chapter ${CHAPTER.number}` }));
+    // The chapter's cliffhanger, once the whole chapter has been played.
+    if (state.chapterClosing && state.chapter) {
+      passages.push(
+        talePassage({
+          paragraphs: state.chapterClosing,
+          cite: `End of Chapter ${roman(state.chapter.number)}`,
+        }),
+      );
+    } else if (state.complete && state.chapter && !state.chapterClosing) {
+      const left = state.chapter.collectionIds.filter((id) => {
+        const c = host.road.find((r) => r.id === id);
+        return c ? !c.subjects.every((s) => progress.solved[s.id]) : true;
+      }).length;
+      if (left > 0) {
+        passages.push(
+          el('p', {
+            class: 'tale-waiting',
+            text: `The chapter does not end here. ${left} more ${left === 1 ? 'archive' : 'archives'} before the Archivist closes it.`,
+          }),
+        );
+      }
     }
   }
 
@@ -142,13 +160,18 @@ export function galleryScreen(
             class: 'tale',
             children: [
               el('h2', { class: 'tale-title', text: 'The Archivist' }),
-              el('span', { class: 'tale-kicker', text: `Chapter ${CHAPTER.number === 1 ? 'One' : roman(CHAPTER.number)} · ${CHAPTER.title}` }),
+              state.chapter
+                ? el('span', {
+                    class: 'tale-kicker',
+                    text: `Chapter ${roman(state.chapter.number)} · ${state.chapter.title}`,
+                  })
+                : null,
               ...passages,
             ],
           })
         : el('p', {
             class: 'tale-waiting',
-            text: 'The Archivist has not reached this archive yet.',
+            text: 'The Archivist has not reached this archive yet. Its pieces are still yours to collect.',
           }),
     ],
   });

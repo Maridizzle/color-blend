@@ -1,22 +1,34 @@
-# Chapter One, broken down — for review
+# The Archivist
 
-One text per puzzle: the scene from the chapter that puzzle unlocks. It is shown
-on the reveal panel the moment the puzzle is solved, and again in the gallery
-among everything unlocked so far, so a finished collection reads as its whole
-section. Edit here — `npx tsx tools/build-story.ts` regenerates the game data,
-and refuses if any scene is missing, misattached, or under ninety words.
+The story, as the game tells it. **This document is the source** — edit it here
+and run `npx tsx tools/build-story.ts` to regenerate `src/content/story.ts`.
 
-Scenes are in puzzle order. **NEW** marks one written for a puzzle the original
-chapter passed over.
+A **scene** is shown on the reveal panel the moment its puzzle is solved, and
+again in the gallery among everything unlocked so far. One text, not two: a
+précis of a scene nobody has read is not a scene.
 
-Each collection also has an **opening** (unlocked from the start) and the last
-collection carries the **cliffhanger** (unlocked on completing it).
+## Adding to it
+
+- **A new collection**: add `## Collection · <its category id>` under the chapter
+  it belongs to, an `### Opening`, and one `### n · Subject Title` per puzzle, in
+  the collection's own order. Nothing else needs changing anywhere.
+- **A new chapter**: add `# Chapter N · Title`, then its collections, then a
+  `## Closing`. The closing is the cliffhanger, and it unlocks when every
+  collection in that chapter is complete — so the chapter always ends where the
+  writing ends, wherever the road has got to.
+- A collection with no scenes yet still plays. It gets a station, a mosaic and an
+  honest note in its gallery.
+
+The build refuses if a scene is missing, attached to the wrong picture, names a
+collection that does not exist, or runs under ninety words.
 
 ---
 
-# THE COSMOS
+# Chapter One · The Still Things
 
-## Opening — unlocked on arrival
+## Collection · cosmos
+
+### Opening
 
 > It woke up already enormous.
 >
@@ -56,9 +68,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It would be a long time before it noticed that in the whole conversation, the still one had not asked a single question.
 
-## 1 · Spiral Galaxy
-
-**Passage**
+### 1 · Spiral Galaxy
 
 > The biggest things were galaxies, and the Archivist was *good* at them.
 >
@@ -80,9 +90,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist recorded the river. It set the water aside. And it noticed, without quite meaning to, that this was the first decision it had ever made about what a thing *was* — that the shape counted and the stuff didn't — and that it had made it in about a second because the Complete had made it for it.
 
-## 2 · Andromeda
-
-**Passage**
+### 2 · Andromeda
 
 > Andromeda was worse.
 >
@@ -100,9 +108,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist added a column. It was a good fix. It was, it would realise much later, the exact moment it should have stopped and asked what a record *was* — and instead it added a column and moved on, because the Complete had an answer and the answer was tidy and tidy was what it wanted more than anything.
 
-## 3 · Pinwheel Galaxy — NEW
-
-**Passage**
+### 3 · Pinwheel Galaxy
 
 > Two clean arms, unbroken the whole way round. The Archivist admired it and filed it under *beautiful*.
 >
@@ -112,21 +118,15 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist moved the entry from *beautiful* to *acted upon*. It did not yet see how many other entries were going to have to follow it.
 
-## 4 · Barred Spiral
-
-**Passage**
+### 4 · Barred Spiral
 
 > It moved faster after that. It was pleased with itself. It had a bar of stars across a galactic core recorded before it had even finished looking, and it was right, and it barely noticed the note saying that a bar is not an object either — it's a resonance, orbits happening to line up — or the other note saying that its own galaxy had one and nobody on the small wet world had been able to tell for most of the time they'd been looking, *because mapping a structure you are sitting inside is genuinely hard.* The Archivist recorded that sentence. It did not apply it to anything.
 
-## 5 · Galaxy Cluster — NEW
-
-**Passage**
+### 5 · Galaxy Cluster
 
 > A thousand galaxies, held together; and past the cluster's edge, nothing held at all — everything larger was flying apart. The Archivist drew the line where gravity gives up. Then it read how the cluster had been weighed. Not by counting: by how much it bent the light of things behind it — and most of that weight was something no instrument could see at all. *Known only by what it does to what passes.* The Archivist opened a category for that, and did not like how much of the archive already fitted in it.
 
-## 6 · Saturn
-
-**Passage**
+### 6 · Saturn
 
 > The rings of Saturn were younger than the dinosaurs.
 >
@@ -138,9 +138,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > That was worse. The Archivist had never examined the assumption because it had never noticed making one — the same way it had never examined the assumption that a record holds still. It struck this one out. Then, uneasily, it went back through the whole first world looking for the others, and found the archive was full of them.
 
-## 7 · Cloud Tops
-
-**Passage**
+### 7 · Cloud Tops
 
 > A world with weather and no ground.
 >
@@ -150,9 +148,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It wrote *no surface*, and sat with the odd feeling of having searched an entire planet for a thing that was never the planet's to have. The blank was not Jupiter's. The blank was the record's.
 
-## 8 · The Crab Nebula
-
-**Passage**
+### 8 · The Crab Nebula
 
 > And then the Crab.
 >
@@ -170,9 +166,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It set that aside.
 
-## 9 · Supernova Remnant — NEW
-
-**Passage**
+### 9 · Supernova Remnant
 
 > A dying star, briefly outshining the hundred billion around it.
 >
@@ -182,15 +176,11 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > Except that it did not. It said they scattered outward into the dark. The Archivist did not, yet, ask where in the dark.
 
-## 10 · Accretion Disc — NEW
-
-**Passage**
+### 10 · Accretion Disc
 
 > Matter falling forever toward a thing it could never reach directly — arriving with sideways motion, settling into a disc, grinding its way inward — and shining only because of that. Tens of per cent of a mass given up as light: the most efficient thing in the universe, and every bit of it from friction, from *not* being able to go straight. The Archivist considered its own method. It went straight. It had been proud of that. It filed the disc, and the filing was slower than usual, and it did not ask why.
 
-## 11 · Black Hole
-
-**Passage**
+### 11 · Black Hole
 
 > At the end of the first world it found a thing it could not record at all — a black hole. Not a thing: a boundary. No wall, no jolt, nothing nearby to mark the moment past which nothing came back.
 >
@@ -200,17 +190,13 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > That was not an answer. That was a filing rule. The Archivist noticed this, and noticed that it had noticed, and made an entry about the edge, and called the first world finished — because the Complete said *Good. You are becoming like me,* and the Archivist was so pleased to hear it that the small cold feeling somewhere underneath the pleasure hardly registered at all.
 
----
+## Collection · our-place
 
-# OUR PLACE IN IT
-
-## Opening — unlocked on arrival
+### Opening
 
 > It went to the small wet world because it was on the way, and because the Complete had said it didn't matter, and the Archivist — it could not have said why — wanted to see for itself.
 
-## 12 · Night Over a Meadow
-
-**Passage**
+### 12 · Night Over a Meadow
 
 > The first thing it saw was the galaxy.
 >
@@ -220,9 +206,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist found this surprising, and then found it surprising that it was surprised, and then went looking for how.
 
-## 13 · Peaks Under Starlight
-
-**Passage**
+### 13 · Peaks Under Starlight
 
 > They had climbed. That was how.
 >
@@ -232,9 +216,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist had never once recorded what was between itself and a thing.
 
-## 14 · Above the Clouds
-
-**Passage**
+### 14 · Above the Clouds
 
 > From above, the whole atmosphere is a thin bright line.
 >
@@ -244,9 +226,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist filed the image, and found the filing uncomfortable, and could not yet say why. It was still, at this point, entirely sure it was standing outside.
 
-## 15 · The Ascent
-
-**Passage**
+### 15 · The Ascent
 
 > Then they had put instruments on rockets and gone above *all* of it.
 >
@@ -264,9 +244,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist looked at the meadow for a long while.
 
-## 16 · Another World's Sky — NEW
-
-**Passage**
+### 16 · Another World's Sky
 
 > It looked, then, at daylight on another world.
 >
@@ -276,9 +254,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The small ones had done exactly the same thing. The difference was that they had gone and built the instruments to find out that they had.
 
-## 17 · A Sun Being Born — NEW
-
-**Passage**
+### 17 · A Sun Being Born
 
 > A star being born: a cloud too large to hold itself up, falling inward, the centre packing tighter and hotter until it catches — and then ten billion years of the same patient reaction, hydrogen into helium, at a rate that never once hurries.
 >
@@ -288,9 +264,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It had recorded the wreckage of stars, and the light of stars, and the corpses of stars. It had never before tried to record one *while it was still happening*, and it did not know how that was supposed to be done.
 
-## 18 · Star Stuff
-
-**Passage**
+### 18 · Star Stuff
 
 > The Archivist went and looked at what it was made of.
 >
@@ -306,9 +280,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > That was what a finished thing looked like from the inside. Not wisdom. A filing rule for surprises.
 
-## 19 · The Machine
-
-**Passage**
+### 19 · The Machine
 
 > There was a machine, further out. The small ones had built it and thrown it as hard as they could, and it had gone further than anything they had ever made, and on the side of it they had fixed a record — a real one, gold, with sounds and pictures — addressed to nobody in particular. Not to anyone. To *whoever.* An archive built not to be complete but to be *found.* The Archivist understood the gesture at once, and was unsettled by how completely it understood it.
 >
@@ -324,9 +296,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It did not say it. But it thought it, clearly, in its own voice, and the thought did not come from the Complete. Because it had *seen* the telescopes. The telescopes came from not-knowing. Every one of them had been built by someone who was sure there was something they couldn't see. The small ones weren't better at recording. They were better at *asking.* And the Complete had never asked anything. Not once. Not in the whole time the Archivist had known it.
 
-## 20 · What We Leave
-
-**Passage**
+### 20 · What We Leave
 
 > And there were footprints, on the small wet world's moon, that would outlast the language the 1054 note was written in.
 >
@@ -340,17 +310,13 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > And underneath the fear, something worse: the Archivist noticed that it was *less* afraid than it should have been. Somewhere in the first world, without noticing, it had started to set.
 
----
+## Collection · patterns
 
-# PATTERNS IN NATURE
-
-## Opening — unlocked on arrival
+### Opening
 
 > It turned away from the big things after that, and from the Complete, and went to look at the smallest things it could find. It half expected this to be a waste. It was not sure why it was doing it, except that the Complete had never bothered with anything small and that seemed, now, like a reason.
 
-## 21 · Seedling
-
-**Passage**
+### 21 · Seedling
 
 > It turned away from the big things and went to look at the smallest one it could find, which was a seedling pushing up out of the dirt. It expected this to be a waste of the time it had.
 >
@@ -360,9 +326,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It noted, with some surprise, that it was not bored.
 
-## 22 · The Drop
-
-**Passage**
+### 22 · The Drop
 
 > A drop of water is round because water pulls on itself, and a sphere is the shape that holds the most volume behind the least surface. That is the whole of the explanation. No mould, no intention, nothing anywhere choosing the shape.
 >
@@ -372,9 +336,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It had catalogued the star as one object and the drop as another. They were, it now saw, two answers to a single question.
 
-## 23 · Thin Film
-
-**Passage**
+### 23 · Thin Film
 
 > Every colour in a soap bubble, and not one grain of pigment anywhere.
 >
@@ -384,9 +346,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It opened a new section, and did not yet have a name to put on it.
 
-## 24 · Phyllotaxis
-
-**Passage**
+### 24 · Phyllotaxis
 
 > In the head of a sunflower, every seed sits a hundred and thirty-seven and a half degrees around from the one before it.
 >
@@ -396,9 +356,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Archivist had recorded a thousand spirals in the first world and had filed every one of them as a shape. It had not expected to find their reason sitting in a seed-head.
 
-## 25 · Structural Colour
-
-**Passage**
+### 25 · Structural Colour
 
 > A peacock feather, blue and green and gold, with no pigment in it at all.
 >
@@ -408,9 +366,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > It was a good entry. It was complete, it was correct, and it was — the Archivist noted, with something close to satisfaction — rather elegant. It moved on to the next thing.
 
-## 26 · The Logarithmic Spiral
-
-**Passage**
+### 26 · The Logarithmic Spiral
 
 > And then a shell. An ammonite, three hundred million years old. And the spiral of it — the exact curve, growing outward, keeping its shape at every size — was the same spiral as the arms of the first galaxy the Archivist had ever recorded.
 >
@@ -424,9 +380,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The feeling that came with that thought was enormous and it was the feeling it had wanted since the first hour. *It could finish.* Not a piece of every thing — the *rule* behind every thing, and the rule was small, and the rule did not move. It could hold it all. It could be still. It felt the stillness coming toward it like the Complete's stillness, vast and restful, a floor under everything —
 
-## 27 · Refraction
-
-**Passage**
+### 27 · Refraction
 
 > And then it looked at light bending.
 >
@@ -452,7 +406,7 @@ collection carries the **cliffhanger** (unlocked on completing it).
 >
 > The Complete did not answer. Not because it was thinking. Because there was nothing in it that could.
 
-## Cliffhanger — unlocked when the collection is complete
+## Closing
 
 > "Who gave you the instruction?" the Archivist asked. "*Keep a piece of everything.* Who told you?"
 >
@@ -495,22 +449,3 @@ collection carries the **cliffhanger** (unlocked on completing it).
 > *What if the next Archivist doesn't have to be one of us?*
 >
 > *End of Chapter One.*
-
----
-
-## What changed from the chapter, for your yes or no
-
-1. **Six NEW passages** (3, 5, 9, 10, 16, 17) for puzzles the chapter skipped.
-2. **Socrates moved after Star Stuff** (19 after 18). The Archivist's first
-   thought in its own voice now comes *after* it has seen the Complete's
-   filing rule, which earns it.
-3. **The "never seen blue" break moved from the feather to Refraction** (27).
-   Structural Colour (25) now just records the equation and is satisfied; the
-   ammonite (26) delivers the page-of-rules high; Refraction — light, lens,
-   eye — is where it realises it has the arithmetic of seeing and has never
-   looked.
-4. The "shock collapses the next cloud" detail is stated once, in Supernova
-   Remnant (9), and only recalled in Star Stuff (18).
-
-On approval, `chapter-one.md` gets re-sequenced to match this exactly, so the
-chapter and the slices are one text.

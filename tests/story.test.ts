@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLER_CATEGORIES } from '../src/content/sampler';
-import { TALES, taleFor } from '../src/content/story';
+import { CHAPTERS, TALES, chapterFor, taleFor } from '../src/content/story';
 import { cellOwners, collectionState, passageFor } from '../src/game/story';
 import { mosaicPlan } from '../src/game/mosaic';
 import type { Progress } from '../src/game/persistence';
@@ -12,8 +12,20 @@ function progressWith(solvedIds: string[]): Progress {
 }
 
 describe('the tale matches the shipped content', () => {
-  it('has a section for every shipped collection, and no extras', () => {
-    expect(TALES.map((t) => t.categoryId).sort()).toEqual(SAMPLER_CATEGORIES.map((c) => c.id).sort());
+  it('only ever names collections that exist, so no story is unreachable', () => {
+    const shipped = new Set(SAMPLER_CATEGORIES.map((c) => c.id));
+    for (const tale of TALES) expect(shipped.has(tale.categoryId)).toBe(true);
+    for (const chapter of CHAPTERS) {
+      for (const id of chapter.collectionIds) expect(shipped.has(id)).toBe(true);
+    }
+  });
+
+  it('lists each collection in exactly one chapter, and every tale in a chapter', () => {
+    const listed = CHAPTERS.flatMap((c) => c.collectionIds);
+    expect(new Set(listed).size).toBe(listed.length);
+    for (const tale of TALES) {
+      expect(chapterFor(tale.categoryId)?.number).toBe(tale.chapterNumber);
+    }
   });
 
   for (const category of SAMPLER_CATEGORIES) {
@@ -32,8 +44,8 @@ describe('the tale matches the shipped content', () => {
   }
 
   it('carries no leftover markup from the source document', () => {
-    for (const tale of TALES) {
-      const texts = [...tale.opening, ...(tale.closing ?? []), ...tale.entries.flatMap((e) => e.passage)];
+    for (const tale of [...TALES, ...CHAPTERS.map((c) => ({ opening: c.closing, entries: [] as never[] }))]) {
+      const texts = [...tale.opening, ...tale.entries.flatMap((e: { passage: string[] }) => e.passage)];
       for (const text of texts) {
         expect(text).not.toMatch(/\*\*|^>|\n/);
         // Emphasis markers come in pairs.
@@ -42,9 +54,11 @@ describe('the tale matches the shipped content', () => {
     }
   });
 
-  it('ends the chapter on the last shipped collection', () => {
-    const last = SAMPLER_CATEGORIES[SAMPLER_CATEGORIES.length - 1]!;
-    expect(taleFor(last.id)?.closing?.length ?? 0).toBeGreaterThan(0);
+  it('gives every chapter a cliffhanger, on the chapter rather than a collection', () => {
+    for (const chapter of CHAPTERS) {
+      expect(chapter.closing.length).toBeGreaterThan(0);
+      expect(chapter.collectionIds.length).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -75,6 +89,38 @@ describe('collectionState', () => {
     expect(state.complete).toBe(true);
     expect(state.uncovered.size).toBe(state.plan.cols * state.plan.rows);
     expect(state.sealed).toBe(0);
+  });
+
+  it('holds the cliffhanger back until the whole chapter is done', () => {
+    const chapter = CHAPTERS[0]!;
+    const road = chapter.collectionIds.map((id) => SAMPLER_CATEGORIES.find((c) => c.id === id)!);
+    const last = road[road.length - 1]!;
+    const allIds = road.flatMap((c) => c.subjects.map((s) => s.id));
+
+    // The chapter's last collection finished, but not the ones before it.
+    const onlyLast = collectionState(last, progressWith(last.subjects.map((s) => s.id)), road);
+    expect(onlyLast.complete).toBe(true);
+    expect(onlyLast.chapterClosing).toBeUndefined();
+
+    // Everything done: the cliffhanger lands, and only on the chapter's end.
+    const done = progressWith(allIds);
+    expect(collectionState(last, done, road).chapterClosing).toBeDefined();
+    expect(collectionState(road[0]!, done, road).chapterClosing).toBeUndefined();
+  });
+
+  it('lets a pack join the end of the road without stealing the ending', () => {
+    const chapter = CHAPTERS[0]!;
+    const authored = chapter.collectionIds.map((id) => SAMPLER_CATEGORIES.find((c) => c.id === id)!);
+    const pack = { id: 'a-visiting-pack', title: 'A Visiting Archive', subjects: cosmos.subjects, fromPack: true };
+    const road = [...authored, pack];
+    const done = progressWith(authored.flatMap((c) => c.subjects.map((s) => s.id)));
+
+    // The chapter ends where it was written to end, not at the road's last stop.
+    expect(collectionState(authored[authored.length - 1]!, done, road).chapterClosing).toBeDefined();
+    const packState = collectionState(pack, done, road);
+    expect(packState.chapterClosing).toBeUndefined();
+    expect(packState.chapter).toBeUndefined();
+    expect(packState.tale).toBeUndefined();
   });
 
   it('gives a pack with no tale a mosaic but no passages', () => {

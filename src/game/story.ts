@@ -1,5 +1,5 @@
-import type { Category, CollectionTale, TaleEntry } from '../content/types';
-import { taleFor } from '../content/story';
+import type { Category, Chapter, CollectionTale, TaleEntry } from '../content/types';
+import { chapterFor, taleFor } from '../content/story';
 import { type MosaicPlan, mosaicPlan, uncoveredCells } from './mosaic';
 import type { Progress } from './persistence';
 
@@ -24,9 +24,22 @@ export interface CollectionState {
   /** Subjects still to solve. */
   sealed: number;
   complete: boolean;
+  /** The chapter this collection belongs to, if its story is written. */
+  chapter: Chapter | undefined;
+  /**
+   * The chapter's cliffhanger, present only when the whole chapter is done and
+   * this is where it ends. Adding a collection to a chapter moves the ending to
+   * the new last one rather than stranding it mid-road.
+   */
+  chapterClosing: string[] | undefined;
 }
 
-export function collectionState(category: Category, progress: Progress): CollectionState {
+export function collectionState(
+  category: Category,
+  progress: Progress,
+  /** Every collection currently on the road, so chapter completion can be read. */
+  road: readonly Category[] = [category],
+): CollectionState {
   const solved = category.subjects.map((s) => Boolean(progress.solved[s.id]));
   const plan = mosaicPlan(category.subjects.length);
   const tale = taleFor(category.id);
@@ -40,6 +53,19 @@ export function collectionState(category: Category, progress: Progress): Collect
   });
 
   const solvedCount = solved.filter(Boolean).length;
+  const complete = solvedCount === category.subjects.length && category.subjects.length > 0;
+
+  // The cliffhanger waits for the whole chapter, and shows on its last
+  // collection -- last as the chapter lists them, not last on the road, so a
+  // pack joining the end cannot displace an ending written for something else.
+  const chapter = chapterFor(category.id);
+  const isChapterEnd = chapter?.collectionIds.at(-1) === category.id;
+  const chapterDone =
+    chapter?.collectionIds.every((id) => {
+      const c = road.find((r) => r.id === id);
+      return c ? c.subjects.length > 0 && c.subjects.every((s) => progress.solved[s.id]) : false;
+    }) ?? false;
+
   return {
     category,
     tale,
@@ -49,7 +75,9 @@ export function collectionState(category: Category, progress: Progress): Collect
     uncovered: uncoveredCells(plan, solved),
     passages,
     sealed: category.subjects.length - solvedCount,
-    complete: solvedCount === category.subjects.length && category.subjects.length > 0,
+    complete,
+    chapter,
+    chapterClosing: isChapterEnd && chapterDone && chapter?.closing.length ? chapter.closing : undefined,
   };
 }
 

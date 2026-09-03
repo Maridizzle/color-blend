@@ -25,7 +25,7 @@ export function roadScreen(
   let all = 0;
 
   const stations = categories.map((category, index) => {
-    const state = collectionState(category, progress);
+    const state = collectionState(category, progress, categories);
     const total = category.subjects.length;
     held += state.solvedCount;
     all += total;
