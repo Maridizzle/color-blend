@@ -68,6 +68,22 @@ export function saveProgress(progress: Progress): void {
   write(PROGRESS_KEY, progress);
 }
 
+/**
+ * Forget every solved puzzle and every fact found.
+ *
+ * Settings are deliberately untouched: clearing what you have collected should
+ * not put the tutorial back or undo an accessibility choice. Removing the key
+ * rather than writing an empty record means a reset device is indistinguishable
+ * from a new one.
+ */
+export function clearProgress(): void {
+  try {
+    localStorage.removeItem(PROGRESS_KEY);
+  } catch {
+    // Storage unavailable; there was nothing persisted to clear.
+  }
+}
+
 export function loadSettings(): Settings {
   return read(SETTINGS_KEY, DEFAULT_SETTINGS);
 }

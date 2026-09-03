@@ -1,7 +1,7 @@
 import { formatReport, ingestPack } from '../content/ingest';
 import { loadArtwork } from '../content/artwork';
 import { addPackCategory, allCategories, findCategory, findSubject } from '../game/library';
-import { loadProgress, loadSettings, saveSettings, type Settings } from '../game/persistence';
+import { clearProgress, loadProgress, loadSettings, saveSettings, type Settings } from '../game/persistence';
 import { button, clear, el } from './dom';
 import { puzzleScreen } from './puzzleScreen';
 import { categoryFlash, introSplash, type Dismissable } from './intro';
@@ -518,8 +518,63 @@ export class App {
           settings.reducedMotion === true,
           (next) => update({ reducedMotion: next ? true : null }),
         ),
+        this.resetSection(),
       ],
     });
+  }
+
+  /**
+   * Start the archive over.
+   *
+   * Two taps rather than one, and the second says what it will actually cost in
+   * numbers, because there is no undo: this is every solved board, every fact
+   * and every passage of the tale at once.
+   */
+  private resetSection(): HTMLElement {
+    const progress = loadProgress();
+    const solved = Object.keys(progress.solved).length;
+    const total = allCategories().reduce((n, c) => n + c.subjects.length, 0);
+
+    const section = el('div', { class: 'setting-danger' });
+    const render = () => {
+      clear(section);
+      section.append(
+        el('h2', { class: 'setting-danger-title', text: 'Begin again' }),
+        el('p', {
+          class: 'setting-desc',
+          text:
+            solved === 0
+              ? 'Nothing collected yet, so there is nothing to give back.'
+              : `Unseal every folio and return all ${solved} of ${total} to the dark. The Archivist forgets what it read there.`,
+        }),
+      );
+      if (solved === 0) return;
+
+      section.appendChild(
+        button('Reset progress', () => {
+          clear(section);
+          section.append(
+            el('h2', { class: 'setting-danger-title', text: 'Begin again' }),
+            el('p', {
+              class: 'setting-desc',
+              text: `This cannot be undone. ${solved} solved folios, their facts, and the tale so far.`,
+            }),
+            el('div', {
+              class: 'setting-danger-actions',
+              children: [
+                button('Yes, reset everything', () => {
+                  clearProgress();
+                  this.goHome();
+                }, 'button button-danger'),
+                button('Keep it', render),
+              ],
+            }),
+          );
+        }),
+      );
+    };
+    render();
+    return section;
   }
 
   // --------------------------------------------------------------- shared
