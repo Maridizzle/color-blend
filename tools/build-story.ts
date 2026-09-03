@@ -4,7 +4,7 @@
  * The breakdown document is the single source of truth for the Archivist's
  * tale: it is what gets read and edited. This turns it into typed data, matching
  * each entry to a shipped subject by position within its collection, and refuses
- * to build if the counts disagree -- a blurb attached to the wrong picture is
+ * to build if the counts disagree -- a scene attached to the wrong picture is
  * worse than a missing one.
  *
  *   npx tsx tools/build-story.ts
@@ -23,7 +23,6 @@ const HEADINGS: Record<string, string> = {
 
 interface Entry {
   title: string;
-  blurb: string;
   passage: string[];
 }
 interface Collection {
@@ -87,18 +86,12 @@ for (let i = 0; i < lines.length; ) {
   }
   const head = /^## \d+ · (.+?)(?: — NEW)?$/.exec(line);
   if (head) {
-    entry = { title: head[1]!.trim(), blurb: '', passage: [] };
+    entry = { title: head[1]!.trim(), passage: [] };
     current.entries.push(entry);
     i++;
     continue;
   }
-  if (entry && /^\*\*Reveal blurb\*\*/.test(line)) {
-    const q = quote(i + 1);
-    entry.blurb = q.paragraphs.join(' ');
-    i = q.next;
-    continue;
-  }
-  if (entry && /^\*\*Gallery slice/.test(line)) {
+  if (entry && /^\*\*Passage/.test(line)) {
     const q = quote(i + 1);
     entry.passage = q.paragraphs;
     i = q.next;
@@ -128,8 +121,11 @@ for (const c of collections) {
     if (plain(e.title) !== plain(subject.title)) {
       problems.push(`${c.categoryId}[${j}]: breakdown says '${e.title}', subject is '${subject.title}'`);
     }
-    if (!e.blurb) problems.push(`${c.categoryId}[${j}] ${e.title}: no blurb`);
     if (e.passage.length === 0) problems.push(`${c.categoryId}[${j}] ${e.title}: no passage`);
+    // Every folio should deliver a scene, not a fragment: a stub here means a
+    // passage that will read as an offcut when it lands on the reveal panel.
+    const words = e.passage.join(' ').split(/\s+/).length;
+    if (words < 90) problems.push(`${c.categoryId}[${j}] ${e.title}: passage is only ${words} words`);
   });
 }
 if (problems.length) {
@@ -156,7 +152,7 @@ for (const c of collections) {
   const category = SAMPLER_CATEGORIES.find((s) => s.id === c.categoryId)!;
   out += `  {\n    categoryId: ${q(c.categoryId)},\n    opening: ${arr(c.opening, '    ')},\n    entries: [\n`;
   c.entries.forEach((e, j) => {
-    out += `      {\n        subjectId: ${q(category.subjects[j]!.id)},\n        blurb: ${q(e.blurb)},\n        passage: ${arr(e.passage, '        ')},\n      },\n`;
+    out += `      {\n        subjectId: ${q(category.subjects[j]!.id)},\n        passage: ${arr(e.passage, '        ')},\n      },\n`;
   });
   out += `    ],\n`;
   if (c.closing) out += `    closing: ${arr(c.closing, '    ')},\n`;

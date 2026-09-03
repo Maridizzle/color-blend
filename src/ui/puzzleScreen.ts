@@ -3,9 +3,9 @@ import { preparePuzzle } from '../game/prepare';
 import { isTwoColour } from '../puzzle/difficulty';
 import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
 import type { Category, Subject } from '../content/types';
-import { blurbFor } from '../game/story';
+import { passageFor } from '../game/story';
 import { button, clear, el } from './dom';
-import { paragraph } from './tale';
+import { talePassage } from './tale';
 
 export interface PuzzleScreenHost {
   goBack(): void;
@@ -152,7 +152,7 @@ export function puzzleScreen(
   function showRevealPanel(moves: number): void {
     const nextIndex = index + 1;
     const next = category.subjects[nextIndex];
-    const blurb = blurbFor(category, subject.id);
+    const passage = passageFor(category, subject.id);
 
     const panel = el('div', {
       class: 'reveal-panel',
@@ -193,11 +193,14 @@ export function puzzleScreen(
                 .join(' · '),
             })
           : null,
-        // The Archivist's blurb: fiction, after the facts, in its own register.
-        blurb
-          ? el('blockquote', {
-              class: 'reveal-tale tale-passage',
-              children: [el('span', { class: 'tale-kicker', text: 'The Archivist' }), paragraph(blurb)],
+        // The Archivist's scene: fiction, after the facts, in its own register.
+        passage
+          ? el('div', {
+              class: 'reveal-tale',
+              children: [
+                el('span', { class: 'tale-kicker', text: 'The Archivist' }),
+                talePassage({ paragraphs: passage }),
+              ],
             })
           : null,
         el('div', {

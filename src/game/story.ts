@@ -53,9 +53,9 @@ export function collectionState(category: Category, progress: Progress): Collect
   };
 }
 
-/** The reveal-panel blurb for one subject, if the tale has reached it. */
-export function blurbFor(category: Category, subjectId: string): string | undefined {
-  return taleFor(category.id)?.entries.find((e) => e.subjectId === subjectId)?.blurb;
+/** The scene this subject unlocks, if the tale has reached it. */
+export function passageFor(category: Category, subjectId: string): string[] | undefined {
+  return taleFor(category.id)?.entries.find((e) => e.subjectId === subjectId)?.passage;
 }
 
 /** Which subject owns each cell of a plan, row-major. */

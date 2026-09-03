@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLER_CATEGORIES } from '../src/content/sampler';
 import { TALES, taleFor } from '../src/content/story';
-import { blurbFor, cellOwners, collectionState } from '../src/game/story';
+import { cellOwners, collectionState, passageFor } from '../src/game/story';
 import { mosaicPlan } from '../src/game/mosaic';
 import type { Progress } from '../src/game/persistence';
 
@@ -23,17 +23,17 @@ describe('the tale matches the shipped content', () => {
       expect(tale!.entries.map((e) => e.subjectId)).toEqual(category.subjects.map((s) => s.id));
       expect(tale!.opening.length).toBeGreaterThan(0);
       for (const entry of tale!.entries) {
-        expect(entry.blurb.length).toBeGreaterThan(40);
-        // Short enough for a reveal panel on a phone.
-        expect(entry.blurb.split(/\s+/).length).toBeLessThanOrEqual(90);
         expect(entry.passage.length).toBeGreaterThan(0);
+        // Every folio delivers a scene, not an offcut. This is the floor the
+        // generator enforces; asserting it here keeps it true of shipped data.
+        expect(entry.passage.join(' ').split(/\s+/).length).toBeGreaterThanOrEqual(90);
       }
     });
   }
 
   it('carries no leftover markup from the source document', () => {
     for (const tale of TALES) {
-      const texts = [...tale.opening, ...(tale.closing ?? []), ...tale.entries.flatMap((e) => [e.blurb, ...e.passage])];
+      const texts = [...tale.opening, ...(tale.closing ?? []), ...tale.entries.flatMap((e) => e.passage)];
       for (const text of texts) {
         expect(text).not.toMatch(/\*\*|^>|\n/);
         // Emphasis markers come in pairs.
@@ -86,11 +86,11 @@ describe('collectionState', () => {
   });
 });
 
-describe('blurbFor and cellOwners', () => {
-  it('finds the blurb by subject id', () => {
+describe('passageFor and cellOwners', () => {
+  it('finds the scene by subject id', () => {
     const cosmos = SAMPLER_CATEGORIES.find((c) => c.id === 'cosmos')!;
-    expect(blurbFor(cosmos, 'saturn')).toMatch(/grand things are old things/);
-    expect(blurbFor(cosmos, 'no-such-subject')).toBeUndefined();
+    expect(passageFor(cosmos, 'saturn')?.join(' ')).toMatch(/grand things are old things/i);
+    expect(passageFor(cosmos, 'no-such-subject')).toBeUndefined();
   });
 
   it('assigns every cell to exactly one owner', () => {

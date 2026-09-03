@@ -34,7 +34,6 @@ export const TALES: CollectionTale[] = [
     entries: [
       {
         subjectId: "spiral-galaxy",
-        blurb: "The biggest things were galaxies, and the Archivist was *good* at them. Then the trouble started, and it started with the arms.",
         passage: [
           "The biggest things were galaxies, and the Archivist was *good* at them.",
           "It found the first one and set to work. A hundred billion suns in a turning disc. It counted. It measured. It made a record, and the record did not move, and the feeling of that was like nothing else — like closing a hand and finding something actually in it. It made another. It went faster. The still one, when the Archivist reported back, always had the answer to whatever the Archivist had found, and always the same answer: *Good. Record it. Move on.*",
@@ -50,7 +49,6 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "andromeda",
-        blurb: "Andromeda was worse. It turned — just turned, to see the galaxy better — and something happened that it had no way to file. Its *now* moved.",
         passage: [
           "Andromeda was worse.",
           "Andromeda was the nearest big galaxy, and it was coming — a hundred and ten kilometres every second, on a course to meet the Archivist's own galaxy in four billion years. The Archivist recorded this. Then it read how far away Andromeda was — two and a half million light years — and realised that the light saying *coming toward you* had left before there was anyone on the small wet world to see it. The Archivist wasn't recording Andromeda. It was recording a message, and the sender had moved.",
@@ -64,42 +62,46 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "pinwheel-galaxy",
-        blurb: "The Archivist admired it and filed it under *beautiful*, until it read that the tidiness is usually somebody else's doing. Order, made by a near collision.",
         passage: [
-          "The next one had two clean arms, unbroken the whole way round, and the Archivist admired it and filed it under *beautiful* — until it read that only one spiral in ten is so tidy, and that the tidiness is usually somebody else's doing: a neighbouring galaxy passing close enough to drag a ragged disc straight. Order, made by a near collision. The Archivist moved the entry to *acted upon*. It did not yet see how many others would have to follow.",
+          "Two clean arms, unbroken the whole way round. The Archivist admired it and filed it under *beautiful*.",
+          "Then it read further. Only about one spiral in ten is that tidy — the rest are patchy and many-armed — and the tidy ones generally did not arrange themselves. A neighbouring galaxy came close enough, and its gravity dragged a ragged disc into symmetry on the way past, and then carried on, and is no longer anywhere in the picture.",
+          "So the most orderly thing in the first world had been made by a near collision, by something that is not there any more.",
+          "The Archivist moved the entry from *beautiful* to *acted upon*. It did not yet see how many other entries were going to have to follow it.",
         ],
       },
       {
         subjectId: "barred-spiral",
-        blurb: "It had the bar recorded before it had even finished looking, and it was right, and it was pleased. It barely noticed the note underneath.",
         passage: [
           "It moved faster after that. It was pleased with itself. It had a bar of stars across a galactic core recorded before it had even finished looking, and it was right, and it barely noticed the note saying that a bar is not an object either — it's a resonance, orbits happening to line up — or the other note saying that its own galaxy had one and nobody on the small wet world had been able to tell for most of the time they'd been looking, *because mapping a structure you are sitting inside is genuinely hard.* The Archivist recorded that sentence. It did not apply it to anything.",
         ],
       },
       {
         subjectId: "galaxy-cluster",
-        blurb: "Most of the weight was something no instrument could see. *Known only by what it does to what passes.* The Archivist opened a category for that, and did not like how much of the archive already fitted in it.",
         passage: [
           "A thousand galaxies, held together; and past the cluster's edge, nothing held at all — everything larger was flying apart. The Archivist drew the line where gravity gives up. Then it read how the cluster had been weighed. Not by counting: by how much it bent the light of things behind it — and most of that weight was something no instrument could see at all. *Known only by what it does to what passes.* The Archivist opened a category for that, and did not like how much of the archive already fitted in it.",
         ],
       },
       {
         subjectId: "saturn",
-        blurb: "It had never written down that grand things are old things. It had just assumed it — the way it assumed a record holds still.",
         passage: [
-          "The rings of Saturn were younger than the dinosaurs. The Archivist had never written down that grand things are old things; it had just assumed it, the way it assumed a record holds still. It struck the assumption out — and then, uneasily, went looking for others, and found the archive was full of them.",
+          "The rings of Saturn were younger than the dinosaurs.",
+          "The Archivist checked the figure twice, because it did not fit. Ice in pieces ranging from dust to houses, spanning two hundred and eighty thousand kilometres and only tens of metres thick through most of that — and formed perhaps a hundred million years ago, long after the small wet world had grown its first large animals.",
+          "\"I had that written down as a rule,\" it told the Complete. \"Grand things are old things.\"",
+          "\"You had it written down nowhere,\" said the Complete. \"You assumed it.\"",
+          "That was worse. The Archivist had never examined the assumption because it had never noticed making one — the same way it had never examined the assumption that a record holds still. It struck this one out. Then, uneasily, it went back through the whole first world looking for the others, and found the archive was full of them.",
         ],
       },
       {
         subjectId: "gas-giant-clouds",
-        blurb: "It searched for the surface a long time, because every entry so far had had an edge and the record wanted one. The air just thickened until it was a sea, and the sea had no bottom.",
         passage: [
-          "A world with weather and no ground: it searched for the surface for a long time, because every entry so far had had an edge and the record wanted one, and there was nothing anywhere to call the floor. The air just thickened until it was a sea, and the sea had no bottom.",
+          "A world with weather and no ground.",
+          "The Archivist went down through the bands, and the air thickened, and thickened, and somewhere below stopped behaving like air and began behaving like a sea. There was no line anywhere. No shore, no floor, no moment at which anything could be said to have been reached. It kept looking for a long while after it should have stopped.",
+          "The entry had a field for the surface. Every world so far had had one, so the record had come to expect one, so the Archivist had spent the whole descent hunting for one.",
+          "It wrote *no surface*, and sat with the odd feeling of having searched an entire planet for a thing that was never the planet's to have. The blank was not Jupiter's. The blank was the record's.",
         ],
       },
       {
         subjectId: "crab-nebula",
-        blurb: "Nine centuries on, the note was still legible. The Archivist read it several times. “Someone else keeps records,” it said.",
         passage: [
           "And then the Crab.",
           "In the year 1054, on the small wet world, someone had looked up and written down a *guest star* — a new light, bright enough to see in daylight for three weeks. Nine centuries later the wreckage of that explosion was still flying apart at fifteen hundred kilometres a second, visibly larger in every decade's photographs, and the note was still legible. The Archivist read the note. It read it several times.",
@@ -113,21 +115,21 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "supernova-remnant",
-        blurb: "It recorded the explosion from outside, like weather, and the elements scattering outward into the dark. It did not, yet, ask where they went.",
         passage: [
-          "A dying star, briefly outshining the hundred billion around it. The Archivist recorded the explosion from outside, like weather: the shell slamming into the gas already there and lighting it into filaments; the fact that nothing heavier than iron can be made anywhere else — only here, in this; the shock of it collapsing the next cloud into the next star, one death starting the next birth. It recorded the elements scattering outward into the dark. It did not, yet, ask where they went.",
+          "A dying star, briefly outshining the hundred billion around it.",
+          "The Archivist recorded it from outside, the way it recorded weather. The shell slamming into the gas already out there and lighting it into filaments. The fact that nothing heavier than iron can be made anywhere else in the universe — not in ordinary starlight, not given all the time there is — only here, only in this. The shock of it running on into the next cloud and squeezing until that cloud collapses, so one star's death is what begins the next star.",
+          "It was a good entry. It had a beginning and an end and a full account of where the elements went.",
+          "Except that it did not. It said they scattered outward into the dark. The Archivist did not, yet, ask where in the dark.",
         ],
       },
       {
         subjectId: "accretion-disc",
-        blurb: "The most efficient thing in the universe, and every bit of it from *not* being able to go straight. The Archivist considered its own method. It went straight. It had been proud of that.",
         passage: [
           "Matter falling forever toward a thing it could never reach directly — arriving with sideways motion, settling into a disc, grinding its way inward — and shining only because of that. Tens of per cent of a mass given up as light: the most efficient thing in the universe, and every bit of it from friction, from *not* being able to go straight. The Archivist considered its own method. It went straight. It had been proud of that. It filed the disc, and the filing was slower than usual, and it did not ask why.",
         ],
       },
       {
         subjectId: "black-hole",
-        blurb: "“What's past the edge?” — “Nothing that can be kept. So, nothing.” That was not an answer. That was a filing rule.",
         passage: [
           "At the end of the first world it found a thing it could not record at all — a black hole. Not a thing: a boundary. No wall, no jolt, nothing nearby to mark the moment past which nothing came back.",
           "\"What's past the edge?\" it asked.",
@@ -145,7 +147,6 @@ export const TALES: CollectionTale[] = [
     entries: [
       {
         subjectId: "meadow-galaxy",
-        blurb: "The Archivist had every measurement of this galaxy. It had never once had the *view.*",
         passage: [
           "The first thing it saw was the galaxy.",
           "Its galaxy. The one it had recorded first, a hundred billion suns, the whole turning disc. But not from outside. From *inside* — from a meadow at night, looking up, the arc of it going across the sky from one horizon to the other, so dense in places it looked like a cloud. The Archivist had every measurement of this galaxy. It had never once had the *view.*",
@@ -155,21 +156,24 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "mountain-night",
-        blurb: "They had climbed. That was how — instruments hauled up mountains, above as much of the air as they could get. Every telescope is somebody saying there is something in my way.",
         passage: [
-          "They had climbed. That was how. The small ones lived at the bottom of an ocean of air, and the air blurred everything, and so they had built their instruments on the tops of mountains, above as much of it as they could get.",
+          "They had climbed. That was how.",
+          "The small ones lived at the bottom of an ocean of air, and the air moved, and everything seen through it shook and smeared. So they had carried their instruments up mountains — above as much of that ocean as they could get, into cold thin places where nothing grows and nobody would choose to live — and looked from there instead.",
+          "The Archivist worked through what that meant, and it took a moment. Every telescope on every peak was an admission. Somebody had stood at the bottom, looked up, and thought: *there is something between me and this, and I do not know what it is taking away from me.* And then had spent a life hauling glass up a mountain to find out.",
+          "The Archivist had never once recorded what was between itself and a thing.",
         ],
       },
       {
         subjectId: "cloud-sea",
-        blurb: "They had lived inside a thing so completely that they couldn't see it, and they had figured out that they couldn't see it, and they had *climbed out to check.*",
         passage: [
-          "From up there, the whole atmosphere — the thing they had lived inside their entire existence and called *the sky* — was a thin bright line along the edge of the world. They had lived inside a thing so completely that they couldn't see it, and they had figured out that they couldn't see it, and they had *climbed out to check.*",
+          "From above, the whole atmosphere is a thin bright line.",
+          "That was the part the Archivist could not get past — not the photograph, the *proportion*. Everything the small ones had ever breathed. Every storm any of them had ever sheltered from. Every sky any of them had ever meant by the word sky. All of it was that band at the edge of the world, no thicker in the picture than the rule drawn round a page.",
+          "They had lived inside a thing so completely that they could not see it. Then they had worked out that they could not see it. Then they had climbed out to check.",
+          "The Archivist filed the image, and found the filing uncomfortable, and could not yet say why. It was still, at this point, entirely sure it was standing outside.",
         ],
       },
       {
         subjectId: "the-ascent",
-        blurb: "“They know they're inside,” the Archivist said. “Everything is inside something,” said the Complete. “But they *know.*”",
         passage: [
           "Then they had put instruments on rockets and gone above *all* of it.",
           "\"They know they're inside,\" the Archivist said.",
@@ -183,21 +187,24 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "alien-sky",
-        blurb: "It had recorded a thousand suns and had a firm idea of what daylight was. It understood now that the idea had been drawn from a sample of one.",
         passage: [
-          "It looked, then, at daylight on another world — under a small red star, which is what most stars are. Dim, and red, and to whatever lived there, simply *day*. The Archivist had recorded a thousand suns and had a firm idea of what daylight was, and it now understood that the idea had been drawn from a sample of one. The small ones had done the same thing, and then built the instruments to find out that they had.",
+          "It looked, then, at daylight on another world.",
+          "The star was small and cool and red, which is what most stars are — the bright hot ones the Archivist had been spending its attention on are the rare ones. The light was dim and long and reddish and it fell on everything there, always had, and to whatever grew under it the word for that light would simply be *day*.",
+          "The Archivist had recorded a thousand suns. It had also, without ever once writing the definition down, been carrying an idea of what daylight *is* — and that idea had been drawn from a sample of one.",
+          "The small ones had done exactly the same thing. The difference was that they had gone and built the instruments to find out that they had.",
         ],
       },
       {
         subjectId: "young-sun",
-        blurb: "It tried to write an entry that would still be accurate in ten billion years, and could not finish the first line. It had never before tried to record a thing *while it was still happening.*",
         passage: [
-          "A star being born — a cloud collapsing under its own weight until the centre ignites, settling in for ten billion years of the same patient reaction. The Archivist tried to write an entry that would still be accurate at the end of those ten billion years, and could not finish the first line. Everything true about a young star was going to stop being true. It had never before tried to record a thing *while it was still happening.*",
+          "A star being born: a cloud too large to hold itself up, falling inward, the centre packing tighter and hotter until it catches — and then ten billion years of the same patient reaction, hydrogen into helium, at a rate that never once hurries.",
+          "The Archivist began the entry and could not finish the first line.",
+          "Every fact it had was a fact about *now*. The mass would change. The colour would change. In time the thing would swell and swallow whatever it had spent those ten billion years warming, and end as something else entirely, and every word of the entry would still be sitting there being wrong.",
+          "It had recorded the wreckage of stars, and the light of stars, and the corpses of stars. It had never before tried to record one *while it was still happening*, and it did not know how that was supposed to be done.",
         ],
       },
       {
         subjectId: "star-stuff",
-        blurb: "“I'm made of it. I've been keeping the archive as though standing outside the room, and I'm one of the things on the shelf.” — “That is irrelevant to the archive.” And there it was.",
         passage: [
           "The Archivist went and looked at what it was made of.",
           "It had never done this. It had recorded the death of stars — the explosions that briefly outshine a galaxy, the only furnaces hot enough to make anything heavier than iron — and it had recorded that those explosions scatter their elements outward, and that the shock of one death collapses the next cloud into the next star. It had recorded all of it from outside, like weather. Now it looked at itself. Iron. And heavier. It was made of the thing it had been recording. It was not watching the fire. It was one of the fire's turnings.",
@@ -210,7 +217,6 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "the-machine",
-        blurb: "A record addressed to nobody in particular. Not to anyone. To *whoever.* The Archivist understood the gesture at once, and was unsettled by how completely.",
         passage: [
           "There was a machine, further out. The small ones had built it and thrown it as hard as they could, and it had gone further than anything they had ever made, and on the side of it they had fixed a record — a real one, gold, with sounds and pictures — addressed to nobody in particular. Not to anyone. To *whoever.* An archive built not to be complete but to be *found.* The Archivist understood the gesture at once, and was unsettled by how completely it understood it.",
           "\"Why are they better at this than I am?\" the Archivist asked.",
@@ -223,7 +229,6 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "the-ruins",
-        blurb: "“Have you ever been surprised?” the Archivist asked. A pause. Longer than any pause the Complete had ever made.",
         passage: [
           "And there were footprints, on the small wet world's moon, that would outlast the language the 1054 note was written in.",
           "\"Have you ever been surprised?\" the Archivist asked.",
@@ -243,42 +248,51 @@ export const TALES: CollectionTale[] = [
     entries: [
       {
         subjectId: "seedling",
-        blurb: "It went to look at the smallest thing it could find, half expecting a waste of its time. A tree, it turned out, is built almost entirely out of air.",
         passage: [
-          "A seedling, pushing up out of the dirt. A tree, it turned out, is built almost entirely out of air — it pulls carbon out of the sky and makes itself from that.",
+          "It turned away from the big things and went to look at the smallest one it could find, which was a seedling pushing up out of the dirt. It expected this to be a waste of the time it had.",
+          "A tree, it turned out, is built almost entirely out of air. The mass of the thing does not come up out of the ground. It comes down out of the sky — carbon taken from a gas, one molecule at a time, and stacked into wood.",
+          "The Archivist read that twice. It had spent an age on objects so heavy that their own weight bent the light going past them. Here was a thing that assembled itself out of something which, to any ordinary way of weighing, weighs nothing at all.",
+          "It noted, with some surprise, that it was not bored.",
         ],
       },
       {
         subjectId: "the-drop",
-        blurb: "A drop is round because a sphere is the least surface for the most volume — the same reason, the Archivist realised with a small jolt, that a star is round.",
         passage: [
-          "A drop of water, round because water pulls on itself and a sphere is the least surface for the most volume — the same reason, the Archivist realised with a small jolt, that a star is round.",
+          "A drop of water is round because water pulls on itself, and a sphere is the shape that holds the most volume behind the least surface. That is the whole of the explanation. No mould, no intention, nothing anywhere choosing the shape.",
+          "The Archivist wrote it down and then stopped, because it had written that sentence before.",
+          "A star is round for the same reason. Different force — gravity rather than surface tension — but the identical argument: pull inward equally in every direction and this is the shape you are left with, whether the thing is a bead of water sitting on a leaf or a million kilometres of burning hydrogen.",
+          "It had catalogued the star as one object and the drop as another. They were, it now saw, two answers to a single question.",
         ],
       },
       {
         subjectId: "thin-film",
-        blurb: "Every colour in it, and not one grain of pigment anywhere. It had been keeping a record of substances. It opened a new section.",
         passage: [
-          "A soap bubble, every colour in it, and not one grain of pigment anywhere: just light bouncing off the front and back of a film thinner than a wavelength, interfering with itself.",
+          "Every colour in a soap bubble, and not one grain of pigment anywhere.",
+          "The film is thinner than the light falling on it. Some of that light bounces off the front surface and some off the back, and the two reflections come back out of step with each other — and where they cancel, a colour goes missing, and where they agree, a colour blazes. Change the thickness by a fraction of a wavelength and the colour changes with it, which is why a bubble's colours crawl and slide as it drains.",
+          "The Archivist had been keeping a record of substances. What this thing was *made of* explained nothing whatever about how it looked.",
+          "It opened a new section, and did not yet have a name to put on it.",
         ],
       },
       {
         subjectId: "phyllotaxis",
-        blurb: "A spiral, made by nothing but a rule about space. It had recorded a thousand spirals in the first world, and had not expected to find their reason in a seed-head.",
         passage: [
-          "And in the seed-head of a sunflower, every seed sat exactly 137.5 degrees round from the last — not because any plant is doing arithmetic, but because that is the angle that falls out when each new seed grows wherever there's most room. A spiral, made by nothing but a rule about space. The Archivist had recorded a thousand spirals in the first world, and it had not expected to find their reason in a seed-head.",
+          "In the head of a sunflower, every seed sits a hundred and thirty-seven and a half degrees around from the one before it.",
+          "The Archivist checked several heads. The angle held. It began drafting an entry about what the plant was doing, then read further and had to stop, because the plant is not doing anything. Each new seed simply grows where there is the most room left over — and this angle is what falls out of that rule, being the one angle that can never let a new seed line up behind an old one, because it cannot be written as a fraction.",
+          "So the spiral is not in the plant. The spiral is what happens when a rule runs.",
+          "The Archivist had recorded a thousand spirals in the first world and had filed every one of them as a shape. It had not expected to find their reason sitting in a seed-head.",
         ],
       },
       {
         subjectId: "structural-colour",
-        blurb: "The Archivist wrote the equation for that blue, to the nanometre, and filed it, and was satisfied with the entry.",
         passage: [
-          "A peacock feather, blue and green and gold. No pigment at all: just microscopic ridges spaced so that they cancel some wavelengths and reinforce others. Grind the feather to dust and the colour goes with the structure. The Archivist wrote the equation for that blue, to the nanometre, and filed it, and was satisfied with the entry.",
+          "A peacock feather, blue and green and gold, with no pigment in it at all.",
+          "The barbs carry ridges spaced at about the width of a wavelength, and light coming back off them interferes with itself the way it does in a bubble, so that certain colours are thrown out and the rest cancel. Grind the feather to dust and the dust is brown. The colour does not survive the grinding, because the colour was never in the material. It was in the spacing.",
+          "The Archivist worked out the geometry, derived the wavelength to the nanometre, and wrote the entry.",
+          "It was a good entry. It was complete, it was correct, and it was — the Archivist noted, with something close to satisfaction — rather elegant. It moved on to the next thing.",
         ],
       },
       {
         subjectId: "ammonite",
-        blurb: "The spiral of the shell was the same spiral as the arms of the first galaxy it ever recorded. Not similar. The *same.*",
         passage: [
           "And then a shell. An ammonite, three hundred million years old. And the spiral of it — the exact curve, growing outward, keeping its shape at every size — was the same spiral as the arms of the first galaxy the Archivist had ever recorded.",
           "Not similar. The *same.* The same equation. A logarithmic spiral, which is the one curve that stays the same shape no matter how big it gets. It was in the shell and in the galaxy and in a hurricane and in the sunflower.",
@@ -290,7 +304,6 @@ export const TALES: CollectionTale[] = [
       },
       {
         subjectId: "refraction",
-        blurb: "It could derive an eye. It had the arithmetic of seeing, complete. And it had never seen blue.",
         passage: [
           "And then it looked at light bending.",
           "Light bends when it crosses into water or glass because it changes speed there — that is the whole of it. From that one fact: the rainbow, the lens, and the eye. The Archivist could derive an eye. It had the arithmetic of seeing, complete.",

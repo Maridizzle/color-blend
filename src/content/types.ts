@@ -62,12 +62,17 @@ export interface Category {
   mosaic?: ArtworkSource;
 }
 
-/** One puzzle's share of the Archivist's tale. */
+/**
+ * One puzzle's share of the Archivist's tale.
+ *
+ * One text, not two. It is shown on the reveal panel the moment the puzzle is
+ * solved, and again in the gallery among everything unlocked so far. A separate
+ * shorter version was tried and cut: a précis of a scene nobody has read yet is
+ * not a scene, and a teaser trimmed out of one is an offcut.
+ */
 export interface TaleEntry {
   subjectId: string;
-  /** Two or three sentences on the reveal panel, standing alone. */
-  blurb: string;
-  /** The chapter's own passage, unlocked in the gallery. Paragraphs. */
+  /** The scene, in paragraphs. */
   passage: string[];
 }
 
