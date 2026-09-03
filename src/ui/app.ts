@@ -526,9 +526,14 @@ export class App {
   /**
    * Start the archive over.
    *
-   * Two taps rather than one, and the second says what it will actually cost in
-   * numbers, because there is no undo: this is every solved board, every fact
-   * and every passage of the tale at once.
+   * Three deliberate acts, because this is played by people who did not build
+   * it: the panel stays collapsed until asked for, the confirm word has to be
+   * typed, and the button is dead until it matches. A mis-tap cannot reach the
+   * end of that, which matters more than the two seconds it costs someone who
+   * actually meant it.
+   *
+   * The warning counts what will go rather than asking whether you are sure,
+   * and when nothing has been collected there is no control at all.
    */
   private resetSection(): HTMLElement {
     const progress = loadProgress();
@@ -536,44 +541,70 @@ export class App {
     const total = allCategories().reduce((n, c) => n + c.subjects.length, 0);
 
     const section = el('div', { class: 'setting-danger' });
-    const render = () => {
+    const heading = () => el('h2', { class: 'setting-danger-title', text: 'Begin again' });
+
+    const collapsed = () => {
       clear(section);
       section.append(
-        el('h2', { class: 'setting-danger-title', text: 'Begin again' }),
+        heading(),
         el('p', {
           class: 'setting-desc',
           text:
             solved === 0
               ? 'Nothing collected yet, so there is nothing to give back.'
-              : `Unseal every folio and return all ${solved} of ${total} to the dark. The Archivist forgets what it read there.`,
+              : `Unseal every folio and return all ${solved} of ${total} to the dark.`,
         }),
       );
-      if (solved === 0) return;
-
-      section.appendChild(
-        button('Reset progress', () => {
-          clear(section);
-          section.append(
-            el('h2', { class: 'setting-danger-title', text: 'Begin again' }),
-            el('p', {
-              class: 'setting-desc',
-              text: `This cannot be undone. ${solved} solved folios, their facts, and the tale so far.`,
-            }),
-            el('div', {
-              class: 'setting-danger-actions',
-              children: [
-                button('Yes, reset everything', () => {
-                  clearProgress();
-                  this.goHome();
-                }, 'button button-danger'),
-                button('Keep it', render),
-              ],
-            }),
-          );
-        }),
-      );
+      if (solved > 0) section.appendChild(button('Reset progress…', expanded));
     };
-    render();
+
+    const expanded = () => {
+      clear(section);
+
+      const field = el('input', {
+        class: 'confirm-input',
+        attrs: {
+          type: 'text',
+          autocomplete: 'off',
+          autocapitalize: 'characters',
+          spellcheck: 'false',
+          placeholder: RESET_WORD,
+          'aria-label': `Type ${RESET_WORD} to confirm`,
+        },
+      });
+
+      const go = button(
+        'Reset everything',
+        () => {
+          // Checked here as well as on input: a submit can arrive from a
+          // keyboard before the field has told us it changed.
+          if (field.value.trim().toUpperCase() !== RESET_WORD) return;
+          clearProgress();
+          this.goHome();
+        },
+        'button button-danger',
+      );
+      go.disabled = true;
+      field.addEventListener('input', () => {
+        go.disabled = field.value.trim().toUpperCase() !== RESET_WORD;
+      });
+
+      section.append(
+        heading(),
+        el('p', {
+          class: 'setting-desc',
+          text: `This cannot be undone. ${solved} solved folios, the facts they hold, and the tale so far.`,
+        }),
+        el('label', {
+          class: 'confirm-label',
+          children: [el('span', { text: `Type ${RESET_WORD} to confirm` }), field],
+        }),
+        el('div', { class: 'setting-danger-actions', children: [go, button('Keep it', collapsed)] }),
+      );
+      field.focus({ preventScroll: true });
+    };
+
+    collapsed();
     return section;
   }
 
@@ -596,6 +627,9 @@ export class App {
     });
   }
 }
+
+/** Typed out in full to reset. Thematic, and not a word anyone taps by accident. */
+const RESET_WORD = 'ARCHIVE';
 
 const EXAMPLE_MANIFEST = `{
   "schemaVersion": 1,
