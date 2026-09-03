@@ -28,13 +28,15 @@ describe('the tale matches the shipped content', () => {
     }
   });
 
-  for (const category of SAMPLER_CATEGORIES) {
-    it(`${category.id}: one entry per subject, in order, each with a blurb and a passage`, () => {
-      const tale = taleFor(category.id);
-      expect(tale).toBeDefined();
-      expect(tale!.entries.map((e) => e.subjectId)).toEqual(category.subjects.map((s) => s.id));
-      expect(tale!.opening.length).toBeGreaterThan(0);
-      for (const entry of tale!.entries) {
+  // A collection can ship before its story is written -- it gets a station, a
+  // mosaic and an honest note in its gallery. What is not allowed is a *partial*
+  // tale, which would silently drop scenes off the end of a collection.
+  for (const category of SAMPLER_CATEGORIES.filter((c) => taleFor(c.id))) {
+    it(`${category.id}: one entry per subject, in order, each with a scene`, () => {
+      const tale = taleFor(category.id)!;
+      expect(tale.entries.map((e) => e.subjectId)).toEqual(category.subjects.map((s) => s.id));
+      expect(tale.opening.length).toBeGreaterThan(0);
+      for (const entry of tale.entries) {
         expect(entry.passage.length).toBeGreaterThan(0);
         // Every folio delivers a scene, not an offcut. This is the floor the
         // generator enforces; asserting it here keeps it true of shipped data.
@@ -42,6 +44,15 @@ describe('the tale matches the shipped content', () => {
       }
     });
   }
+
+  it('leaves an unwritten collection playable rather than half-told', () => {
+    const unwritten = SAMPLER_CATEGORIES.filter((c) => !taleFor(c.id));
+    for (const category of unwritten) {
+      // No tale at all, and so no chapter claiming it half-finished.
+      expect(chapterFor(category.id)).toBeUndefined();
+      expect(category.subjects.length).toBeGreaterThan(0);
+    }
+  });
 
   it('carries no leftover markup from the source document', () => {
     for (const tale of [...TALES, ...CHAPTERS.map((c) => ({ opening: c.closing, entries: [] as never[] }))]) {

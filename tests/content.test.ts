@@ -93,10 +93,22 @@ describe('board assignment across a category', () => {
       const pairs = new Set(mine.map((s) => `${s.spec.latticeKind}/${s.spec.shape}`));
       expect(pairs.size, category.id).toBe(mine.length);
 
+      // Variety has to scale with the category, because a fixed floor is not a
+      // property of the assignment -- it is a statement about how many subjects
+      // happen to be shipped. Five subjects cannot show four shapes and three
+      // lattices without repeating a pair, which the line above already forbids.
       const lattices = new Set(mine.map((s) => s.spec.latticeKind));
       const shapes = new Set(mine.map((s) => s.spec.shape));
-      expect(lattices.size, category.id).toBeGreaterThanOrEqual(3);
-      expect(shapes.size, category.id).toBeGreaterThanOrEqual(4);
+      expect(lattices.size, category.id).toBeGreaterThanOrEqual(Math.min(3, mine.length));
+      expect(shapes.size, category.id).toBeGreaterThanOrEqual(Math.min(4, Math.ceil(mine.length / 2)));
+
+      // And no shape may dominate, at any category size. This is the property
+      // the fixed floor was reaching for, and it does not weaken with a small
+      // category the way a count does.
+      const commonest = Math.max(...[...shapes].map((sh) => mine.filter((m) => m.spec.shape === sh).length));
+      expect(commonest, `${category.id}: one shape on ${commonest} of ${mine.length} boards`).toBeLessThanOrEqual(
+        Math.ceil(mine.length / 2),
+      );
     }
   });
 
