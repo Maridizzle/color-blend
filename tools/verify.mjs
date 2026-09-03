@@ -98,21 +98,39 @@ async function main() {
     return Number((text ?? '').match(/\d+/)?.[0] ?? -1);
   };
 
-  // Tap one tile then another: the pair should swap and count one move. Try a
+  // Drag one tile onto another: the pair should swap and count one move. Try a
   // few offsets because a given point may land on a locked starter.
   const box = await page.locator('.board').boundingBox();
+  const drag = async (x1, y1, x2, y2) => {
+    await page.mouse.move(x1, y1);
+    await page.mouse.down();
+    for (let i = 1; i <= 10; i++) {
+      await page.mouse.move(x1 + ((x2 - x1) * i) / 10, y1 + ((y2 - y1) * i) / 10);
+    }
+    await page.mouse.up();
+    await page.waitForTimeout(250);
+  };
   let swapped = false;
   for (const dy of [0, -60, 60, -120]) {
     if (await moves()) break;
-    await page.mouse.click(box.x + box.width / 2 - 55, box.y + box.height / 2 + dy);
-    await page.mouse.click(box.x + box.width / 2 + 55, box.y + box.height / 2 + dy);
+    await drag(
+      box.x + box.width / 2 - 55,
+      box.y + box.height / 2 + dy,
+      box.x + box.width / 2 + 55,
+      box.y + box.height / 2 + dy,
+    );
     if ((await moves()) > 0) {
       swapped = true;
       break;
     }
   }
-  if (!swapped) throw new Error('tapping two tiles did not swap them');
-  console.log(`tap-to-swap: ${await moves()} move`);
+  if (!swapped) throw new Error('dragging a tile onto another did not swap them');
+  console.log(`drag-to-swap: ${await moves()} move`);
+
+  // A tile let go over nothing goes home: no move is counted.
+  await drag(box.x + box.width / 2 - 55, box.y + box.height / 2, box.x + 4, box.y + 4);
+  if ((await moves()) !== 1) throw new Error('letting a tile go off the board counted a move');
+  console.log('drop off the board: tile returned, still 1 move');
 
   await page.locator('.puzzle-footer .button', { hasText: 'Undo' }).click();
   if ((await moves()) !== 0) throw new Error('undo did not take the move back');

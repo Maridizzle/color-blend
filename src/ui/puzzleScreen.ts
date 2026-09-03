@@ -65,7 +65,7 @@ export function puzzleScreen(
     attrs: {
       tabindex: '0',
       role: 'application',
-      'aria-label': `${subject.title}. Sort the tiles from darkest to lightest. Use arrow keys to move and Enter to pick up or place a tile.`,
+      'aria-label': `${subject.title}. Sort the tiles from darkest to lightest. Drag a tile onto another to swap them, or use arrow keys to move and Enter to pick up or place a tile.`,
     },
   });
   const boardWrap = el('div', {

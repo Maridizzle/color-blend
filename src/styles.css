@@ -870,8 +870,12 @@ summary {
   height: calc(100% - 28px);
   border: 1px solid rgb(5 5 6 / 88%);
   border-radius: 94px 94px 2px 2px;
-  cursor: pointer;
+  cursor: grab;
   touch-action: none;
+}
+
+.board.board-dragging {
+  cursor: grabbing;
 }
 
 .board-tracery {

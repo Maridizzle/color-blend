@@ -1,9 +1,9 @@
 import { type Oklab, oklabToHex } from '../color/oklab';
 import type { Puzzle } from '../puzzle/generator';
 import { arrangementOf } from '../puzzle/generator';
-import type { Cell } from '../puzzle/lattice';
+import type { Cell, Point } from '../puzzle/lattice';
 import { type Arrangement, findHintSwap, isCellCorrect, isSolved, swap } from '../puzzle/solve';
-import { BoardRenderer, type BoardView } from '../render/board';
+import { BoardRenderer, type BoardView, type Flight } from '../render/board';
 import {
   type RevealPlan,
   buildRevealPlan,
@@ -12,10 +12,14 @@ import {
 } from '../render/reveal';
 import type { Artwork, Subject } from '../content/types';
 
-/** Distance in CSS pixels before a press counts as a drag rather than a tap. */
-const DRAG_THRESHOLD = 8;
-const SWAP_DURATION = 190;
+/** How long a tile takes to fly into a cell, after a swap or on being let go. */
+const FLIGHT_MS = 190;
 const PULSE_DURATION = 700;
+/**
+ * On touch the carried tile rides this many cells above the finger, so the
+ * finger does not hide the thing being placed. A mouse pointer hides nothing.
+ */
+const TOUCH_LIFT = 0.55;
 
 export interface SessionCallbacks {
   onFact(factIndex: number, text: string): void;
@@ -24,11 +28,20 @@ export interface SessionCallbacks {
   onRevealDone(): void;
 }
 
-interface PendingSwap {
-  a: number;
-  b: number;
-  colorA: string;
-  colorB: string;
+/** A tile in the player's hand. */
+interface Carry {
+  pointerId: number;
+  /** The cell it came from, drawn empty while it is out. */
+  cell: number;
+  /** Where the tile is, in board units. */
+  at: Point;
+  touch: boolean;
+}
+
+interface FlightInProgress {
+  cell: number;
+  color: string;
+  from: Point;
   start: number;
 }
 
@@ -36,21 +49,31 @@ interface PendingSwap {
  * One playthrough of one puzzle: owns the board state, the input handling and
  * the animation loop, and reports upward through callbacks. Deliberately knows
  * nothing about screens or DOM layout beyond its own canvas.
+ *
+ * Pointer play is drag and drop: press a tile and it lifts, carry it, drop it
+ * on another and they swap; let it go anywhere else and it flies home. Nothing
+ * is ever "selected", so nothing needs a ring around it. The keyboard cannot
+ * drag, so it keeps a cursor and a pick-up-and-put-down, with the cursor ringed
+ * only while the keyboard is the thing driving.
  */
 export class PuzzleSession {
   private renderer: BoardRenderer;
   private arrangement: Arrangement;
   private colors: string[];
   private lightness: number[];
-  private selection: number | null = null;
-  private cursor: number | null = null;
   private moves = 0;
   private undoStack: [number, number][] = [];
   private firedFacts = new Set<number>();
 
-  private pointer: { cellId: number; x: number; y: number; dragging: boolean } | null = null;
-  private activeSwap: PendingSwap | null = null;
+  private carry: Carry | null = null;
+  private target: number | null = null;
+  private flights: FlightInProgress[] = [];
   private pulses = new Map<number, number>();
+
+  /** Keyboard state: where the cursor is, what it has picked up, and whether it is in charge. */
+  private cursor: number | null = null;
+  private held: number | null = null;
+  private keyboard = false;
 
   private previewTimer: ReturnType<typeof setTimeout> | null = null;
   private previewing = false;
@@ -120,7 +143,7 @@ export class PuzzleSession {
       (c) => (this.puzzle.targets[c.id] as Oklab).L,
     );
     this.previewing = true;
-    this.selection = null;
+    this.dropEverything();
     this.dirty = true;
 
     this.previewTimer = setTimeout(() => {
@@ -146,58 +169,77 @@ export class PuzzleSession {
   // ---------------------------------------------------------------- input
 
   private onPointerDown = (event: PointerEvent) => {
-    if (this.solved || this.previewing) return;
-    const cellId = this.renderer.pickAtClient(event.clientX, event.clientY);
-    if (cellId === null) {
-      this.selection = null;
-      this.dirty = true;
-      return;
-    }
-    if (this.puzzle.locked[cellId]) {
-      // Nothing to do, but don't silently swallow it -- keep the selection so
-      // the player doesn't lose their place by brushing a locked starter.
-      return;
-    }
+    if (this.solved || this.previewing || this.carry) return;
+    const cell = this.renderer.pickAtClient(event.clientX, event.clientY);
+    // A locked starter, or the ground between tiles, is simply not a handle.
+    if (cell === null || this.puzzle.locked[cell]) return;
+
     this.canvas.setPointerCapture(event.pointerId);
-    this.pointer = { cellId, x: event.clientX, y: event.clientY, dragging: false };
-    this.cursor = cellId;
+    // The pointer takes over from the keyboard: whatever it was holding is
+    // put down and its cursor ring goes away.
+    this.keyboard = false;
+    this.held = null;
+    const touch = event.pointerType === 'touch';
+    this.carry = { pointerId: event.pointerId, cell, at: this.liftPoint(event, touch), touch };
+    this.target = null;
+    this.canvas.classList.add('board-dragging');
     this.dirty = true;
   };
 
   private onPointerMove = (event: PointerEvent) => {
-    if (!this.pointer || this.pointer.dragging) return;
-    if (Math.hypot(event.clientX - this.pointer.x, event.clientY - this.pointer.y) > DRAG_THRESHOLD) {
-      this.pointer.dragging = true;
-      this.selection = this.pointer.cellId;
-      this.dirty = true;
-    }
+    if (!this.carry || event.pointerId !== this.carry.pointerId) return;
+    this.carry.at = this.liftPoint(event, this.carry.touch);
+    this.target = this.dropTargetAt(this.carry.at, this.carry.cell);
+    this.dirty = true;
   };
 
   private onPointerUp = (event: PointerEvent) => {
-    const pointer = this.pointer;
-    this.pointer = null;
-    if (!pointer) return;
+    const carry = this.carry;
+    if (!carry || event.pointerId !== carry.pointerId) return;
+    this.carry = null;
+    this.target = null;
+    this.canvas.classList.remove('board-dragging');
     if (this.canvas.hasPointerCapture(event.pointerId)) {
       this.canvas.releasePointerCapture(event.pointerId);
     }
 
-    const target = this.renderer.pickAtClient(event.clientX, event.clientY);
-
-    if (pointer.dragging) {
-      if (target !== null && target !== pointer.cellId && !this.puzzle.locked[target]) {
-        this.applySwap(pointer.cellId, target);
-      }
-      this.selection = null;
-    } else if (this.selection === null) {
-      this.selection = pointer.cellId;
-    } else if (this.selection === pointer.cellId) {
-      this.selection = null;
-    } else {
-      this.applySwap(this.selection, pointer.cellId);
-      this.selection = null;
-    }
+    // A cancelled pointer carries no useful position: the tile goes home from
+    // wherever it last was.
+    const at = event.type === 'pointercancel' ? carry.at : this.liftPoint(event, carry.touch);
+    const target = this.dropTargetAt(at, carry.cell);
+    if (target !== null) this.applySwap(carry.cell, target, true, at);
+    else this.launch(carry.cell, this.colors[carry.cell] as string, at);
     this.dirty = true;
   };
+
+  /** Where the carried tile sits for this pointer, in board units. */
+  private liftPoint(event: PointerEvent, touch: boolean): Point {
+    const [x, y] = this.renderer.clientToBoard(event.clientX, event.clientY);
+    return [x, touch ? y - this.renderer.cellSize() * TOUCH_LIFT : y];
+  }
+
+  /**
+   * The cell a tile carried to `at` would drop into. Judged from the tile, not
+   * the finger, so what you see hovering is what lands.
+   */
+  private dropTargetAt(at: Point, home: number): number | null {
+    const cell = this.renderer.pickAtBoard(at[0], at[1]);
+    if (cell === null || cell === home || this.puzzle.locked[cell]) return null;
+    return cell;
+  }
+
+  /** Put down anything in hand, pointer or keyboard, without a swap. */
+  private dropEverything(): void {
+    if (this.carry) {
+      if (this.canvas.hasPointerCapture(this.carry.pointerId)) {
+        this.canvas.releasePointerCapture(this.carry.pointerId);
+      }
+      this.canvas.classList.remove('board-dragging');
+    }
+    this.carry = null;
+    this.target = null;
+    this.held = null;
+  }
 
   private onKeyDown = (event: KeyboardEvent) => {
     if (this.solved || this.previewing) return;
@@ -211,14 +253,16 @@ export class PuzzleSession {
     const direction = directions[event.key];
     if (direction) {
       event.preventDefault();
+      this.keyboard = true;
       this.moveCursor(direction);
       return;
     }
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
+      this.keyboard = true;
       this.activateCursor();
     } else if (event.key === 'Escape') {
-      this.selection = null;
+      this.held = null;
       this.dirty = true;
     }
   };
@@ -267,18 +311,23 @@ export class PuzzleSession {
     }
     if (this.puzzle.locked[this.cursor]) return;
 
-    if (this.selection === null) this.selection = this.cursor;
-    else if (this.selection === this.cursor) this.selection = null;
+    if (this.held === null) this.held = this.cursor;
+    else if (this.held === this.cursor) this.held = null;
     else {
-      this.applySwap(this.selection, this.cursor);
-      this.selection = null;
+      this.applySwap(this.held, this.cursor);
+      this.held = null;
     }
     this.dirty = true;
   }
 
   // ------------------------------------------------------------- mutation
 
-  private applySwap(a: number, b: number, countMove = true): void {
+  /**
+   * Swap two cells. The tile leaving `a` flies into `b` from `carriedFrom` if
+   * it was in the player's hand, otherwise from its own cell; the tile it
+   * displaces flies back into `a`.
+   */
+  private applySwap(a: number, b: number, countMove = true, carriedFrom?: Point): void {
     if (a === b || this.puzzle.locked[a] || this.puzzle.locked[b]) return;
 
     const colorA = this.colors[a] as string;
@@ -296,12 +345,24 @@ export class PuzzleSession {
       this.undoStack.push([a, b]);
     }
 
-    this.activeSwap = { a, b, colorA, colorB, start: performance.now() };
+    this.launch(b, colorA, carriedFrom ?? this.centre(a));
+    this.launch(a, colorB, this.centre(b));
     this.dirty = true;
 
     this.checkFacts();
     this.reportProgress();
     this.checkSolved();
+  }
+
+  private centre(cellId: number): Point {
+    const cell = this.puzzle.lattice.cells[cellId] as Cell;
+    return [cell.cx, cell.cy];
+  }
+
+  /** Send a tile flying into `cell` from `from`. Under reduced motion it is simply there. */
+  private launch(cell: number, color: string, from: Point): void {
+    if (this.options.reducedMotion) return;
+    this.flights.push({ cell, color, from, start: performance.now() });
   }
 
   undo(): void {
@@ -347,7 +408,7 @@ export class PuzzleSession {
   private checkSolved(): void {
     if (this.solved || !isSolved(this.arrangement)) return;
     this.solved = true;
-    this.selection = null;
+    this.dropEverything();
     this.revealPlan = buildRevealPlan(this.puzzle.lattice, this.artwork.pixels);
     this.revealStart = performance.now();
     this.callbacks.onSolved(this.moves);
@@ -370,16 +431,15 @@ export class PuzzleSession {
     if (this.destroyed) return;
     const now = performance.now();
 
-    if (this.activeSwap && now - this.activeSwap.start >= SWAP_DURATION) {
-      this.activeSwap = null;
-      this.dirty = true;
-    }
+    const landed = this.flights.length;
+    this.flights = this.flights.filter((flight) => now - flight.start < FLIGHT_MS);
+    if (this.flights.length !== landed) this.dirty = true;
     for (const [cellId, start] of this.pulses) {
       if (now - start >= PULSE_DURATION) this.pulses.delete(cellId);
     }
 
     const animating =
-      this.activeSwap !== null || this.pulses.size > 0 || (this.solved && !this.revealDone);
+      this.flights.length > 0 || this.pulses.size > 0 || (this.solved && !this.revealDone);
 
     if (this.dirty || animating) {
       this.renderer.draw(this.buildView(now));
@@ -390,15 +450,12 @@ export class PuzzleSession {
   };
 
   private buildView(now: number): BoardView {
-    const swapView = this.activeSwap
-      ? {
-          a: this.activeSwap.a,
-          b: this.activeSwap.b,
-          colorA: this.activeSwap.colorA,
-          colorB: this.activeSwap.colorB,
-          t: Math.min(1, (now - this.activeSwap.start) / SWAP_DURATION),
-        }
-      : null;
+    const flights: Flight[] = this.flights.map((flight) => ({
+      cell: flight.cell,
+      color: flight.color,
+      from: flight.from,
+      t: Math.min(1, (now - flight.start) / FLIGHT_MS),
+    }));
 
     const pulses = new Map<number, number>();
     for (const [cellId, start] of this.pulses) {
@@ -419,8 +476,15 @@ export class PuzzleSession {
       colors: this.colors,
       lightness: this.lightness,
       locked: this.puzzle.locked,
-      selection: this.selection ?? this.cursor,
-      swap: swapView,
+      cursor: this.keyboard ? this.cursor : null,
+      held: this.held,
+      // The colour is read live rather than remembered at pick-up, so a hint
+      // or undo landing mid-carry cannot leave a stale tile in the hand.
+      carry: this.carry
+        ? { cell: this.carry.cell, color: this.colors[this.carry.cell] as string, at: this.carry.at }
+        : null,
+      target: this.target,
+      flights,
       pulses,
       reveal,
       lightnessAssist: this.options.lightnessAssist,

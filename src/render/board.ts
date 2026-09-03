@@ -6,8 +6,20 @@ import {
   insetPolygon,
   project,
   tracePolygon,
+  unproject,
 } from './transform';
 import type { RevealPlan, RevealState } from './reveal';
+
+/** A tile in the air, on its way into a cell. */
+export interface Flight {
+  /** The cell it lands in. */
+  cell: number;
+  color: string;
+  /** Where it set off from, in board units. */
+  from: Point;
+  /** Progress, 0..1. */
+  t: number;
+}
 
 /** Everything the renderer needs to draw one frame. */
 export interface BoardView {
@@ -16,9 +28,19 @@ export interface BoardView {
   /** Perceptual lightness 0..1 per cell, for the accessibility overlay. */
   lightness: number[];
   locked: boolean[];
-  selection: number | null;
-  /** A swap in flight: the two tiles slide past each other. */
-  swap: { a: number; b: number; colorA: string; colorB: string; t: number } | null;
+  /**
+   * The keyboard cursor. Ringed only while the keyboard is driving, which is
+   * the one time a player needs telling where they are: a pointer always knows.
+   */
+  cursor: number | null;
+  /** A tile the keyboard has picked up, lifted in place until it is put down. */
+  held: number | null;
+  /** A tile under the pointer: drawn at `at`, its own cell left empty. */
+  carry: { cell: number; color: string; at: Point } | null;
+  /** The cell a carried tile would drop into, pressed a little to say so. */
+  target: number | null;
+  /** Tiles in the air after a swap, or on their way home after being let go. */
+  flights: Flight[];
   /** Cells that just fired a fact, for a brief pulse. */
   pulses: Map<number, number>;
   reveal: { state: RevealState; plan: RevealPlan; artwork: HTMLCanvasElement } | null;
@@ -30,6 +52,13 @@ export interface BoardView {
 // correctness calculations remain untouched.
 const BACKGROUND = '#0a090c';
 const EMPTY_CELL = '#17141b';
+
+/** How much a carried tile grows, so it reads as above the board. */
+const CARRY_LIFT = 1.12;
+/** A keyboard-held tile lifts less: it is not going anywhere yet. */
+const HELD_LIFT = 1.08;
+/** The drop target sinks a little under the tile hovering over it. */
+const TARGET_PRESS = 0.9;
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -47,6 +76,7 @@ export class BoardRenderer {
   private transform: BoardTransform = { scale: 1, offsetX: 0, offsetY: 0 };
   private lattice: Lattice | null = null;
   private gutter = 0;
+  private typicalCell = 1;
   private dpr = 1;
 
   constructor(private canvas: HTMLCanvasElement) {
@@ -82,10 +112,10 @@ export class BoardRenderer {
 
     // Gutter scaled to tile size: a fixed pixel gap swallows small tiles whole
     // on a hard board and disappears entirely on an easy one.
-    const typicalCell = Math.sqrt(
+    this.typicalCell = Math.sqrt(
       (this.lattice.width * this.lattice.height) / this.lattice.cells.length,
     );
-    this.gutter = Math.min(typicalCell * 0.06, typicalCell * 0.5);
+    this.gutter = Math.min(this.typicalCell * 0.06, this.typicalCell * 0.5);
 
     this.picking.rebuild(this.lattice, this.transform, this.canvas.width, this.canvas.height);
   }
@@ -97,6 +127,27 @@ export class BoardRenderer {
       (clientX - rect.left) * this.dpr,
       (clientY - rect.top) * this.dpr,
     );
+  }
+
+  /** Cell id under a point in board units, or null. */
+  pickAtBoard(x: number, y: number): number | null {
+    const [px, py] = project(this.transform, x, y);
+    return this.picking.pick(px, py);
+  }
+
+  /** A client-space point in board units, so a carried tile can be drawn there. */
+  clientToBoard(clientX: number, clientY: number): Point {
+    const rect = this.canvas.getBoundingClientRect();
+    return unproject(
+      this.transform,
+      (clientX - rect.left) * this.dpr,
+      (clientY - rect.top) * this.dpr,
+    );
+  }
+
+  /** The side of a typical tile, in board units. */
+  cellSize(): number {
+    return this.typicalCell;
   }
 
   draw(view: BoardView): void {
@@ -111,33 +162,50 @@ export class BoardRenderer {
       return;
     }
 
+    // A cell whose tile is in the air, or in the player's hand, is drawn empty.
+    const empty = new Set<number>();
+    for (const flight of view.flights) empty.add(flight.cell);
+    if (view.carry) empty.add(view.carry.cell);
+
     for (const cell of lattice.cells) {
-      const inFlight = view.swap && (cell.id === view.swap.a || cell.id === view.swap.b);
-      if (inFlight) {
+      if (empty.has(cell.id)) {
         this.fillCell(cell, EMPTY_CELL, 1);
         continue;
       }
       const pulse = view.pulses.get(cell.id);
-      this.fillCell(cell, view.colors[cell.id] ?? '#000', 1, pulse);
+      const press = cell.id === view.target ? TARGET_PRESS : 1;
+      this.fillCell(cell, view.colors[cell.id] ?? '#000', 1, pulse, press);
       if (view.locked[cell.id]) this.drawLockMark(cell);
       if (view.lightnessAssist) this.drawLightnessMark(cell, view.lightness[cell.id] ?? 0);
     }
 
-    if (view.swap) this.drawSwap(view.swap);
-    if (view.selection !== null) this.drawSelection(view.selection);
+    for (const flight of view.flights) this.drawFlight(flight);
+
+    if (view.held !== null) {
+      const cell = lattice.cells[view.held];
+      if (cell) this.drawLifted(cell, view.colors[view.held] ?? '#000', [cell.cx, cell.cy], HELD_LIFT, 0.6);
+    }
+    // Last, so it rides over everything.
+    if (view.carry) {
+      const cell = lattice.cells[view.carry.cell];
+      if (cell) this.drawLifted(cell, view.carry.color, view.carry.at, CARRY_LIFT, 1);
+    }
+
+    if (view.cursor !== null) this.drawCursor(view.cursor);
   }
 
-  private fillCell(cell: Cell, color: string, alpha: number, pulse?: number): void {
+  private fillCell(cell: Cell, color: string, alpha: number, pulse?: number, press = 1): void {
     const { ctx } = this;
     ctx.save();
     ctx.globalAlpha = alpha;
 
     let poly: readonly Point[] = insetPolygon(cell.poly, this.gutter);
+    let scale = press;
     if (pulse !== undefined && pulse > 0) {
       // Brief swell outward when a fact tile lands, drawing the eye to it.
-      const swell = Math.sin(pulse * Math.PI) * 0.18;
-      poly = scaleAbout(poly, cell.cx, cell.cy, 1 + swell);
+      scale *= 1 + Math.sin(pulse * Math.PI) * 0.18;
     }
+    if (scale !== 1) poly = scaleAbout(poly, cell.cx, cell.cy, scale);
 
     ctx.fillStyle = color;
     tracePolygon(ctx, poly, this.transform);
@@ -167,10 +235,7 @@ export class BoardRenderer {
   private drawLightnessMark(cell: Cell, lightness: number): void {
     const { ctx } = this;
     const [px, py] = project(this.transform, cell.cx, cell.cy);
-    const cellPx = Math.sqrt(
-      ((this.lattice?.width ?? 1) * (this.lattice?.height ?? 1)) /
-        Math.max(1, this.lattice?.cells.length ?? 1),
-    ) * this.transform.scale;
+    const cellPx = this.typicalCell * this.transform.scale;
     const barWidth = cellPx * 0.52;
     const barHeight = Math.max(1.5, cellPx * 0.08);
 
@@ -183,7 +248,8 @@ export class BoardRenderer {
     ctx.restore();
   }
 
-  private drawSelection(cellId: number): void {
+  /** The keyboard cursor: an outline, since the keyboard has no other way to point. */
+  private drawCursor(cellId: number): void {
     const cell = this.lattice?.cells[cellId];
     if (!cell) return;
     const { ctx } = this;
@@ -200,38 +266,42 @@ export class BoardRenderer {
     ctx.restore();
   }
 
-  /** Two tiles physically trade places rather than blinking into their new colors. */
-  private drawSwap(swap: NonNullable<BoardView['swap']>): void {
-    const a = this.lattice?.cells[swap.a];
-    const b = this.lattice?.cells[swap.b];
-    if (!a || !b) return;
-
-    const t = easeInOut(swap.t);
+  /**
+   * A tile off the board: its own outline, moved to `at`, grown by `lift`, with
+   * a shadow whose weight says how far above the board it is. This is the one
+   * drawing for a carried tile, a keyboard-held one, and a tile in flight.
+   */
+  private drawLifted(cell: Cell, color: string, at: Point, lift: number, strength: number): void {
     const { ctx } = this;
+    const dx = at[0] - cell.cx;
+    const dy = at[1] - cell.cy;
+    const poly = scaleAbout(
+      insetPolygon(cell.poly, this.gutter).map(([x, y]) => [x + dx, y + dy] as Point),
+      at[0],
+      at[1],
+      lift,
+    );
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.shadowColor = `rgba(0,0,0,${0.5 * strength})`;
+    ctx.shadowBlur = 14 * this.dpr * strength;
+    ctx.shadowOffsetY = 5 * this.dpr * strength;
+    tracePolygon(ctx, poly, this.transform);
+    ctx.fill();
+    ctx.restore();
+  }
 
-    const fly = (from: Cell, to: Cell, color: string) => {
-      const dx = (to.cx - from.cx) * t;
-      const dy = (to.cy - from.cy) * t;
-      // Slight lift at the midpoint so the two tiles read as passing each other
-      // rather than sliding through one another.
-      const lift = 1 + Math.sin(t * Math.PI) * 0.1;
-      const poly = scaleAbout(
-        insetPolygon(from.poly, this.gutter).map(([x, y]) => [x + dx, y + dy] as Point),
-        from.cx + dx,
-        from.cy + dy,
-        lift,
-      );
-      ctx.save();
-      ctx.fillStyle = color;
-      ctx.shadowColor = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur = 12 * this.dpr * Math.sin(t * Math.PI);
-      tracePolygon(ctx, poly, this.transform);
-      ctx.fill();
-      ctx.restore();
-    };
-
-    fly(a, b, swap.colorA);
-    fly(b, a, swap.colorB);
+  /** A tile flying into its cell, rising a little at the midpoint so it reads as travelling over the board. */
+  private drawFlight(flight: Flight): void {
+    const cell = this.lattice?.cells[flight.cell];
+    if (!cell) return;
+    const t = easeInOut(flight.t);
+    const at: Point = [
+      flight.from[0] + (cell.cx - flight.from[0]) * t,
+      flight.from[1] + (cell.cy - flight.from[1]) * t,
+    ];
+    const arc = Math.sin(t * Math.PI);
+    this.drawLifted(cell, flight.color, at, 1 + arc * 0.1, arc);
   }
 
   private drawReveal(view: BoardView, reveal: NonNullable<BoardView['reveal']>): void {

@@ -79,7 +79,7 @@ export function howToPlayContent(): HTMLElement {
         p('Tiles run from darkest to lightest. That is the whole rule.'),
         rampRow(56),
         p(
-          `Tap one tile, then tap another, and they swap. Or drag one onto the other. A board is ${easy} tiles at its smallest and ${hard} at its largest.`,
+          `Drag a tile onto another and they swap. Let go anywhere else and it goes back where it was. A board is ${easy} tiles at its smallest and ${hard} at its largest.`,
         ),
       ]),
 
@@ -130,7 +130,7 @@ export function howToPlayContent(): HTMLElement {
         p(
           'The task is ordering by lightness, and lightness ordering survives colour blindness. Settings has a Lightness assist that draws a bar on each tile showing how light it is, which makes every board playable without using hue at all.',
         ),
-        p('Arrow keys move between tiles and Enter picks up and places, if you would rather not tap.'),
+        p('Arrow keys move between tiles and Enter picks up and places, if you would rather not drag.'),
       ]),
     ],
   });
