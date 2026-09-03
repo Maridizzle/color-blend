@@ -112,6 +112,24 @@ describe('board assignment across a category', () => {
     }
   });
 
+  it('never repeats a lattice-and-shape pair in a blind pack of ordinary size', () => {
+    // A pack loaded from a zip has no author to vary its boards, and a shipped
+    // archive should not need one either: The Elements, at seven, had two
+    // hexagons on the triangle lattice before the assignment learned to step
+    // past a pair already taken. Sizes up to sixteen keep every tier inside a
+    // pool wide enough that a repeat is always avoidable.
+    const ids = ['a', 'pack-1', 'the-elements', 'wonder', 'zeta', 'periodic-table-2'];
+    for (const id of ids) {
+      for (let total = 1; total <= 16; total++) {
+        const boards = Array.from({ length: total }, (_, i) =>
+          specFor({ id: `${id}-${i}` } as unknown as Subject, i, total, id),
+        ).filter((spec) => !isTwoColour(spec.difficulty));
+        const pairs = new Set(boards.map((spec) => `${spec.latticeKind}/${spec.shape}`));
+        expect(pairs.size, `${id} × ${total}`).toBe(boards.length);
+      }
+    }
+  });
+
   it('makes every two-colour board a plain rectangle on a square lattice', () => {
     const planes = specs.filter((s) => isTwoColour(s.spec.difficulty));
     expect(planes.length).toBeGreaterThan(0);

@@ -35,9 +35,10 @@ The grid comes from `mosaicPlan()` — enough cells for one per puzzle, squared 
 | Patterns in Nature | 7 | 3 × 3 = 9 | **1:1 square** | 33 / 66% both axes |
 | Small Company | 6 | 3 × 2 = 6 | **3:2 landscape** | vertical at 33 / 66%, horizontal at 50% |
 | The Rare Hour | 5 | 3 × 2 = 6 | **3:2 landscape** | vertical at 33 / 66%, horizontal at 50% |
+| The Elements | 7 | 3 × 3 = 9 | **1:1 square** | 33 / 66% both axes |
 
-Small Company and The Rare Hour have no plate yet; their galleries compose the
-mosaic from their own puzzle artworks until one is made.
+Small Company, The Rare Hour and The Elements have no plate yet; their galleries
+compose the mosaic from their own puzzle artworks until one is made.
 
 Three rules follow from that, and they matter more than prettiness:
 

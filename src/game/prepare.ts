@@ -28,8 +28,12 @@ const LATTICE_KINDS: LatticeKind[] = ['square', 'hex', 'triangle', 'diamond'];
  * Step through the shape list rather than taking them in order, so consecutive
  * subjects are not a circle followed by a hexagon followed by a diamond. Coprime
  * with the number of shapes, so it still visits all of them, and coprime with
- * the number of lattices too -- which is what makes (lattice, shape) unique for
- * the first 52 subjects instead of repeating every twelfth.
+ * the number of lattices too, so the walk does not fall into step with them.
+ *
+ * On its own the stride cannot promise that no two boards in a category share
+ * a lattice and a silhouette: each tier draws from its own pool of eligible
+ * shapes, so two walks through pools of different sizes can land on the same
+ * name. That promise is kept below, by stepping past anything already taken.
  */
 const SHAPE_STRIDE = 5;
 
@@ -39,16 +43,56 @@ export interface PuzzleShapeSpec {
   shape: ShapeName;
 }
 
+/** The parts of a subject that decide its board. */
+type BoardChoice = Pick<Subject, 'difficulty' | 'latticeKind' | 'shape'>;
 
 /**
  * Difficulty ramps through a category so the first puzzles teach the mechanic
  * before the later ones lean on it. An explicit value in the pack wins.
+ *
+ * Position in the category, not a hash of the id. A hash gives each subject a
+ * stable board but says nothing about its neighbours, so across twenty
+ * subjects it collides and the same handful of boards keep coming back.
+ * Walking the lists, and stepping past any lattice-and-shape pair an earlier
+ * board took, guarantees the set is varied -- which is the property that
+ * actually matters once a category is longer than a few puzzles, and the one a
+ * blind pack of forty images has no author to provide.
+ *
+ * The category offset stops a second category being a re-run of the first:
+ * without it every category opens with the same square grid, then the same
+ * hexagon, in the same order.
  */
 export function specFor(
   subject: Subject,
   index: number,
   total = 1,
   categoryId = '',
+): PuzzleShapeSpec {
+  const offset = categoryId ? hashString(categoryId) : 0;
+  return choose(subject, index, total, offset, takenBefore(index, total, offset));
+}
+
+/**
+ * The lattice-and-shape pairs the boards before `index` take, assuming they
+ * carry no explicit choices of their own. A subject only knows its own
+ * overrides; one elsewhere in the pack can at worst make this set inexact, and
+ * an inexact set never makes a board collide that would not have anyway.
+ */
+function takenBefore(index: number, total: number, offset: number): Set<string> {
+  const taken = new Set<string>();
+  for (let j = 0; j < index; j++) {
+    const spec = choose({}, j, total, offset, taken);
+    if (!isTwoColour(spec.difficulty)) taken.add(`${spec.latticeKind}/${spec.shape}`);
+  }
+  return taken;
+}
+
+function choose(
+  subject: BoardChoice,
+  index: number,
+  total: number,
+  offset: number,
+  taken: ReadonlySet<string>,
 ): PuzzleShapeSpec {
   const difficulty = subject.difficulty ?? rampedDifficulty(index, total);
   const tiles = DIFFICULTY_TUNING.tileCount[difficulty];
@@ -61,36 +105,31 @@ export function specFor(
     return { difficulty, latticeKind: 'square', shape: 'full' };
   }
 
-  // Position in the category, not a hash of the id. A hash gives each subject a
-  // stable board but says nothing about its neighbours, so across twenty
-  // subjects it collides and the same handful of boards keep coming back.
-  // Walking the lists guarantees the set is varied, which is the property that
-  // actually matters once a category is longer than a few puzzles.
-  //
-  // The category offset stops a second category being a re-run of the first:
-  // without it every category opens with the same square grid, then the same
-  // hexagon, in the same order.
-  const offset = categoryId ? hashString(categoryId) : 0;
-
   const latticeKind =
     subject.latticeKind ??
     (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind);
+  if (subject.shape) return { difficulty, latticeKind, shape: subject.shape };
 
-  return {
-    difficulty,
-    latticeKind,
-    shape:
-      subject.shape ??
-      // `tiles` joins the walk position because each difficulty tier has its own
-      // set of eligible shapes, and without it two subjects on the same lattice
-      // in different tiers can walk to the same one -- Andromeda and Saturn both
-      // came out as a squircle of triangles.
-      shapeForTiles(index * SHAPE_STRIDE + offset + tiles, tiles, latticeKind),
-  };
+  // `tiles` joins the walk position because each difficulty tier has its own
+  // set of eligible shapes, and without it two subjects on the same lattice
+  // in different tiers can walk to the same one -- Andromeda and Saturn both
+  // came out as a squircle of triangles.
+  const eligible = eligibleShapes(tiles, latticeKind);
+  const from = index * SHAPE_STRIDE + offset + tiles;
+
+  // The walk's own pick, unless an earlier board on this lattice already has
+  // that silhouette; then the next eligible one, and so on round the pool. A
+  // pool that is entirely taken keeps the walk's pick: the repeat is then
+  // unavoidable, not a mistake.
+  let shape = pick(eligible, from);
+  for (let step = 1; step < eligible.length && taken.has(`${latticeKind}/${shape}`); step++) {
+    shape = pick(eligible, from + step);
+  }
+  return { difficulty, latticeKind, shape };
 }
 
 /**
- * Step through the shapes that read at this tile count.
+ * The shapes that read at this tile count on this lattice.
  *
  * Silhouettes carry their own minimum (see `SHAPE_MIN_TILES`) rather than every
  * shape waiting on one blanket threshold -- a twelve-tile circle is obviously a
@@ -106,10 +145,13 @@ export function specFor(
  * out as four crosses and four squircles. Filtering first keeps the stride
  * coprime with however many shapes are actually available.
  */
-function shapeForTiles(from: number, tiles: number, kind: LatticeKind): ShapeName {
-  const eligible = SHAPE_NAMES.filter(
+function eligibleShapes(tiles: number, kind: LatticeKind): ShapeName[] {
+  return SHAPE_NAMES.filter(
     (s) => tiles >= SHAPE_MIN_TILES[s] && SHAPE_LATTICES[s].includes(kind),
   );
+}
+
+function pick(eligible: readonly ShapeName[], from: number): ShapeName {
   if (eligible.length === 0) return 'full';
   return eligible[((from % eligible.length) + eligible.length) % eligible.length] as ShapeName;
 }

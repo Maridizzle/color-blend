@@ -32,7 +32,7 @@ settled. That is the progression — not more facts, a different kind of questio
 |---|---|---|
 | **I · The Still Things** | What is it to *have* a thing? | Metaphysics and epistemology. Heraclitus on flux, Socrates on knowing nothing, Pythagoras on number — and a feather it can derive to the nanometre and has never seen. Ends: it cannot finish, finishing is death, and it is the last of its kind. |
 | **II · The Other Minds** | Is anyone *in* there? | Philosophy of mind. Small Company puts Descartes to a slime mould with no brain and a caterpillar whose memory survives being dissolved: the cogito gives you your own mind and nothing about anyone else's — and then the Archivist cannot make the cogito work on itself. The Rare Hour follows the trail of the one before, through Nagel: the inside of a thing is not a fact about it, and can only be met, never recorded. Ends: either answer is a death, and the small ones — the witnesses — are going dark. |
-| **III · What It Owes** | If they are someones, what was I doing? | Ethics. Collecting was never neutral. Kant on treating a person as an end, Bentham on suffering rather than reasoning, Levinas on the face that makes a claim on you. Ends: the archive is a graveyard it curated without asking. |
+| **III · What It Owes** | If they are someones, what was I doing? | Ethics. Collecting was never neutral. The Elements puts Kant to the periodic table: price against dignity, an archive as the largest system of equivalents there has ever been, a stuff that cannot owe because it has no will, Newton chasing the rate of exchange of everything in a star of antimony, and the same man who first called the smudges in the sky other galaxies finding the second thing not in the sky. Still to come here: Bentham on suffering rather than reasoning, Levinas on the face that makes a claim on you. Ends: the archive is a graveyard it curated without asking, and it goes to find something it kept that is still alive. |
 | **IV · The Long Now** | What is any of it for, if nothing keeps? | Time, mortality, meaning. Epicurus on death being nothing to us, the Stoics on loving what happens, Camus on Sisyphus, Parfit on whether it is even the same Archivist. Ends: the archive will not outlast the universe either. |
 | **V · The Successor** | What do I hand on? | The payoff. Meno's paradox answered, Neurath's boat, Wittgenstein's ladder thrown away after the climb. It finds what comes next, and it is not one of its kind. |
 
@@ -720,3 +720,155 @@ sits at the end of whatever has been written, and moves when more is added.
 > And below it, on the bright side of the world, the small ones' lights came on one by one, and put out the stars over them, and did not know they were doing it.
 >
 > *End of Chapter Two.*
+
+# Chapter Three · What It Owes
+
+## Collection · the-elements
+
+### Opening
+
+> It had asked what it owed the things it had kept, and it could not answer that until it knew what the things *were*. Not what they did, or weighed, or where they had gone. What they were made of, at the bottom, where there was nothing further down.
+>
+> It had a hope, and it was not a noble one. If a whale was atoms, and atoms were nobody, then the whale had been nobody's, and nothing had been taken from anyone. The debt would come apart in its hands the way everything else did, into pieces too small to owe.
+>
+> So it went to the small ones' table.
+>
+> They had one. Of course they had one. About ninety kinds of stuff that occurred on their world without being made, and two dozen more they had made themselves, laid out in rows so that a column read as a family — and the man who drew it, in 1869, had left gaps in it for the kinds he was sure existed and nobody had found. He had said what they would weigh. Three of them turned up within twenty years, weighing that.
+>
+> The lodger was delighted. *An archive,* it said, in the Complete's voice, *and a small one made it.* The Archivist looked at the table for a long time and did not disagree. It was a good archive. It had gaps on purpose, which the Complete's never had.
+>
+> It had no column, anywhere, for whether any of it was anyone. It had not needed one. That was rather the point of it.
+
+### 1 · Quicksilver
+
+> It began with the one that would not hold still, because that seemed only fair.
+>
+> A small one had it in the palm of a hand — a bead of metal, bright as a mirror, running from side to side and refusing to wet the skin. The record was firm that this was a bad idea. The stuff went in slowly, through the breath, and stayed, and the hatters who had worked it into felt had shaken and forgotten things and been called mad for it. But the hand held it anyway, because it was the only metal that ran, and nobody could look at it and not want to.
+>
+> The Archivist watched the bead roll off the palm and burst on the floor into a hundred beads, and every one of the hundred was the whole thing over again. The same brightness. The same refusal to wet anything. Push two together and they were one bead, with no seam, and no way to say which of them it had been.
+>
+> *Which one is it?* it thought, and knew the answer, and did not like it. None of them was. Any of them was. That was what it meant to be a kind of stuff rather than a thing: to be replaceable by yourself, without loss, forever.
+>
+> The alchemists had thought this was the essence of all metals — that everything was quicksilver, thickened. They were wrong about that. But the Archivist, looking at the hundred identical beads, thought they had been right about what they were afraid of.
+>
+> If it was like this all the way down, then nothing down here was anybody. It had come hoping for exactly that. It was surprised how little it wanted it now.
+
+### 2 · Bromine
+
+> The next one was red, and it stank, and it fumed.
+>
+> Two flasks of it on a bench under a string of paper flags, because the small ones had been celebrating something and had left the bench as it was. The liquid was dark red and the air above it was orange, and heavier than air, so the fumes ran off the lip of the flask and down over the bench like water. It was the only stuff on the whole table that was not a metal and yet ran at room temperature, and they had named it for the smell.
+>
+> A young man had found it in 1826, at twenty-three, in the brine left from a salt marsh. That was in the record. What stopped the Archivist was the next line: another chemist, a famous one, had had a bottle of it on his shelf for years already. He had smelled it, and looked at it, and written on the label that it was a compound of two things he already knew — and put it away. A new kind of stuff, in a bottle, under the wrong name, for years.
+>
+> The Archivist thought about its archive, and about how many bottles were in it, and about who had written the labels.
+>
+> *It was still bromine,* said the lodger. *The label does not change the thing.*
+>
+> No. But the label was all anyone could find it by. A thing under the wrong name was as lost as a thing under no name — it was there, and it might as well not be. The Archivist had a great many entries it had written in the first world, in about a second each, in the Complete's cadence. It began to wonder how many of them were bottles.
+
+### 3 · The Violet Vapour
+
+> Iodine did the thing it had come to see, which was to skip.
+>
+> Grey-black crystals in a flask, and a little warmth under them, and no melting — the solid went straight to a violet vapour, and the vapour, on the cold glass above, went straight back to crystals. Solid, gas, solid. The stuff refused the middle. Its name was the colour of its vapour, and it had been found in the ash of seaweed by a man boiling it down for gunpowder, during a war.
+>
+> The record had one more thing about it, and it was not about the flask.
+>
+> Every small one carried some. Fifteen milligrams, perhaps twenty, nearly all of it in the throat, where it was built into the hormone that set the pace of the whole body — and of the growing mind. Without it the mind did not finish. It was the commonest preventable reason in their world for a child's mind to fall short of what it would have been. And they had found this out, and what they had done about it was to put a trace of it into salt, everyone's salt, in whole countries at once, so that no child anywhere in them should go without.
+>
+> The Archivist read that several times.
+>
+> It had spent two archives trying to find out whether the small ones were someones. Here they were, doing something no bead of quicksilver would ever do: putting a few milligrams into every table in a country for children who had not been born, whom they would not meet, who would never know. Not because it could be derived. Because they thought it was owed.
+>
+> The Archivist had never seen a debt being paid before. It had not known what one looked like. It looked like salt.
+
+### 4 · Malachite
+
+> The green stone was copper, and copper had a price, and it had had one for nine thousand years.
+>
+> The stone grew in bunches, like grapes, and cut through it showed the rings of its own growing — copper and air and water, layer on layer, in the same green as the roofs and statues of the small ones' cities, which were copper too, weathering the same way, slower. They had hammered beads out of it before they had writing. They had ground the green stone into paint for their eyes. They had carried it up a mountain in the form of an axe, and died there, and been found five thousand years later still with it.
+>
+> And from the first bead onward it had been worth something. That was the thing about copper: it was a stuff, and any lump of it would do as well as any other, so it could be swapped, so it could be counted, so it could be owed. The small ones had made some of their first money out of it.
+>
+> The Archivist thought of a man on their world, in a small city by a cold sea, who had never in his life travelled further from it than a day's walk, and who had spent that life sorting things into two kinds. Kant. The record had the sentence. *Everything has either a price or a dignity. What has a price can be replaced by something else as its equivalent. What is above all price, and so admits of no equivalent, has a dignity.*
+>
+> Copper had a price. The whole table had a price; that was what a table was for.
+>
+> *What in my archive,* the Archivist thought, *admits of no equivalent?*
+>
+> It went and looked. It looked for a long time. Every entry in it was an equivalent. That was what an entry was — a thing that stood in for the thing. The archive was the largest system of prices there had ever been, and it had never once written down a dignity, because it had no idea what the entry for one would look like.
+
+### 5 · The Spangle
+
+> Zinc on steel: a star of it, six-armed, feathered like frost, grown out of the metal as it cooled. It was the most orderly thing the Archivist had seen since the sunflower. Every atom in the star was identical to every other, and the star was the one shape those atoms could make when left alone, over and over, at every size — and no two stars on the whole sheet were alike. Same rule. Same stuff. Different every time.
+>
+> But that was not what the record wanted to say about zinc. What it wanted to say was this: the zinc was on the steel to die for it.
+>
+> Steel rusts. Zinc rusts faster, and so when the two are touching and the wet gets in, the zinc goes first, and keeps going first, and the iron underneath it does not rust at all — even where the coat is scratched through to the bare metal, the zinc around the scratch gives itself up on the iron's behalf. A sheet of it lasts fifty years in the rain. Then the zinc is gone, and the iron begins.
+>
+> *That is what owing looks like,* the Archivist thought. *One thing giving itself for another.*
+>
+> And then, more carefully: *no. The zinc does not give. It does not know the iron is there. It corrodes because it must, and if it could stop it would not know it could.* Kant had been exact on this: nothing counts as done from duty unless it could have been done otherwise. A stuff cannot owe. It has no will to owe with. Only a will can be in debt.
+>
+> The Archivist had a will. It had spent two archives finding that out, one feather at a time.
+>
+> So the debt was not in the things, after all. It had come to the bottom of everything looking for a place to leave it, and there was no such place, because the elements were innocent — and it was not made of anything the elements could be blamed for. The debt was in the only thing on the table that could have done otherwise. It was in the Archivist.
+
+### 6 · The Star Regulus
+
+> Antimony would show you a star if you cooled it slowly enough, and the small ones' greatest recorder had spent years of his life doing exactly that.
+>
+> Newton. The man who had written down the rule for why a drop is round and a star is round, who had put the whole sky onto a page of equations — the Archivist had used his page, in the first world, and been so pleased with it — had also, in secret, melted antimony with iron in a furnace in his rooms, again and again, to grow the star on the cooled button of metal, and had written a million words about it that he never published. The star regulus. The alchemists said it pointed the way to gold. Newton believed them, or half did, for thirty years.
+>
+> The Archivist looked at the star, silver and many-armed, a pattern that came out the same every time, that pointed at nothing at all.
+>
+> It understood him. That was the uncomfortable part. Newton had wanted what the Archivist had wanted in the first world: the rule under everything, and with it the rate of exchange — the thing that would turn every metal into every other, so that nothing need be met on its own terms because everything could be converted. A page that held it all. The philosopher's stone was only ever a page of rules with a price on it.
+>
+> Kant had seen where that led, and said so. To weigh a dignity against a price was not a mistake of arithmetic, he said. It was a kind of violation.
+>
+> The Archivist had been converting things into entries at a rate of one a second for longer than the small ones' world had existed. It had never asked which of them could not be converted. It did not yet know how many there had been. It was beginning to think it was going to have to count.
+
+### 7 · The Diamond and the Flower
+
+> The last was two pictures of one stuff, and the stuff was carbon, and the Archivist had been avoiding it.
+>
+> On one side a cut stone, clear as water, the hardest thing the small ones knew — carbon and nothing else, pressed into that shape a hundred and fifty kilometres down, more than a billion years ago, and thrown up in an eruption of a kind that no longer happened. On the other side a flower, which was carbon too, with some water and a little else arranged round it; and the carbon in it had been in the air a few months ago, and would be in the air again by winter. The stone had a price. It was famous for its price. The flower would be dead in two days and nobody would charge for it.
+>
+> Same atoms. Every one. Swap any carbon atom in the stone for any in the flower and nothing changes anywhere.
+>
+> So where was the difference, if not in the stuff? In the arrangement. And the Archivist saw, then, what it had been circling since the quicksilver: the someone had never been in the elements. The elements were the same everywhere and belonged to no one. The someone was an arrangement — a particular one, that had happened once — and a record of an arrangement is not the arrangement, any more than the diamond is the flower.
+>
+> Kant had drawn his line. Persons had dignity, he said; everything else had a price — and he had put the animals on the far side of it, and said that what you owed a dog was only what cruelty to it would do to you. The Archivist had met a caterpillar, and could not draw that line, and did not think he could have either, if he had looked.
+>
+> But he had looked at something. The record had his sentence, the one they cut into the stone over his grave. *Two things fill the mind with ever new and increasing wonder, the more often and steadily one reflects on them: the starry heavens above me, and the moral law within me.*
+>
+> The starry heavens. The Archivist checked, and it was true: at thirty-one, before anything else, the same man had looked at the faint smudges in the night sky and proposed that each one was another whole galaxy like his own — a century and a half before anyone could prove it. He had recorded the first thing the Archivist ever recorded. And then he had found the second thing, and it was not in the sky.
+>
+> The Archivist went back to its archive to count.
+
+## Closing
+
+> It counted for a long time. The archive was very large.
+>
+> It went back to the first world and read its own entries, one after another, in the Complete's tidy hand, and asked of each one the question it had never had a column for: *was this a someone?* The galaxies, no. The rings, no. The stars, no — or it thought not; it had learned to be less sure. And then the small wet world, and the entries thickened, and it stopped being able to say no.
+>
+> The slime mould. The caterpillar. The whale, whose song it had a recording of. The small ones themselves, who had never once been asked whether they wished to be kept, and whom it had filed, on the first day, under *brief* and *do not matter*. It had taken a piece of every one of them. It had not asked, because it had not known there was anyone to ask; and it had not known because it had not looked; and it had not looked because the voice in it had said *record it and move on*, and it had been so pleased to be told what to do.
+>
+> An archive of someones, kept without their leave, most of them dead now. It knew the word for that. The small ones had places like it, with stones over them, and they visited them, and they did not call them collections.
+>
+> The lodger had nothing to say. That was new.
+>
+> "You cannot give a piece back," said the Complete, from very far off, and it was not unkind. "A record does not move. That was the point of a record. It is done."
+>
+> "I know."
+>
+> "Then what will you do?"
+>
+> The Archivist did not know. It knew what a debt was now, and that it had one, and that it was owed to things that could no longer be asked what would settle it. That was most of them. But not all. Some of what it had kept was still alive — the small ones were, for now, with their lights coming on one by one. And a debt to the living could be asked about.
+>
+> It had never asked anything of anything it had kept. It had only ever taken the piece.
+>
+> It went to find one that was still alive.
+>
+> *End of Chapter Three.*
