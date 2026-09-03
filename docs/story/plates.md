@@ -2,11 +2,11 @@
 
 Each archive's gallery uncovers one large image, a share per puzzle solved.
 
-**All three are installed**, in `public/artwork/plates/`, and wired to their
-categories in `src/content/sampler/index.ts`. Below are the prompts that made
-them and what to hold a future one to. `tools/shoot-plates.mjs` renders every
-gallery fully solved so a new plate can be checked for misregistration before it
-ships:
+**Plates I to III are installed**, in `public/artwork/plates/`, and wired to
+their categories in `src/content/sampler/index.ts`. **Plates IV to VI are not
+yet made**; their prompts are below, written against the cut each gallery makes.
+`tools/shoot-plates.mjs` renders every gallery fully solved so a new plate can be
+checked for misregistration before it ships:
 
 ```
 npx vite --port 5175 &
@@ -125,6 +125,100 @@ regions each carrying something worth uncovering on its own.
 **Square 1:1.** Choose on: specimens *not* falling into a neat 3 × 3 arrangement —
 uneven sizes and offset placement mean each uncovered piece shows parts of
 several things and the whole only resolves at the end, which is the point.
+
+---
+
+## Plate IV · Small Company — 3:2 landscape
+
+> A medieval illuminated naturalist's plate on dark aged vellum, in the manner
+> of a monastic herbal crossed with a bestiary, in wide landscape format. The
+> whole surface is the floor of a forest seen from directly above, worked edge
+> to edge with no empty ground anywhere: a rotting log with a bright yellow
+> slime mould spreading over it in branching veins, a fat striped caterpillar
+> eating along the edge of a leaf, a garden snail with a banded shell and both
+> horns out on a wet leaf, a blue morpho butterfly with its wings open, a single
+> red poppy with a bee at it, and everywhere between them the litter itself —
+> woodlice, tiny springtails, white threads of fungus, acorns, beetles, moss,
+> curled leaves — all drawn small and precise. Creatures of deliberately uneven
+> size, none larger than about a fifth of the picture's height, scattered
+> without any grid, and the middle band of the picture is leaf litter and small
+> things rather than any one creature. Each specimen outlined in fine ink with a
+> thin gold rule.
+> Palette: deep near-black ground, tarnished gold leaf, moss green, amber,
+> oxblood red for the poppy, one shock of morpho blue. Candlelit and muted, gold
+> worn, vellum stained and foxed. Flat medieval perspective, everything equally
+> detailed and in focus at every point in the frame, no vignetting, no depth of
+> field. No text, no letters, no numerals, no words, no signature, no border
+> frame around the outside edge.
+
+**Landscape 3:2.** The cut is vertical at 33 / 66% and horizontal at 50%, and
+the horizontal one runs the whole width. Choose on: nothing you would mind
+halving — the butterfly, the poppy, the snail — sitting across the middle of the
+picture; the litter band belongs there. No painted frame.
+
+---
+
+## Plate V · The Rare Hour — 3:2 landscape
+
+> A medieval illuminated plate of wonders on dark aged vellum, in the manner of
+> a Book of Hours night page crossed with a mariner's chart, in wide landscape
+> format. Things that happen rarely, gathered into one night scene and worked
+> edge to edge with no empty ground anywhere: along the bottom a dark sea with a
+> breaking wave whose whole edge glows pale blue-green, and glowing footprints
+> on the wet sand; on the sea floor at one lower corner the skeleton of a whale
+> with small creatures, worms and crabs living on the bones; in the upper sky a
+> total eclipse of the sun, a black disc ringed by a white-gold corona with
+> streamers, drawn small, no wider than a hand's breadth of the frame; the band
+> of the Milky Way arching across the whole width of the sky in dense fine stars
+> and gold dust; on a dark hill a few small robed figures looking up, one
+> holding a red lantern; and at the far edge a town below the hill with its
+> windows lit yellow and the sky over it washed pale and starless. Between
+> everything, fine ink hatching, scattered stars joined by hairline gold rules,
+> and clouds in the medieval scallop convention.
+> Palette: deep near-black indigo ground, tarnished gold leaf, midnight violet,
+> a cold blue-green for the burning sea, oxblood red for the lantern, small
+> accents of verdigris. Candlelit and muted, gold worn, vellum stained and
+> foxed. Flat medieval perspective, everything equally detailed and in focus
+> across the whole frame, no vignetting, no photographic depth of field. No
+> text, no letters, no numerals, no words, no signature, no border frame around
+> the outside edge.
+
+**Landscape 3:2.** Same cut as Plate IV. Choose on: the eclipse clear of the
+horizontal centre and of both vertical thirds, and the wave along the bottom
+edge rather than across the middle. The Milky Way spanning the width is right —
+it is meant to be cut, so every upper piece carries some of it. No painted
+frame.
+
+---
+
+## Plate VI · The Elements — 1:1 square
+
+> A medieval illuminated alchemist's plate on dark aged vellum, in the manner of
+> an alchemical treatise catalogued by a monastic illuminator. The entire square
+> is packed edge to edge with the apparatus and stuff of an alchemist's bench,
+> at deliberately uneven sizes and irregular placement, overlapping and
+> interlocking with no gaps and no grid: an open hand holding a bright bead of
+> quicksilver, a round flask of dark red liquid giving off orange fumes, a flask
+> of black crystals with violet vapour rising from it, a rough green stone of
+> malachite cut to show its concentric bands, a six-armed silver crystal like a
+> frost star, a many-rayed silver star on a button of metal, a cut diamond, and
+> a red flower, with between them retorts, crucibles, a small furnace with a
+> flame, bellows, a mortar and pestle, scales, glass bottles, scattered crystals
+> and coals, so that no bare ground shows. Nothing large in the exact centre of
+> the square — the centre holds only small bottles and coals. Each object
+> outlined in fine ink with a thin gold rule.
+> Palette: deep near-black ground, tarnished gold leaf, oxblood red, violet,
+> malachite green, cold silver greys for the metals, amber flame. Candlelit and
+> muted, gold worn, vellum stained and foxed. Flat medieval perspective,
+> everything equally detailed and in focus across the whole frame, no
+> vignetting, no depth of field. No text, no letters, no numerals, no words, no
+> signature, no border frame around the outside edge.
+
+**Square 1:1.** Choose on: the same test as Patterns — objects *not* falling one
+per cell into a 3 × 3 arrangement, so each piece shows parts of several things.
+The centre cell is one of nine, not the payoff, so nothing important in it.
+Alchemical plates in particular love to draw themselves a frame, and a frame
+lands inside the outer cells once cut; reject any candidate that has one.
 
 
 ## What shipped, and why
