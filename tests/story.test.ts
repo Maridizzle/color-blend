@@ -89,7 +89,7 @@ describe('collectionState', () => {
 describe('blurbFor and cellOwners', () => {
   it('finds the blurb by subject id', () => {
     const cosmos = SAMPLER_CATEGORIES.find((c) => c.id === 'cosmos')!;
-    expect(blurbFor(cosmos, 'saturn')).toMatch(/younger than the dinosaurs/);
+    expect(blurbFor(cosmos, 'saturn')).toMatch(/grand things are old things/);
     expect(blurbFor(cosmos, 'no-such-subject')).toBeUndefined();
   });
 
