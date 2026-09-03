@@ -1,10 +1,21 @@
 # The collection plates
 
-Each archive's gallery uncovers one large image, a share per puzzle solved. These
-are the generation prompts for the three shipped archives, written for **Flux**.
+Each archive's gallery uncovers one large image, a share per puzzle solved.
 
-Drop the chosen file at `public/artwork/plates/<id>.jpg` and add `mosaic` to that
-category in `src/content/sampler/index.ts`:
+**All three are installed**, in `public/artwork/plates/`, and wired to their
+categories in `src/content/sampler/index.ts`. Below are the prompts that made
+them and what to hold a future one to. `tools/shoot-plates.mjs` renders every
+gallery fully solved so a new plate can be checked for misregistration before it
+ships:
+
+```
+npx vite --port 5175 &
+URL=http://127.0.0.1:5175 node tools/shoot-plates.mjs
+```
+
+To replace one, or add a plate for a new archive, drop the file at
+`public/artwork/plates/<id>.jpg` and add `mosaic` to that category in
+`src/content/sampler/index.ts`:
 
 ```ts
 mosaic: { kind: 'url', url: './artwork/plates/cosmos.jpg' },
@@ -108,3 +119,22 @@ regions each carrying something worth uncovering on its own.
 **Square 1:1.** Choose on: specimens *not* falling into a neat 3 × 3 arrangement —
 uneven sizes and offset placement mean each uncovered piece shows parts of
 several things and the whole only resolves at the end, which is the point.
+
+
+## What shipped, and why
+
+- **The Cosmos** — the candidate with no painted border and no dominant centred
+  object: a Milky Way band running corner to corner, planets and constellations
+  spread to every edge. Generated 3:2, so it is centre-cropped to 683×512 to
+  match the 4:3 grid rather than being stretched to fit it. The rejected three
+  all carried a painted frame, which lands *inside* the outer cells once cut and
+  reads as an arbitrary line through the picture.
+- **Our Place In It** — chosen over a version with a tidier centred globe,
+  because a globe that fits the middle cell exactly makes that one cell the whole
+  payoff and the other eight decoration. This one's globe spans the centre cuts,
+  so the surrounding pieces carry parts of it, and every edge cell has mountains,
+  waves, a ship, a sun or a moon of its own.
+- **Patterns in Nature** — the only candidate with no frame at all, the widest
+  colour range, and specimens at genuinely uneven sizes rather than in a grid.
+  That last part matters: had the specimens landed one per cell, each piece would
+  be a complete object and the mosaic would never resolve into anything.

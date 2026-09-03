@@ -43,6 +43,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'cosmos',
     title: 'The Cosmos',
     blurb: 'Deep space, and the physics that shapes it.',
+    mosaic: { kind: 'url', url: './artwork/plates/cosmos.jpg' },
     subjects: [
       {
         id: 'spiral-galaxy',
@@ -204,6 +205,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'our-place',
     title: 'Our Place In It',
     blurb: 'Standing under it, made of it, and trying to reach it.',
+    mosaic: { kind: 'url', url: './artwork/plates/our-place.jpg' },
     subjects: [
       {
         id: 'meadow-galaxy',
@@ -337,6 +339,7 @@ export const SAMPLER_CATEGORIES: Category[] = [
     id: 'patterns',
     title: 'Patterns in Nature',
     blurb: 'Spirals, ripples, and colour made from structure rather than pigment.',
+    mosaic: { kind: 'url', url: './artwork/plates/patterns.jpg' },
     subjects: [
       {
         id: 'seedling',
