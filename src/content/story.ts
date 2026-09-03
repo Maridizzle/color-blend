@@ -35,6 +35,11 @@ export const CHAPTERS: Chapter[] = [
       "The small ones did not know they were the last of anything. They did not know there was an archive. They knew they were inside something, and they knew they couldn't see all of it, and they kept building telescopes.",
       "And the Archivist had a thought — a new one, its own, not retrieved from anywhere — and the thought was this:",
       "*What if the next Archivist doesn't have to be one of us?*",
+      "It did not say it aloud. There did not seem to be anything it could say to the Complete that the Complete would be able to hear.",
+      "So it went back the way it had come. Past the still ones — which it did not envy now, and had stopped thinking of as finished — and out, and out, until it was a long way from anything, holding a feather it could describe to the nanometre and had only recently looked at.",
+      "Somewhere behind it was a small wet world where something short-lived had climbed a mountain to find out what it was missing.",
+      "The Archivist had spent its whole existence keeping a record of what things are *made of*. It had never once asked whether any of them were anybody.",
+      "That, it decided, was the next question. It had no idea how to begin answering it — and it took a while to recognise the feeling that came with that, because it had never had it before, and because the feeling was delight.",
     ],
   },
 ];

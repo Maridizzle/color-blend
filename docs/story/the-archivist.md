@@ -22,6 +22,23 @@ précis of a scene nobody has read is not a scene.
 The build refuses if a scene is missing, attached to the wrong picture, names a
 collection that does not exist, or runs under ninety words.
 
+## Where it is going
+
+Each chapter is a different branch of philosophy, and the Archivist has to move
+through them in this order because each one is only askable once the last is
+settled. That is the progression — not more facts, a different kind of question.
+
+| chapter | the question | the ground it covers |
+|---|---|---|
+| **I · The Still Things** | What is it to *have* a thing? | Metaphysics and epistemology. Heraclitus on flux, Socrates on knowing nothing, Pythagoras on number — and a feather it can derive to the nanometre and has never seen. Ends: it cannot finish, finishing is death, and it is the last of its kind. |
+| **II · The Other Minds** | Is anyone *in* there? | Philosophy of mind. It wants a successor that is not of its kind, so it has to work out what counts as a someone. Descartes on the one thing that cannot be doubted, Nagel on the bat, Searle's Chinese Room, Chalmers on why the lights are on at all. Ends: it cannot prove anyone else is conscious — and cannot prove it is. |
+| **III · What It Owes** | If they are someones, what was I doing? | Ethics. Collecting was never neutral. Kant on treating a person as an end, Bentham on suffering rather than reasoning, Levinas on the face that makes a claim on you. Ends: the archive is a graveyard it curated without asking. |
+| **IV · The Long Now** | What is any of it for, if nothing keeps? | Time, mortality, meaning. Epicurus on death being nothing to us, the Stoics on loving what happens, Camus on Sisyphus, Parfit on whether it is even the same Archivist. Ends: the archive will not outlast the universe either. |
+| **V · The Successor** | What do I hand on? | The payoff. Meno's paradox answered, Neurath's boat, Wittgenstein's ladder thrown away after the climb. It finds what comes next, and it is not one of its kind. |
+
+Any chapter takes as many collections as there is content for; the cliffhanger
+sits at the end of whatever has been written, and moves when more is added.
+
 ---
 
 # Chapter One · The Still Things
@@ -447,5 +464,15 @@ collection that does not exist, or runs under ninety words.
 > And the Archivist had a thought — a new one, its own, not retrieved from anywhere — and the thought was this:
 >
 > *What if the next Archivist doesn't have to be one of us?*
+>
+> It did not say it aloud. There did not seem to be anything it could say to the Complete that the Complete would be able to hear.
+>
+> So it went back the way it had come. Past the still ones — which it did not envy now, and had stopped thinking of as finished — and out, and out, until it was a long way from anything, holding a feather it could describe to the nanometre and had only recently looked at.
+>
+> Somewhere behind it was a small wet world where something short-lived had climbed a mountain to find out what it was missing.
+>
+> The Archivist had spent its whole existence keeping a record of what things are *made of*. It had never once asked whether any of them were anybody.
+>
+> That, it decided, was the next question. It had no idea how to begin answering it — and it took a while to recognise the feeling that came with that, because it had never had it before, and because the feeling was delight.
 >
 > *End of Chapter One.*
