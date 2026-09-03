@@ -6,10 +6,14 @@ import { button, clear, el } from './dom';
 import { puzzleScreen } from './puzzleScreen';
 import { categoryFlash, introSplash, type Dismissable } from './intro';
 import { howToPlayContent } from './howToPlay';
+import { roadScreen } from './roadScreen';
+import { galleryScreen } from './galleryScreen';
+import { roman } from './numerals';
 import { prefersReducedMotion } from '../game/persistence';
 
 type Route =
   | { name: 'home' }
+  | { name: 'gallery'; categoryId: string }
   | { name: 'category'; categoryId: string }
   | { name: 'puzzle'; categoryId: string; subjectId: string }
   | { name: 'journal' }
@@ -70,9 +74,10 @@ export class App {
     this.history.push(route);
     this.render();
 
-    // Only on the way in. Flashing the same card again on every Back would turn
-    // a piece of punctuation into a toll gate.
-    if (route.name === 'category') {
+    // Only on the way in, and on entering the archive rather than its folio
+    // list. Flashing the same card again on every Back would turn a piece of
+    // punctuation into a toll gate.
+    if (route.name === 'gallery') {
       const category = findCategory(route.categoryId);
       if (category) {
         this.showOverlay(
@@ -110,7 +115,14 @@ export class App {
 
   /** Re-render when new categories arrive, e.g. baked packs finishing loading. */
   contentChanged(): void {
-    if (this.route.name === 'home') this.render();
+    if (this.route.name === 'home' || this.route.name === 'gallery') this.render();
+  }
+
+  /** The gallery for a collection -- back to it if we came from there, else in. */
+  private openGallery(categoryId: string): void {
+    const previous = this.history[this.history.length - 2];
+    if (previous?.name === 'gallery' && previous.categoryId === categoryId) this.goBack();
+    else this.navigate({ name: 'gallery', categoryId });
   }
 
   private render(): void {
@@ -146,6 +158,32 @@ export class App {
       case 'packs':
         this.root.appendChild(this.packsScreen());
         break;
+      case 'gallery': {
+        const category = findCategory(route.categoryId);
+        if (!category) {
+          this.goHome();
+          return;
+        }
+        const index = allCategories().findIndex((c) => c.id === category.id);
+        const gallery = galleryScreen(category, loadProgress(), {
+          onEnter: () => this.navigate({ name: 'category', categoryId: category.id }),
+        });
+        this.teardown = gallery.destroy;
+        this.root.appendChild(
+          el('section', {
+            class: 'screen screen-list screen-gallery',
+            children: [
+              this.subHeader(
+                category.title,
+                'The collection, and what the Archivist made of it.',
+                category.fromPack ? 'Visiting archive' : `Archive ${roman(index + 1)}`,
+              ),
+              gallery.element,
+            ],
+          }),
+        );
+        break;
+      }
       case 'how':
         this.root.appendChild(
           el('section', {
@@ -166,50 +204,11 @@ export class App {
     const progress = loadProgress();
     const categories = allCategories();
 
-    const cards = categories.map((category, categoryIndex) => {
-      const solved = category.subjects.filter((s) => progress.solved[s.id]).length;
-      const cover = category.subjects.find(
-        (subject) => progress.solved[subject.id] && subject.artwork.kind === 'url',
-      );
-      return el('button', {
-        class: 'card category-card',
-        attrs: { type: 'button' },
-        on: {
-          click: (() => this.navigate({ name: 'category', categoryId: category.id })) as never,
-        },
-        children: [
-          el('div', {
-            class: 'category-illumination',
-            attrs: { 'aria-hidden': 'true' },
-            children: [
-              cover?.artwork.kind === 'url'
-                ? el('img', {
-                    class: 'category-image',
-                    attrs: { src: cover.artwork.url, alt: '', loading: 'lazy' },
-                  })
-                : null,
-              el('span', { class: 'category-rose' }),
-            ],
-          }),
-          el('div', {
-            class: 'card-body',
-            children: [
-              el('span', {
-                class: 'card-kicker',
-                text: category.fromPack ? 'Visiting archive' : `Archive ${roman(categoryIndex + 1)}`,
-              }),
-              el('h2', { class: 'card-title', text: category.title }),
-              category.blurb ? el('p', { class: 'card-blurb', text: category.blurb }) : null,
-              el('p', {
-                class: 'card-meta',
-                text: `${solved} of ${category.subjects.length} revealed`,
-              }),
-            ],
-          }),
-          el('span', { class: 'category-arrow', attrs: { 'aria-hidden': 'true' }, text: '†' }),
-        ],
-      });
-    });
+    // The road rather than a list of cards. A list says how many collections
+    // there are; the road says where you are along them, and that it goes on.
+    const road = roadScreen(categories, progress, (categoryId) =>
+      this.navigate({ name: 'gallery', categoryId }),
+    );
 
     return el('section', {
       class: 'screen screen-home',
@@ -235,7 +234,7 @@ export class App {
             el('div', { class: 'ornament-rule', attrs: { 'aria-hidden': 'true' } }),
           ],
         }),
-        el('div', { class: 'card-list', children: cards }),
+        road,
         el('nav', {
           class: 'home-nav',
           children: [
@@ -312,6 +311,10 @@ export class App {
         this.subHeader(category.title, category.blurb),
         el('p', { class: 'list-intro', text: 'Choose a sealed folio and restore its order of light.' }),
         el('div', { class: 'card-list', children: cards }),
+        el('div', {
+          class: 'category-actions',
+          children: [button('The collection ✦', () => this.openGallery(categoryId))],
+        }),
       ],
     });
   }
@@ -519,7 +522,7 @@ export class App {
 
   // --------------------------------------------------------------- shared
 
-  private subHeader(title: string, blurb?: string): HTMLElement {
+  private subHeader(title: string, blurb?: string, kicker = 'Color Blend Archive'): HTMLElement {
     return el('header', {
       class: 'sub-header',
       children: [
@@ -527,7 +530,7 @@ export class App {
         el('div', {
           class: 'sub-heading-copy',
           children: [
-            el('span', { class: 'sub-kicker', text: 'Color Blend Archive' }),
+            el('span', { class: 'sub-kicker', text: kicker }),
             el('h1', { class: 'sub-title', text: title }),
             blurb ? el('p', { class: 'sub-blurb', text: blurb }) : null,
           ],
@@ -535,25 +538,6 @@ export class App {
       ],
     });
   }
-}
-
-function roman(value: number): string {
-  const numerals: [number, string][] = [
-    [10, 'X'],
-    [9, 'IX'],
-    [5, 'V'],
-    [4, 'IV'],
-    [1, 'I'],
-  ];
-  let rest = value;
-  let result = '';
-  for (const [amount, glyph] of numerals) {
-    while (rest >= amount) {
-      result += glyph;
-      rest -= amount;
-    }
-  }
-  return result;
 }
 
 const EXAMPLE_MANIFEST = `{

@@ -55,13 +55,24 @@ async function main() {
   await page.screenshot({ path: `${OUT}/0-how.png`, fullPage: true });
   await page.locator('.sub-header .button-icon').click();
 
-  await page.waitForSelector('.category-card');
-  await page.screenshot({ path: `${OUT}/1-home.png` });
+  // The road: every archive as a station. A station opens its gallery.
+  await page.waitForSelector('.station-card');
+  const stations = await page.locator('.station-card').count();
+  console.log(`road shown with ${stations} stations`);
+  await page.screenshot({ path: `${OUT}/1-home.png`, fullPage: true });
 
-  // Into a category. A flash card covers the list for a moment on the way in,
-  // so dismiss it rather than racing it.
-  await page.locator('.category-card').first().click();
+  // Into the gallery. A flash card covers it for a moment on the way in, so
+  // dismiss it rather than racing it.
+  await page.locator('.station-card').first().click();
   await page.locator('.flash').click({ timeout: 3000 }).catch(() => {});
+  await page.waitForSelector('.gallery .mosaic');
+  const sealedCells = await page.locator('.mosaic-cell:not(.mosaic-cell-held)').count();
+  const passages = await page.locator('.tale .tale-passage').count();
+  console.log(`gallery shown: ${sealedCells} sealed cells, ${passages} passage(s) unlocked`);
+  await page.screenshot({ path: `${OUT}/1b-gallery.png`, fullPage: true });
+
+  // Down into the folio list.
+  await page.locator('.gallery-actions .button').click();
   await page.waitForSelector('.subject-card');
   await page.screenshot({ path: `${OUT}/2-category.png` });
 
@@ -136,11 +147,20 @@ async function main() {
 
   const revealed = await page.locator('.reveal-title').textContent();
   const facts = await page.locator('.reveal-facts li').count();
+  const tale = await page.locator('.reveal-panel .reveal-tale').count();
+  if (tale !== 1) problems.push(`reveal panel shows ${tale} Archivist blurbs, expected 1`);
   console.log(`revealed: ${revealed}, facts shown: ${facts}`);
 
   // Journal should now hold whatever facts fired during the solve.
   await page.locator('.reveal-actions .button').last().click();
   await page.waitForSelector('.subject-card');
+  await page.locator('.sub-header .button-icon').click();
+  await page.waitForSelector('.gallery');
+  // The gallery now shows the passage this solve unlocked.
+  const unlocked = await page.locator('.tale .tale-passage').count();
+  console.log(`gallery after solving: ${unlocked} passage(s) unlocked`);
+  if (unlocked < 2) problems.push(`gallery shows ${unlocked} passages after a solve, expected the opening plus one`);
+  await page.screenshot({ path: `${OUT}/6b-gallery-after.png`, fullPage: true });
   await page.locator('.sub-header .button-icon').click();
   await page.waitForSelector('.home-nav');
   await page.locator('.home-nav .button', { hasText: 'Journal' }).click();

@@ -3,7 +3,9 @@ import { preparePuzzle } from '../game/prepare';
 import { isTwoColour } from '../puzzle/difficulty';
 import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
 import type { Category, Subject } from '../content/types';
+import { blurbFor } from '../game/story';
 import { button, clear, el } from './dom';
+import { paragraph } from './tale';
 
 export interface PuzzleScreenHost {
   goBack(): void;
@@ -150,6 +152,7 @@ export function puzzleScreen(
   function showRevealPanel(moves: number): void {
     const nextIndex = index + 1;
     const next = category.subjects[nextIndex];
+    const blurb = blurbFor(category, subject.id);
 
     const panel = el('div', {
       class: 'reveal-panel',
@@ -188,6 +191,13 @@ export function puzzleScreen(
               text: [subject.attribution.creator, subject.attribution.source, subject.attribution.license]
                 .filter(Boolean)
                 .join(' · '),
+            })
+          : null,
+        // The Archivist's blurb: fiction, after the facts, in its own register.
+        blurb
+          ? el('blockquote', {
+              class: 'reveal-tale tale-passage',
+              children: [el('span', { class: 'tale-kicker', text: 'The Archivist' }), paragraph(blurb)],
             })
           : null,
         el('div', {

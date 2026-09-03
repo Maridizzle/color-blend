@@ -53,6 +53,36 @@ export interface Category {
   subjects: Subject[];
   /** True for categories loaded from a zip at runtime rather than shipped. */
   fromPack?: boolean;
+  /**
+   * One large plate the whole collection uncovers, a share per puzzle.
+   *
+   * Optional. Without it the gallery composes the mosaic from the members' own
+   * artworks -- which is all a pack loaded from a zip can ever have.
+   */
+  mosaic?: ArtworkSource;
+}
+
+/** One puzzle's share of the Archivist's tale. */
+export interface TaleEntry {
+  subjectId: string;
+  /** Two or three sentences on the reveal panel, standing alone. */
+  blurb: string;
+  /** The chapter's own passage, unlocked in the gallery. Paragraphs. */
+  passage: string[];
+}
+
+/**
+ * A collection's section of the tale. Fiction, kept apart from the facts each
+ * subject carries and shown in a different register.
+ */
+export interface CollectionTale {
+  categoryId: string;
+  /** Unlocked on arrival. Paragraphs. */
+  opening: string[];
+  /** One per subject, matched by id. */
+  entries: TaleEntry[];
+  /** Unlocked when the collection is complete. Paragraphs. */
+  closing?: string[];
 }
 
 /** A decoded artwork: a drawable for the reveal, and pixels for analysis. */

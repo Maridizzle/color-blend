@@ -14,14 +14,19 @@ import { SAMPLER_CATEGORIES } from '../content/sampler';
 
 const packCategories: Category[] = [];
 
+/**
+ * Shipped collections first, then packs in the order they arrived. The road is
+ * travelled in this order, so a pack joins the end of it -- and the shipped
+ * archives keep their numbers however many packs are loaded.
+ */
 export function allCategories(): Category[] {
-  return [...packCategories, ...SAMPLER_CATEGORIES];
+  return [...SAMPLER_CATEGORIES, ...packCategories];
 }
 
 export function addPackCategory(category: Category | IngestedCategory): void {
   const existing = packCategories.findIndex((c) => c.id === category.id);
   if (existing >= 0) packCategories.splice(existing, 1);
-  packCategories.unshift(category);
+  packCategories.push(category);
 }
 
 export function findCategory(categoryId: string): Category | undefined {
