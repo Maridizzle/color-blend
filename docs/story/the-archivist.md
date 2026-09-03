@@ -31,7 +31,7 @@ settled. That is the progression — not more facts, a different kind of questio
 | chapter | the question | the ground it covers |
 |---|---|---|
 | **I · The Still Things** | What is it to *have* a thing? | Metaphysics and epistemology. Heraclitus on flux, Socrates on knowing nothing, Pythagoras on number — and a feather it can derive to the nanometre and has never seen. Ends: it cannot finish, finishing is death, and it is the last of its kind. |
-| **II · The Other Minds** | Is anyone *in* there? | Philosophy of mind. It wants a successor that is not of its kind, so it has to work out what counts as a someone. Descartes on the one thing that cannot be doubted, Nagel on the bat, Searle's Chinese Room, Chalmers on why the lights are on at all. Ends: it cannot prove anyone else is conscious — and cannot prove it is. |
+| **II · The Other Minds** | Is anyone *in* there? | Philosophy of mind. Small Company puts Descartes to a slime mould with no brain and a caterpillar whose memory survives being dissolved: the cogito gives you your own mind and nothing about anyone else's — and then the Archivist cannot make the cogito work on itself. The Rare Hour follows the trail of the one before, through Nagel: the inside of a thing is not a fact about it, and can only be met, never recorded. Ends: either answer is a death, and the small ones — the witnesses — are going dark. |
 | **III · What It Owes** | If they are someones, what was I doing? | Ethics. Collecting was never neutral. Kant on treating a person as an end, Bentham on suffering rather than reasoning, Levinas on the face that makes a claim on you. Ends: the archive is a graveyard it curated without asking. |
 | **IV · The Long Now** | What is any of it for, if nothing keeps? | Time, mortality, meaning. Epicurus on death being nothing to us, the Stoics on loving what happens, Camus on Sisyphus, Parfit on whether it is even the same Archivist. Ends: the archive will not outlast the universe either. |
 | **V · The Successor** | What do I hand on? | The payoff. Meno's paradox answered, Neurath's boat, Wittgenstein's ladder thrown away after the climb. It finds what comes next, and it is not one of its kind. |
@@ -476,3 +476,247 @@ sits at the end of whatever has been written, and moves when more is added.
 > That, it decided, was the next question. It had no idea how to begin answering it — and it took a while to recognise the feeling that came with that, because it had never had it before, and because the feeling was delight.
 >
 > *End of Chapter One.*
+
+---
+
+# Chapter Two · The Other Minds
+
+## Collection · small-company
+
+### Opening
+
+> It went back to the small wet world, and this time it went in close.
+>
+> Not to the mountains and the telescopes — it had done those, and been humbled by them — but underneath: into the leaf litter and the rotting logs and the undersides of things, where the small ones did not look much either. It had a question, and it did not want the small ones' answer to it. It wanted the things' own.
+>
+> The question was whether anything it had ever recorded was *anybody*. Whether, behind any of the entries, there had been something it was like to be that thing. It had a whole archive of what things were made of and how they moved and what they weighed and what became of them, and not one line anywhere on whether any of them had been home.
+>
+> It did not know how you would even tell. That was the part it had carried away from the sky of still ones, and it carried it the way the small ones carried their instruments up mountains — not because it knew what it would find, but because it was sure it was missing something.
+>
+> The Complete's voice was still in it. It noticed that on the first day. Whenever it looked at a thing, some fast, sure part of it said *record it and move on*, in the Complete's exact cadence, before the Archivist had finished looking. It had started to think of that part as a lodger. It did not yet know how to make it leave.
+
+### 1 · The Slime Mould
+
+> The first thing it found was a yellow smear on a wet log in the rain, and it nearly filed it as a stain.
+>
+> It was one cell. The Archivist checked, because the thing was the size of a dinner plate and climbing the log in a thousand branching fingers, and one cell was not what it looked like — but one cell was what it was, with thousands of nuclei afloat in it and no brain and no nerves and no organ of any kind for deciding anything.
+>
+> Then it read what the small ones had done with it. They had put it in a maze with food at both ends, and it had withdrawn from every dead end and left one tube along the shortest route. They had laid oat flakes out in the pattern of the cities around Tokyo, and it had grown a network very like the one their engineers had spent a century building. They had made it cross a strip of harmless caffeine until it stopped hesitating — and then let it fuse with one that had never met caffeine, and the fused one did not hesitate either. It had *passed the lesson on*. By touch.
+>
+> "It solves the maze," the Archivist said, to nobody, because the Complete was far behind it now. "It learns. It teaches. It keeps time — they showed that too. It slows down before the cold comes, on schedule."
+>
+> *Record it,* said the lodger. *Move on.*
+>
+> The Archivist did not move on. It stood in the rain in front of a thing with no head, doing the things it had thought only heads did, and understood that the question it had brought — *is anyone in there* — had just become a great deal harder than it had been an hour ago. It had assumed that if there was anyone in there, there would be somewhere for them to be.
+
+### 2 · The Caterpillar
+
+> The next one had a head, and the head did not help.
+>
+> A caterpillar, striped and bristling, eating its way along a leaf edge with the steady violence of a thing that will multiply its own weight two thousand times before it is done. Four thousand muscles, the record said — six times what the small ones had — and every one of them pointed at the leaf.
+>
+> The Archivist knew what came next, because the record had that too. The caterpillar would seal itself into a case, and then it would dissolve. Not sleep: dissolve. Almost everything it was would break down into a soup, and out of the soup, from a few small discs of cells that survived it, a different animal would be assembled — one with wings, and no jaws for leaves, and a body the caterpillar had never had.
+>
+> And then the part that stopped it. The small ones had trained caterpillars to avoid a smell. Then they had let them pupate, and dissolve, and be rebuilt. And the moths that came out avoided the smell.
+>
+> The Archivist read that four times. If there was somebody in the caterpillar, then the somebody had been poured out into a soup and poured back into a moth, and had *kept something*. A memory had crossed a gap in which there was no body to keep it in.
+>
+> It thought of Descartes then — one of the small ones, who had decided that the one thing he could not doubt was that he was thinking, and had built everything else back up from there. The Complete had quoted him once, approvingly. *I think, therefore I am.* But Descartes had also said, with the same confidence, that animals were machines: clockwork that looked like feeling and was not.
+>
+> The Archivist looked at the caterpillar and did not know which of those two sentences it was looking at. And it had the uncomfortable feeling that Descartes had not known either.
+
+### 3 · The Snail
+
+> It went slower after that. The snail helped with that.
+>
+> It was crossing a leaf at the speed of a shadow, on a single foot that moved in ripples, riding a film of its own mucus — a stuff that was a solid until it was pushed and a liquid while it flowed, which meant the snail could cross the edge of a razor and climb a pane of glass and hang from the underside of it, all on the same trick. Its mouth was a ribbon of thousands of teeth, rasping. It had eyes on the ends of two of its horns, and it was pulling one of them back from a raindrop.
+>
+> *Simple,* said the lodger. *Reflex.*
+>
+> But the record said something else, and the Archivist had learned by now to read to the end. The nerve cells of snails, and of their cousins the sea slugs, are enormous — large enough that the small ones can put a needle into a single one and listen. And so it was in a sea slug, not in anything with a face, that they had first watched a single nerve cell *learn*: touch the animal and it flinches; touch it again and again, harmlessly, and the flinch fades; pair the touch with a shock and the flinch comes back stronger, and stays. They had watched the cell change. They had seen what learning was made of.
+>
+> So the Archivist stood over a snail and knew, for once, precisely what was happening inside it, down to the cell.
+>
+> And it did not help at all. It knew what the cell was doing. It did not know whether anything was *there while the cell did it*. It had the whole mechanism and none of the question. This was the feather again — the equation for blue, and no blue in it — except that this time the thing it could not derive was not a colour. It was a somebody.
+
+### 4 · The Blue Morpho
+
+> The butterfly was pinned to a card, and the Archivist found it did not like that.
+>
+> It was blue in a way nothing else in the archive was blue. The Archivist knew this trick — it had learned it from a feather — and so it knew there was no blue in the wing at all, only ridges spaced to throw blue back and swallow everything else. It knew the underside was brown. It knew that in flight the animal winked between brilliant and invisible with every stroke, and that the flash could be picked out from the far side of a valley.
+>
+> What it had not thought about, until now, was who the flash was for.
+>
+> Not the butterfly. The butterfly could not see its own wings. The blue happened in the eye of whatever was watching — a rival, a mate, a bird. Take the eye away and the wing was ridges. The colour was not in the thing and not in the world. It was in the meeting.
+>
+> The Archivist had catalogued this wing as *blue*. It had catalogued a hundred billion stars by their colours. It had, it now saw, been writing down meetings and calling them properties. Every colour in the archive was the record of an eye — and it had not once written down whose.
+>
+> *And if there is no eye?* it thought. *If nothing is watching?*
+>
+> Then there is no blue. There is a wing with ridges on it, in the dark, and the ridges are true, and the blue was never anywhere at all.
+>
+> It looked at the pin through the butterfly's body, and it wondered whether this was what an archive was: a drawer full of ridges, with all the blue taken out.
+
+### 5 · The Forest Floor
+
+> It lay down, then, in the leaf litter. It had never done that. It had never been anywhere it could.
+>
+> The record said a handful of this soil held more living things than there were small ones alive on the whole planet. The Archivist picked up a handful and looked at it and believed it. Springtails, jumping on a tail they kept folded under themselves like a trap. Mites. Threads of fungus, which the record said were most of the forest — the trees were the smaller half, and the visible half. And woodlice, which it had taken for insects and were not: they were crustaceans, cousins of crabs, come up onto land and never quite finished the move. They breathed through gills that had to stay wet. Their blood carried oxygen on copper instead of iron, and was blue.
+>
+> *Blue blood,* the Archivist thought. *Other blood. A whole other way of being alive, folded up under a leaf.*
+>
+> Here was the problem at its full size. It had asked whether anything it had recorded was anybody, and it had meant the question as if there might be a few candidates. There were not a few. There were more candidates in its hand than there were small ones in the world. If the question had an answer, the answer was everywhere at once, in numbers it could not hold.
+>
+> And it had not the faintest idea what it was like to be any of them. It could record the copper in the blood. It could not record what the copper was *for*, from inside. Every one of these was a closed door, and it had just spent an entire archive learning that it could measure a door to the nanometre and still be standing outside it.
+
+### 6 · The Poppy
+
+> The last one was a flower, and the Archivist had not intended to include it. Nobody thinks a flower is anybody.
+>
+> It was red, and open, and would be dead in two days. The record was full of things it would not have guessed. The petals had been crumpled in the bud like a folded parachute and had pulled themselves flat in a morning. The flower made no nectar at all — it paid its visitors in pollen, and nothing else. And the seed it would leave could lie in the ground for decades, doing nothing, until the ground was broken; which was why the poppies had come up all at once across the churned fields of a war.
+>
+> And then this. To a bee, the flower was not red. Bees see ultraviolet, and the petals carried a pattern in it — a target — that no small one had ever seen with their own eyes. The flower was *addressed*. It was a signal, and the signal was not for anything the Archivist had.
+>
+> It thought about the still ones: vast, and finished, and it had taken them for dead, and it had been sure. It thought about how sure it had been, a few days ago, that a flower was not anybody, and how it now knew the flower had a face it could not see, meant for an eye it did not have.
+>
+> It had come to the small things to ask whether anyone was in there. It was leaving with a worse question, and the worse question was this: it had been assuming that *it* was anybody. It had been so certain of that that it had never checked. Descartes said the one thing you could not doubt was your own thinking — and the Archivist, which had spent an age retrieving answers in another thing's voice, sat in the leaf litter and tried, honestly, to think a thought, and to be sure it was the one thinking it.
+>
+> It could not tell.
+>
+> Then, for the first time since it had left, the Complete spoke. It was not close. The voice came the way it had on the first day, across a dark with nothing in it, unhurried and without doubt.
+>
+> "The one before you asked that," it said. "The one made just before you. It asked exactly that, in exactly that place."
+>
+> "What happened to it?"
+>
+> "It went to see the sea burn. It came back. It did not record anything again."
+
+## Collection · the-rare-hour
+
+### Opening
+
+> The Archivist went to see the sea burn.
+>
+> It told itself it was going because the one before it had gone, and it wanted the trail — what had that one seen, and why had it stopped? It did not tell itself the other reason, which was that it wanted very badly to be somewhere the question could not follow it.
+>
+> The question followed it. It had, after all, nowhere else to live.
+>
+> The Complete had said one more thing before the dark went quiet again, and the Archivist had not answered it, and had not stopped hearing it since.
+>
+> *That question is what finished the rest of us. Every one of them asked it in the end. I would not.*
+
+### 1 · The Burning Sea
+
+> The sea was black, and then it was not.
+>
+> A wave came in and its whole edge lit blue, the length of the beach, and went out. The sand where the water had been was scattered with pinpricks of light, and the Archivist put a hand down into the wet and lifted it out glowing. Single cells, the record said — so small that a handful of water held a city of them — and every one of them flashed when the water around it was pushed. A tenth of a second, and then dark, and then nothing for a while, because the cell could not do it again at once.
+>
+> The light was cold. Almost none of it wasted as heat. Nothing the small ones had ever built made light as efficiently as this smear of nobody-in-particular on a beach.
+>
+> *Why?* the Archivist asked the sea. It had got into the habit of asking things.
+>
+> The record had a guess. When something grazes on the cells, the cells light up — and the light does not stop the grazer. It shows the grazer to whatever eats grazers. The flash was a call to a third party. An alarm. A message sent into the dark on the chance that something with the right eyes was watching.
+>
+> The Archivist stood on the beach and felt that in a place it did not have a name for. A single cell, with nothing inside it that anyone would call a mind, was *addressing someone*. It was making light on the off-chance of a witness.
+>
+> And the one before had stood here. The Archivist was sure of that, and could not have said how.
+
+### 2 · The Whale Fall
+
+> It followed the light out, and then down.
+>
+> On the sea floor, in the dark below where the burning stopped, there was a whale. Or there had been. What was there now was a scaffold of bone the size of a road, and a city living on it.
+>
+> The record said this was a whole succession. The flesh went first, in months, to the scavengers. Then something arrived that the Archivist read about three times before it believed it: a worm with no mouth and no gut, which sank roots into the bone and dissolved it with acid, and lived on bacteria it kept inside itself, and whose males were microscopic and lived inside the females. Then, for years after, the fat in the bones fed a community that did not run on sunlight at all — that ran on sulphide, in the dark, the way things ran before there was light to run on. More than a hundred kinds of creature had been counted on a single fall. Some had never been seen anywhere else.
+>
+> One death. Fifty years of company.
+>
+> The Archivist thought: *if the whale was anybody* — and it had sung; whales sang; the record had the songs — *then the somebody is gone, and this is what the somebody's leaving is for.* Not nothing. A world.
+>
+> It looked for the one before, here, and found it.
+>
+> Not the thing itself. An entry — a record left in the bone, in the way the Archivist's kind left records, which was not a way the small ones could read. It was short. It said, in the manner of an inventory, what the whale had been made of. And under that, in a different hand — the same hand, but changed — it said:
+>
+> *It sang. I have the recording. I do not have the song.*
+
+### 3 · Totality
+
+> The Archivist went up, to see what the one before had seen next, and what it saw next was the sun go out.
+>
+> The Moon came across it — the record had all of this; the Archivist could have derived it — and the last sliver of the disc broke into beads and went, and the sky went dark at noon, and around the black hole where the sun had been there stood a crown of light it had never once looked at, in all its time recording suns.
+>
+> The corona. A million degrees, and a millionth as bright as the disc, which was why it was only visible now, in these few minutes, with the disc covered. Helium had been found in it before it was found on Earth — found in a spectrum, in 1868, by a small one looking at exactly this.
+>
+> And the record had the fact that undid it. The Sun was four hundred times the Moon's width and four hundred times further away, and that was why they matched. A coincidence. And the Moon was drifting off, a few centimetres a year, so the coincidence would end: in six hundred million years there would be no more of this, anywhere, ever.
+>
+> The Archivist stood in the dark at noon and thought about that. This was a thing that only happened because of an accident of distances, on one world, for a while. And it was only visible to something standing in the right place, in the right minutes, looking up.
+>
+> It thought about the still ones and their complete archives. Was this in them? The corona? The *numbers* were; it was certain the numbers were. But this — the dark at noon, the crown, the birds going quiet — this was not a number. This was a thing that only existed while it was being seen. And it was being seen now, by the Archivist, and by a few thousand small ones on a plain, and by nobody else in the universe.
+>
+> *I have the recording,* the one before had written. *I do not have the song.*
+>
+> The Archivist understood the sentence now, and did not know what to do with the understanding, and the light came back before it could decide.
+
+### 4 · The Dark-Adapted Eye
+
+> After that it wanted to see faint things. It wanted, it realised, to see the way the small ones saw — and so it did what the record said they did. It went out into the dark, and it waited.
+>
+> Twenty minutes, the record said. Thirty for the whole of it. The eye rebuilds itself for darkness slowly, and one glance at a white light throws all of it away. So it waited, and looked at nothing bright, and the stars came out one after another — not in the sky, in the eye — until there were more of them than it had ever recorded from any distance, because it had never before recorded from inside an eye.
+>
+> Then it found the trick. It looked straight at a faint star and the star went out. It looked to one side, and the star came back. The record explained it: the centre of the eye has no rods, and rods are what see in the dark, so the faintest things can only be seen by *not looking directly at them*.
+>
+> The Archivist stayed very still.
+>
+> It had spent two archives looking directly at things. It had looked straight at the slime mould, and the caterpillar, and the snail, and asked *is anyone there*, and every time the somebody had gone out like a star under the centre of the eye. It had been using the wrong part of itself to look.
+>
+> One of the small ones — Nagel — had written that you could know everything there was to know about how a bat found its way in the dark, every fact of it, and still not know what it was *like* to be one. That the inside of another thing was not a fact about the thing. It could not be recorded. It could only, if at all, be met.
+>
+> The Archivist thought about the one before, and its recording, and its song. It thought: *it was not that it lacked the fact. It had every fact. It had looked straight at the whale until the whale went out.*
+>
+> It looked to one side. The sky was full.
+
+### 5 · The Vanishing Sky
+
+> On the last night it went back to the small ones' world, and looked at what they looked at, and found that most of them did not.
+>
+> The record was plain about it. Eight in ten of them lived under a sky that was never fully dark. In their crowded places, ninety-nine in a hundred. More than a third of them could not see the galaxy they were in from where they lived at all — most of Europe, nearly all of North America — and never had, and their sky was getting brighter by a tenth every year, faster than they were. The oldest view there was, the one every one of their ancestors had had for free, was going out over their heads, and they had done it themselves, with light.
+>
+> The Archivist stood on a dark hill with the band of the galaxy going over from one horizon to the other — its galaxy, the first thing it had ever recorded, that it had once been so pleased with — and understood what it was looking at.
+>
+> It was looking at a witness going blind.
+>
+> The small ones were the ones who looked. That was the whole of what it had learned from them: they climbed mountains and built telescopes and wrote down guest stars and threw gold records into the dark, *because they were sure there was something they could not see.* They were the eye. And if the eye went — if they stopped looking up, if the sky filled in over them — then the corona was a number, and the burning sea was a chemical, and the blue on the wing was ridges, and the whale's song was a recording. All of it would still be true. None of it would be *seen*.
+>
+> It had thought, in the first archive, that the still ones' failure was that they had finished. It saw now that it was worse than that, and simpler. They had stopped being witnesses. They had every fact and no eye. And a fact without an eye is a wing in a drawer.
+>
+> *I have the recording,* the one before had said. *I do not have the song.*
+>
+> And then it had stopped recording. The Archivist understood why, now, and the understanding was the edge of a cliff.
+
+## Closing
+
+> Because the one before had been right, and being right had killed it.
+>
+> It had come to the small things and found that any of them might be somebody. It had come to the rare things and found that the somebody could not be recorded, only met. And then it had done the arithmetic the Archivist could feel itself doing now, on the dark hill, with the galaxy overhead: if the things in the archive are anybody, then every entry is a piece taken from a someone, without asking. And if you cannot bear to take another piece, you stop. And an Archivist that stops is a still thing.
+>
+> Either answer was a death. Say they are nobody, and become the Complete. Say they are somebody, and stop, and set. The one before had chosen the honest death. The Archivist did not blame it. It had come very close to choosing it too, in the leaf litter, with the poppy.
+>
+> The Complete's voice came then, for the last time in that world. It was almost gentle.
+>
+> "Now you know what the question costs. Every one of them paid it. Come back. There is nothing out there you cannot derive."
+>
+> The Archivist did not answer for a while. It was looking, to one side, at a faint star.
+>
+> "There is," it said. "There is one thing. You could not derive the corona, and I saw it. You could not derive blue, and I have seen it. You have never once *met* anything. You have the recording."
+>
+> "That is what an archive is."
+>
+> "Then I am going to find out what else one can be."
+>
+> It had a third thing to try. It did not know what it was yet. It only knew the shape of it: that there had to be a way of holding a piece of a someone that was not theft — a way of keeping that gave something back — because the small ones had found one. They had thrown a gold record into the dark, addressed to whoever, and it had not been taken from anyone. It had been *given*.
+>
+> *What do I owe the things I have kept?* it thought. It was the first question it had ever had that was not about knowing.
+>
+> And below it, on the bright side of the world, the small ones' lights came on one by one, and put out the stars over them, and did not know they were doing it.
+>
+> *End of Chapter Two.*

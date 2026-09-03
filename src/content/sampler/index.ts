@@ -600,8 +600,8 @@ export const SAMPLER_CATEGORIES: Category[] = [
         hue: 72,
         artwork: { kind: 'url', url: './artwork/vanishing-sky.jpg' },
         facts: [
-          'About eighty per cent of people — and around ninety-nine per cent of those in Europe and North America — live under skies too bright to show the Milky Way.',
-          'Roughly a third of humanity cannot see our own galaxy from where they live at all.',
+          'More than eighty per cent of people — and over ninety-nine per cent of those in Europe and the United States — live under a sky that is never fully dark.',
+          'The Milky Way itself is hidden from more than a third of humanity, including sixty per cent of Europeans and nearly eighty per cent of North Americans.',
           'Artificial sky brightness is rising by something like ten per cent a year in many places, considerably faster than the population under it.',
           'The Bortle scale runs from 1 to 9. Most city dwellers have never stood under anything better than an 8.',
           'Migrating birds, hatchling sea turtles and night-flying insects navigate by natural light, and are pulled off course by ours.',

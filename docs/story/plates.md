@@ -33,6 +33,11 @@ The grid comes from `mosaicPlan()` — enough cells for one per puzzle, squared 
 | The Cosmos | 11 | 4 × 3 = 12 | **4:3 landscape** | vertical at 25 / 50 / 75%, horizontal at 33 / 66% |
 | Our Place In It | 9 | 3 × 3 = 9 | **1:1 square** | 33 / 66% both axes |
 | Patterns in Nature | 7 | 3 × 3 = 9 | **1:1 square** | 33 / 66% both axes |
+| Small Company | 6 | 3 × 2 = 6 | **3:2 landscape** | vertical at 33 / 66%, horizontal at 50% |
+| The Rare Hour | 5 | 3 × 2 = 6 | **3:2 landscape** | vertical at 33 / 66%, horizontal at 50% |
+
+Small Company and The Rare Hour have no plate yet; their galleries compose the
+mosaic from their own puzzle artworks until one is made.
 
 Three rules follow from that, and they matter more than prettiness:
 
