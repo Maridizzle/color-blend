@@ -104,6 +104,9 @@ export function puzzleScreen(
   let solvedMoves = 0;
   /** Fact tiles actually planted on this board; scales with its size. */
   let factTilesOnBoard = 0;
+  /** Guards the one step from admiring the finished art to reading the passage. */
+  let proceeded = false;
+  let admireTimer: number | null = null;
 
   const onResize = () => session?.resize();
   window.addEventListener('resize', onResize);
@@ -148,7 +151,53 @@ export function puzzleScreen(
       factTilesOnBoard > 0 ? `${factsFound.size} / ${factTilesOnBoard} facts` : '';
   }
 
-  /** The panel that slides up once the artwork has finished revealing itself. */
+  /**
+   * The finished artwork, held whole on the board until the player chooses to
+   * read on. This is the moment the whole game is building toward -- the picture
+   * they assembled, entire -- so nothing covers it and nothing moves it along on
+   * a timer. The passage panel waits behind a deliberate tap.
+   */
+  function admireArt(): void {
+    root.classList.add('admiring');
+    // The footer is gone now, so the board has the rest of the screen; refit the
+    // art into the taller canvas so it sits centred and as large as it will go.
+    session?.resize();
+
+    const bar = el('div', {
+      class: 'admire-bar',
+      children: [
+        el('span', { class: 'admire-hint', text: 'The folio is whole.' }),
+        button('Read on →', proceed, 'button button-primary admire-go'),
+      ],
+    });
+    root.appendChild(bar);
+    requestAnimationFrame(() => bar.classList.add('admire-bar-in'));
+
+    // Tapping the picture itself reads on too, but only after a beat: the tap
+    // that skips the reveal animation lands on this same board, and without the
+    // delay it would carry straight through and the player would never see the
+    // whole image settle.
+    admireTimer = window.setTimeout(() => {
+      admireTimer = null;
+      boardWrap.addEventListener('click', proceed);
+    }, 500);
+  }
+
+  /** Leave the finished art and bring up the passage. Runs at most once. */
+  function proceed(): void {
+    if (proceeded) return;
+    proceeded = true;
+    if (admireTimer !== null) {
+      clearTimeout(admireTimer);
+      admireTimer = null;
+    }
+    boardWrap.removeEventListener('click', proceed);
+    root.querySelector('.admire-bar')?.remove();
+    root.classList.remove('admiring');
+    showRevealPanel(solvedMoves);
+  }
+
+  /** The panel that slides up once the player leaves the finished artwork. */
   function showRevealPanel(moves: number): void {
     const nextIndex = index + 1;
     const next = category.subjects[nextIndex];
@@ -251,12 +300,13 @@ export function puzzleScreen(
             undoButton.disabled = true;
             hintButton.disabled = true;
             // Get the toasts out of the way of the artwork; the reveal panel
-            // about to slide up lists every fact found anyway.
+            // later lists every fact found anyway.
             clear(toasts);
-            // Let an impatient player skip straight to the picture.
+            // Let an impatient player skip the animation straight to the whole
+            // picture. It still waits there for them to read on.
             canvas.addEventListener('pointerdown', () => session?.skipReveal(), { once: true });
           },
-          onRevealDone: () => showRevealPanel(solvedMoves),
+          onRevealDone: () => admireArt(),
         },
       );
       canvas.focus({ preventScroll: true });
@@ -283,6 +333,7 @@ export function puzzleScreen(
     element: root,
     destroy: () => {
       destroyed = true;
+      if (admireTimer !== null) clearTimeout(admireTimer);
       window.removeEventListener('resize', onResize);
       session?.destroy();
       clear(root);

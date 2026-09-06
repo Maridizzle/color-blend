@@ -156,9 +156,20 @@ async function main() {
   console.log(`after hints: ${end.correct}/${end.total} placed`);
   if (end.correct < end.total) throw new Error('hints did not solve the board');
 
-  // Reveal: morph, then crossfade to the artwork, then the panel.
+  // Reveal: morph, then crossfade to the whole artwork, which is then held for
+  // the player to take in until they read on.
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${OUT}/5-reveal-morph.png` });
+  await page.waitForSelector('.admire-bar', { timeout: 15000 });
+  // The passage must not have jumped up on its own; the whole image is held.
+  if (await page.locator('.reveal-panel').count()) {
+    problems.push('the passage panel appeared before the player read on');
+  }
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${OUT}/5b-admire-art.png` });
+
+  // Read on: now the passage panel comes up.
+  await page.locator('.admire-bar .button', { hasText: 'Read on' }).click();
   await page.waitForSelector('.reveal-panel', { timeout: 15000 });
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${OUT}/6-reveal-panel.png` });
