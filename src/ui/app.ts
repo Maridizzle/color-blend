@@ -147,7 +147,15 @@ export class App {
           this.goHome();
           return;
         }
-        const screen = puzzleScreen(this, found.category, found.subject, found.index);
+        // The archive's place on the road sets the difficulty ramp: the first
+        // archive plays easiest, later ones harder. A loaded pack joins the end
+        // of the road, but it is side content and should not inherit the road's
+        // hardest boards -- so it ramps from the start within itself, as a fresh
+        // journey does.
+        const roadIndex = found.category.fromPack
+          ? 0
+          : Math.max(0, allCategories().findIndex((c) => c.id === found.category.id));
+        const screen = puzzleScreen(this, found.category, found.subject, found.index, roadIndex);
         this.teardown = screen.destroy;
         this.root.appendChild(screen.element);
         break;

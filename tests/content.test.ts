@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLER_CATEGORIES } from '../src/content/sampler/index';
-import { specFor } from '../src/game/prepare';
+import { specFor, DIFFICULTY_RAMP } from '../src/game/prepare';
 import { SHAPE_MIN_TILES } from '../src/puzzle/shapes';
-import { DIFFICULTY_TUNING, isTwoColour } from '../src/puzzle/difficulty';
+import { isTwoColour } from '../src/puzzle/difficulty';
 import { hueDistance } from '../src/content/hues';
 import type { Subject } from '../src/content/types';
 
@@ -60,18 +60,20 @@ describe('shipped content', () => {
 });
 
 describe('board assignment across a category', () => {
-  const specs = SAMPLER_CATEGORIES.flatMap((c) =>
+  // roadIndex is the archive's place on the road: it drives the global
+  // difficulty ramp, so the tests build it exactly as the app does.
+  const specs = SAMPLER_CATEGORIES.flatMap((c, roadIndex) =>
     c.subjects.map((s, i) => ({
       id: s.id,
       category: c.id,
-      spec: specFor(s, i, c.subjects.length, c.id),
+      roadIndex,
+      spec: specFor(s, i, c.subjects.length, c.id, roadIndex),
     })),
   );
 
   it('only ever picks a shape the board is big enough to read as', () => {
     for (const { id, spec } of specs) {
-      const tiles = DIFFICULTY_TUNING.tileCount[spec.difficulty];
-      expect(tiles, `${id} (${spec.shape})`).toBeGreaterThanOrEqual(
+      expect(spec.tileCount, `${id} (${spec.shape})`).toBeGreaterThanOrEqual(
         SHAPE_MIN_TILES[spec.shape],
       );
     }
@@ -153,18 +155,47 @@ describe('board assignment across a category', () => {
     expect(key(first)).not.toBe(key(second));
   });
 
-  it('ramps difficulty by how far through the category a subject is', () => {
-    for (const category of SAMPLER_CATEGORIES) {
-      const mine = specs.filter((s) => s.category === category.id);
-      expect(mine[0]!.spec.difficulty).toBe('easy');
-      expect(mine[mine.length - 1]!.spec.difficulty).toBe('hard');
-      // And it only ever goes up.
-      const rank = { easy: 0, medium: 1, hard: 2 };
-      for (let i = 1; i < mine.length; i++) {
-        expect(rank[mine[i]!.spec.difficulty]).toBeGreaterThanOrEqual(
-          rank[mine[i - 1]!.spec.difficulty],
-        );
-      }
+  it('ramps difficulty along the whole road, gently at the start', () => {
+    // The journey is the archives in road order, concatenated: the difficulty
+    // ramp runs across all of them, not within each one.
+    const journey = specs; // already in road order
+
+    // The very first board is the easiest thing the game has: easy tier, the
+    // smallest tile count, and one colour.
+    const first = journey[0]!.spec;
+    expect(first.difficulty).toBe('easy');
+    expect(first.tileCount).toBe(DIFFICULTY_RAMP.minTiles);
+    expect(isTwoColour(first.difficulty)).toBe(false);
+
+    // The last board is the hardest.
+    expect(journey[journey.length - 1]!.spec.difficulty).toBe('hard');
+
+    // It only ever climbs: tile count never drops, tier never drops.
+    const rank = { easy: 0, medium: 1, hard: 2 };
+    for (let i = 1; i < journey.length; i++) {
+      expect(journey[i]!.spec.tileCount).toBeGreaterThanOrEqual(journey[i - 1]!.spec.tileCount);
+      expect(rank[journey[i]!.spec.difficulty]).toBeGreaterThanOrEqual(
+        rank[journey[i - 1]!.spec.difficulty],
+      );
+    }
+  });
+
+  it('keeps the first archive a gentle on-ramp: small, one colour, no planes', () => {
+    const cosmos = specs.filter((s) => s.roadIndex === 0);
+    expect(cosmos.length).toBeGreaterThan(0);
+    for (const { id, spec } of cosmos) {
+      expect(isTwoColour(spec.difficulty), `${id} is a plane in the first archive`).toBe(false);
+      // Nothing in the opening archive is a big board.
+      expect(spec.tileCount, id).toBeLessThanOrEqual(14);
+    }
+  });
+
+  it('holds the two-colour planes back for the later archives', () => {
+    // No plane appears before the ramp crosses into the hard tier, which is well
+    // past the first archives.
+    const firstPlane = specs.find((s) => isTwoColour(s.spec.difficulty));
+    if (firstPlane) {
+      expect(firstPlane.roadIndex).toBeGreaterThanOrEqual(3);
     }
   });
 });

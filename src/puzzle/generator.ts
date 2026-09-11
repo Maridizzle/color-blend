@@ -54,6 +54,11 @@ export interface GenerateOptions {
   hue?: number;
   /** Number of fact tiles to plant; capped by the facts actually available. */
   factCount?: number;
+  /**
+   * Tiles to aim for, overriding the difficulty's default count. The road ramps
+   * this so the opening boards are small and later ones grow.
+   */
+  targetTiles?: number;
   seed?: number;
 }
 
@@ -220,6 +225,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     shape = 'full',
     hue,
     factCount = 0,
+    targetTiles,
     seed = hashString(id),
   } = options;
 
@@ -243,6 +249,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     difficulty,
     symmetry,
     hue,
+    targetTiles,
   );
 
   const targets = field;

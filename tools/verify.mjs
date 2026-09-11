@@ -110,25 +110,37 @@ async function main() {
     await page.mouse.up();
     await page.waitForTimeout(250);
   };
+  // Drag from one point to another a step away. The offset is a fraction of the
+  // board so it works on a small opening board as well as a big one, and several
+  // source points are tried because any one may land on a locked starter or a
+  // gap between tiles.
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const reach = box.width * 0.22;
   let swapped = false;
-  for (const dy of [0, -60, 60, -120]) {
-    if (await moves()) break;
-    await drag(
-      box.x + box.width / 2 - 55,
-      box.y + box.height / 2 + dy,
-      box.x + box.width / 2 + 55,
-      box.y + box.height / 2 + dy,
-    );
-    if ((await moves()) > 0) {
-      swapped = true;
-      break;
+  for (const sx of [-0.18, 0.18, -0.3, 0.3, 0]) {
+    for (const sy of [0, -0.18, 0.18, -0.32]) {
+      if (await moves()) break;
+      const fromX = cx + box.width * sx;
+      const fromY = cy + box.height * sy;
+      await drag(fromX, fromY, fromX + reach, fromY);
+      if ((await moves()) > 0) {
+        swapped = true;
+        break;
+      }
+      await drag(fromX, fromY, fromX, fromY + reach);
+      if ((await moves()) > 0) {
+        swapped = true;
+        break;
+      }
     }
+    if (swapped) break;
   }
   if (!swapped) throw new Error('dragging a tile onto another did not swap them');
   console.log(`drag-to-swap: ${await moves()} move`);
 
   // A tile let go over nothing goes home: no move is counted.
-  await drag(box.x + box.width / 2 - 55, box.y + box.height / 2, box.x + 4, box.y + 4);
+  await drag(cx, cy, box.x + 4, box.y + 4);
   if ((await moves()) !== 1) throw new Error('letting a tile go off the board counted a move');
   console.log('drop off the board: tile returned, still 1 move');
 

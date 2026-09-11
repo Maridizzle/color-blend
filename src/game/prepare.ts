@@ -31,45 +31,92 @@ const LATTICE_KINDS: LatticeKind[] = ['square', 'hex', 'triangle', 'diamond'];
  * the number of lattices too, so the walk does not fall into step with them.
  *
  * On its own the stride cannot promise that no two boards in a category share
- * a lattice and a silhouette: each tier draws from its own pool of eligible
- * shapes, so two walks through pools of different sizes can land on the same
- * name. That promise is kept below, by stepping past anything already taken.
+ * a lattice and a silhouette: each board draws from its own pool of eligible
+ * shapes, which grows with its tile count, so two walks through pools of
+ * different sizes can land on the same name. That promise is kept below, by
+ * stepping past anything already taken.
  */
 const SHAPE_STRIDE = 5;
+
+/**
+ * The difficulty ramp, and it runs along the *whole road*, not within one
+ * archive. The first Cosmos board is the smallest and simplest the game has;
+ * every board after it is a little larger, and only past the middle of the
+ * journey do the two-colour planes appear. A player is never dropped in at the
+ * deep end, and never made to start over from easy when a new archive opens --
+ * which is what a per-archive ramp did, and why the first archive felt hard: it
+ * held the hardest boards in the game a few puzzles from the start.
+ */
+export const DIFFICULTY_RAMP = {
+  /**
+   * Archives the ramp climbs over before it tops out. Six is the shipped road,
+   * so the last archive plays at full difficulty and anything loaded past it
+   * (a pack joins the end of the road) stays there rather than climbing forever.
+   */
+  span: 6,
+  /** Tiles on the very first board, and on the last. */
+  minTiles: 8,
+  maxTiles: 30,
+  /** Where on the 0..1 ramp the one-colour tiers give way. */
+  mediumFrom: 0.36,
+  hardFrom: 0.7,
+} as const;
+
+/** 0..1 along the whole road: 0 at the first board, 1 at the far archives. */
+function rampLevel(index: number, total: number, roadIndex: number): number {
+  const throughArchive = total <= 1 ? 0 : index / (total - 1);
+  return Math.min(1, Math.max(0, (roadIndex + throughArchive) / DIFFICULTY_RAMP.span));
+}
+
+/** The tier at a ramp level. Governs tone, two-colour planes and locked starters. */
+function tierForLevel(level: number): Difficulty {
+  if (level >= DIFFICULTY_RAMP.hardFrom) return 'hard';
+  if (level >= DIFFICULTY_RAMP.mediumFrom) return 'medium';
+  return 'easy';
+}
+
+/** Tiles at a ramp level: a straight climb from the first board to the last. */
+function tilesForLevel(level: number): number {
+  const { minTiles, maxTiles } = DIFFICULTY_RAMP;
+  return Math.round(minTiles + (maxTiles - minTiles) * level);
+}
 
 export interface PuzzleShapeSpec {
   difficulty: Difficulty;
   latticeKind: LatticeKind;
   shape: ShapeName;
+  /** Tiles this board aims for, from the ramp rather than the tier default. */
+  tileCount: number;
 }
 
 /** The parts of a subject that decide its board. */
 type BoardChoice = Pick<Subject, 'difficulty' | 'latticeKind' | 'shape'>;
 
 /**
- * Difficulty ramps through a category so the first puzzles teach the mechanic
- * before the later ones lean on it. An explicit value in the pack wins.
+ * A subject's board: its difficulty, lattice, silhouette and size.
+ *
+ * `roadIndex` is the archive's position along the road, and it is what makes the
+ * ramp global -- see `DIFFICULTY_RAMP`. Everything else is derived from position
+ * rather than authored, so a blind pack of forty images still yields forty
+ * varied, sensibly-ramped boards with nobody having picked any of them. An
+ * explicit difficulty, lattice or shape in the pack still wins.
  *
  * Position in the category, not a hash of the id. A hash gives each subject a
- * stable board but says nothing about its neighbours, so across twenty
- * subjects it collides and the same handful of boards keep coming back.
- * Walking the lists, and stepping past any lattice-and-shape pair an earlier
- * board took, guarantees the set is varied -- which is the property that
- * actually matters once a category is longer than a few puzzles, and the one a
- * blind pack of forty images has no author to provide.
- *
- * The category offset stops a second category being a re-run of the first:
- * without it every category opens with the same square grid, then the same
- * hexagon, in the same order.
+ * stable board but says nothing about its neighbours, so across twenty subjects
+ * it collides and the same handful of boards keep coming back. Walking the
+ * lists, and stepping past any lattice-and-shape pair an earlier board took,
+ * guarantees the set is varied. The category offset stops a second category
+ * being a re-run of the first.
  */
 export function specFor(
   subject: Subject,
   index: number,
   total = 1,
   categoryId = '',
+  roadIndex = 0,
 ): PuzzleShapeSpec {
   const offset = categoryId ? hashString(categoryId) : 0;
-  return choose(subject, index, total, offset, takenBefore(index, total, offset));
+  return choose(subject, index, total, roadIndex, offset, takenBefore(index, total, roadIndex, offset));
 }
 
 /**
@@ -78,10 +125,10 @@ export function specFor(
  * overrides; one elsewhere in the pack can at worst make this set inexact, and
  * an inexact set never makes a board collide that would not have anyway.
  */
-function takenBefore(index: number, total: number, offset: number): Set<string> {
+function takenBefore(index: number, total: number, roadIndex: number, offset: number): Set<string> {
   const taken = new Set<string>();
   for (let j = 0; j < index; j++) {
-    const spec = choose({}, j, total, offset, taken);
+    const spec = choose({}, j, total, roadIndex, offset, taken);
     if (!isTwoColour(spec.difficulty)) taken.add(`${spec.latticeKind}/${spec.shape}`);
   }
   return taken;
@@ -91,41 +138,48 @@ function choose(
   subject: BoardChoice,
   index: number,
   total: number,
+  roadIndex: number,
   offset: number,
   taken: ReadonlySet<string>,
 ): PuzzleShapeSpec {
-  const difficulty = subject.difficulty ?? rampedDifficulty(index, total);
-  const tiles = DIFFICULTY_TUNING.tileCount[difficulty];
+  const level = rampLevel(index, total, roadIndex);
+  const difficulty = subject.difficulty ?? tierForLevel(level);
+  // Ramped size for the road; an authored difficulty keeps that tier's count,
+  // since a pack that names a difficulty means the board it goes with.
+  const tileCount = subject.difficulty
+    ? DIFFICULTY_TUNING.tileCount[difficulty]
+    : tilesForLevel(level);
 
   // A two-colour board is read as rows and columns, so it has to have them: a
   // plain rectangle on a square lattice. A leaf or a ring has no rows. This
   // overrides a pack's own choice rather than deferring to it, because the
   // alternative is a board whose two axes cannot be seen.
   if (isTwoColour(difficulty)) {
-    return { difficulty, latticeKind: 'square', shape: 'full' };
+    return { difficulty, latticeKind: 'square', shape: 'full', tileCount };
   }
 
   const latticeKind =
     subject.latticeKind ??
     (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind);
-  if (subject.shape) return { difficulty, latticeKind, shape: subject.shape };
+  if (subject.shape) return { difficulty, latticeKind, shape: subject.shape, tileCount };
 
-  // `tiles` joins the walk position because each difficulty tier has its own
-  // set of eligible shapes, and without it two subjects on the same lattice
-  // in different tiers can walk to the same one -- Andromeda and Saturn both
-  // came out as a squircle of triangles.
-  const eligible = eligibleShapes(tiles, latticeKind);
-  const from = index * SHAPE_STRIDE + offset + tiles;
+  // The tile count joins the walk position because it decides which silhouettes
+  // are legible, and without it two boards of different sizes on the same
+  // lattice can walk to the same one -- Andromeda and Saturn both came out as a
+  // squircle of triangles.
+  const eligible = eligibleShapes(tileCount, latticeKind);
+  const from = index * SHAPE_STRIDE + offset + tileCount;
 
   // The walk's own pick, unless an earlier board on this lattice already has
   // that silhouette; then the next eligible one, and so on round the pool. A
   // pool that is entirely taken keeps the walk's pick: the repeat is then
-  // unavoidable, not a mistake.
+  // unavoidable, not a mistake. Small opening boards have only `full` to offer,
+  // so a couple of plain boards early on is expected, not a fault.
   let shape = pick(eligible, from);
   for (let step = 1; step < eligible.length && taken.has(`${latticeKind}/${shape}`); step++) {
     shape = pick(eligible, from + step);
   }
-  return { difficulty, latticeKind, shape };
+  return { difficulty, latticeKind, shape, tileCount };
 }
 
 /**
@@ -154,17 +208,6 @@ function eligibleShapes(tiles: number, kind: LatticeKind): ShapeName[] {
 function pick(eligible: readonly ShapeName[], from: number): ShapeName {
   if (eligible.length === 0) return 'full';
   return eligible[((from % eligible.length) + eligible.length) % eligible.length] as ShapeName;
-}
-
-/**
- * Difficulty across a category, as a fraction of the way through rather than at
- * fixed indices: roughly the first third easy, the middle medium, the last third
- * hard. Fixed cut-offs were written for a category of four and would have made
- * fifteen of twenty subjects hard.
- */
-function rampedDifficulty(index: number, total: number): Difficulty {
-  const through = total <= 1 ? 0 : index / (total - 1);
-  return through < 0.3 ? 'easy' : through < 0.7 ? 'medium' : 'hard';
 }
 
 /**
@@ -202,6 +245,7 @@ export async function preparePuzzle(
   index: number,
   total = 1,
   categoryId = '',
+  roadIndex = 0,
 ): Promise<PreparedPuzzle> {
   const artwork = await loadArtwork(subject.artwork);
 
@@ -217,7 +261,7 @@ export async function preparePuzzle(
     }
   }
 
-  const spec = specFor(subject, index, total, categoryId);
+  const spec = specFor(subject, index, total, categoryId, roadIndex);
   const puzzle: Puzzle = generatePuzzle({
     id: subject.id,
     anchors,
@@ -225,7 +269,8 @@ export async function preparePuzzle(
     latticeKind: spec.latticeKind,
     shape: spec.shape,
     hue: subject.hue,
-    factCount: factCountFor(DIFFICULTY_TUNING.tileCount[spec.difficulty], subject.facts.length),
+    targetTiles: spec.tileCount,
+    factCount: factCountFor(spec.tileCount, subject.facts.length),
   });
 
   return { subject, artwork, anchors, palette, puzzle, spec };

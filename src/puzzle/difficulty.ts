@@ -35,9 +35,12 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export const DIFFICULTY_TUNING = {
   /**
-   * Tiles on the board, locked starters included. These are the numbers to
-   * change if the game feels too easy or too fiddly -- nothing else needs to
-   * move with them.
+   * Tiles on the board for an *authored* difficulty, locked starters included.
+   * The shipped road no longer uses these directly: it ramps the count smoothly
+   * from the first board to the last (see `DIFFICULTY_RAMP` in game/prepare),
+   * and these are the fallback a pack gets when it names a difficulty but no
+   * size. To make the game broadly easier or harder, move the ramp; to retune
+   * one authored tier, move these.
    */
   tileCount: {
     easy: 12,
@@ -241,8 +244,14 @@ export function calibrate(
   difficulty: Difficulty,
   symmetry: number,
   hue?: number,
+  /**
+   * Tiles to aim for, overriding the difficulty's default. The road ramps this
+   * smoothly so the first boards are small and later ones large; a pack that
+   * authors a difficulty but no count still gets the tier's default.
+   */
+  targetTiles?: number,
 ): CalibrationResult {
-  const targetTileCount = DIFFICULTY_TUNING.tileCount[difficulty];
+  const targetTileCount = targetTiles ?? DIFFICULTY_TUNING.tileCount[difficulty];
   const toneCount = DIFFICULTY_TUNING.toneCount[difficulty];
 
   // A second colour is a second *axis*, not a longer ramp -- see

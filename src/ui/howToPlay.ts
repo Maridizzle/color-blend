@@ -1,7 +1,7 @@
 import { oklabToHex, oklchToOklab } from '../color/oklab';
 import { TONE_TUNING, ARC_TUNING } from '../color/tones';
 import { fitToGamut } from '../color/gamut';
-import { DIFFICULTY_TUNING } from '../puzzle/difficulty';
+import { DIFFICULTY_RAMP } from '../game/prepare';
 import { el } from './dom';
 
 /**
@@ -63,7 +63,7 @@ function section(title: string, body: (HTMLElement | null)[]): HTMLElement {
 const p = (text: string) => el('p', { class: 'how-text', text });
 
 export function howToPlayContent(): HTMLElement {
-  const { easy, hard } = DIFFICULTY_TUNING.tileCount;
+  const { minTiles: easy, maxTiles: hard } = DIFFICULTY_RAMP;
 
   return el('div', {
     class: 'how',

@@ -34,6 +34,8 @@ export function puzzleScreen(
   category: Category,
   subject: Subject,
   index: number,
+  /** The archive's position along the road, which sets the difficulty ramp. */
+  roadIndex = 0,
 ): { element: HTMLElement; destroy: () => void } {
   const root = el('section', { class: 'screen screen-puzzle' });
 
@@ -274,7 +276,13 @@ export function puzzleScreen(
 
   void (async () => {
     try {
-      const prepared = await preparePuzzle(subject, index, category.subjects.length, category.id);
+      const prepared = await preparePuzzle(
+        subject,
+        index,
+        category.subjects.length,
+        category.id,
+        roadIndex,
+      );
       if (destroyed) return;
 
       status.remove();
