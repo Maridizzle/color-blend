@@ -1,0 +1,610 @@
+<title>The Lit Archive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=UnifrakturCook:wght@700&display=swap">
+<style>
+  /* One deliberate dark world: the game is a reliquary by candlelight, so the
+     page commits to it rather than offering a light theme. Tokens copied from
+     src/styles.css so the mock is the app's own palette. */
+  :root {
+    --raven: #09080b;
+    --raven-soft: #111015;
+    --stone: #17151b;
+    --stone-hi: #211e27;
+    --vellum: #d8cfb6;
+    --vellum-dim: #a9a08e;
+    --silver: #8f9298;
+    --silver-bright: #c6c7c5;
+    --wine: #681f30;
+    --wine-bright: #9d3650;
+    --violet: #352640;
+    --moon: #83a9c5;
+    --gold: #c59a4b;
+    --gold-bright: #f0ca72;
+    --ink: #0b090b;
+    --line: rgb(160 157 151 / 34%);
+    --line-faint: rgb(160 157 151 / 15%);
+    --serif: 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+    --blackletter: 'UnifrakturCook', 'Old English Text MT', 'Lucida Blackletter', fantasy;
+    /* Paper grain, inlined so the page carries its own texture. */
+    --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.8 0 0 0 0 0.7 0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    color-scheme: dark;
+  }
+  @property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 18px 64px;
+    background:
+      radial-gradient(circle at 50% -12%, rgb(104 31 48 / 22%), transparent 36rem),
+      radial-gradient(circle at 105% 35%, rgb(60 75 110 / 18%), transparent 32rem),
+      var(--grain),
+      var(--raven);
+    color: var(--vellum);
+    font: 500 17px/1.5 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--gold-bright); }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  /* ------------------------------------------------------------- intro */
+  .intro { padding-block: 44px 22px; max-width: 62ch; }
+  .kicker {
+    margin: 0 0 6px;
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0 0 12px;
+    color: #f3e5c5;
+    font: 700 clamp(40px, 7vw, 58px)/1 var(--blackletter);
+    text-shadow: 0 3px 18px #000, 0 0 26px rgb(240 202 114 / 22%);
+    text-wrap: balance;
+  }
+  .lede { margin: 0 0 10px; font-size: 19px; color: var(--vellum); }
+  .lede em { color: var(--gold-bright); font-style: italic; }
+  .note { margin: 0; color: var(--vellum-dim); font-size: 15px; font-style: italic; }
+
+  /* ---------------------------------------------------------- controls */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0 18px;
+    border-top: 1px solid var(--line-faint);
+  }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tab, .toggle {
+    padding: 9px 16px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 45%), var(--stone);
+    color: var(--vellum-dim);
+    font: 700 13px/1 var(--serif);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 180ms ease, border-color 180ms ease, box-shadow 220ms ease;
+  }
+  .tab:hover, .toggle:hover { color: #fff3d6; border-color: var(--silver-bright); }
+  .tab:focus-visible, .toggle:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+  .tab[aria-selected="true"] {
+    color: #fff3d6;
+    border-color: rgb(224 185 101 / 80%);
+    box-shadow: inset 0 0 0 1px rgb(240 202 114 / 25%), 0 0 18px rgb(240 202 114 / 14%);
+  }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; }
+  .toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--silver); transition: background 200ms, box-shadow 200ms; }
+  .toggle[aria-pressed="true"] { color: #fff3d6; border-color: rgb(224 185 101 / 80%); }
+  .toggle[aria-pressed="true"] .dot { background: var(--gold-bright); box-shadow: 0 0 10px var(--gold-bright); }
+
+  /* ------------------------------------------------------------- stage */
+  .showcase { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .showcase { grid-template-columns: 1fr; } }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 9 / 18.2;
+    overflow: hidden;
+    border: 1px solid rgb(175 174 170 / 40%);
+    border-radius: 26px;
+    background:
+      radial-gradient(circle at 50% -8%, rgb(104 31 48 / 24%), transparent 60%),
+      radial-gradient(circle at 110% 40%, rgb(60 75 110 / 16%), transparent 50%),
+      var(--grain),
+      var(--raven);
+    box-shadow: inset 0 0 0 4px rgb(0 0 0 / 70%), 0 30px 80px rgb(0 0 0 / 70%);
+    isolation: isolate;
+  }
+  .motes { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 900ms ease; }
+  .fx .motes { opacity: 1; }
+  .vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 900ms ease;
+    background: radial-gradient(ellipse at 50% 10%, rgb(240 202 114 / 10%), transparent 55%), radial-gradient(ellipse at 50% 110%, rgb(131 169 197 / 8%), transparent 50%); }
+  .fx .vignette { opacity: 1; animation: breathe 7s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+
+  .screens { position: absolute; inset: 0; z-index: 3; }
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 18px 14px 14px;
+    opacity: 0; transform: scale(0.985);
+    transition: opacity 450ms ease, transform 450ms ease;
+    pointer-events: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .screen.active { opacity: 1; transform: none; pointer-events: auto; }
+
+  /* shared chrome */
+  .sub-kicker { color: var(--silver); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  .title {
+    margin: 0;
+    color: #fff0d0;
+    font: 700 27px/1 var(--blackletter);
+    text-shadow: 0 2px 12px black;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .fx .title { animation: titleglow 8s ease-in-out infinite; }
+  @keyframes titleglow {
+    0%, 100% { text-shadow: 0 2px 12px black, 0 0 0 rgb(240 202 114 / 0%); }
+    50% { text-shadow: 0 2px 12px black, 0 0 20px rgb(240 202 114 / 30%); }
+  }
+  .hdr { display: flex; align-items: center; gap: 12px; min-height: 52px; padding-bottom: 6px; position: relative; }
+  .hdr::after { content: ''; position: absolute; left: 50px; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  .back { width: 40px; height: 40px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 18px 18px 3px 3px; background: var(--stone); color: var(--vellum-dim); display: grid; place-items: center; }
+  .stats { display: flex; gap: 12px; color: #bcb5aa; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .stats .facts { color: var(--gold-bright); }
+
+  .button {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 12px 26px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: linear-gradient(rgb(5 5 7 / 56%), rgb(5 5 7 / 66%)), linear-gradient(180deg, rgb(255 255 255 / 6%), transparent 42%), var(--stone);
+    box-shadow: inset 0 0 0 2px rgb(5 5 7 / 82%), inset 0 0 0 3px rgb(155 155 153 / 12%), 0 10px 26px rgb(0 0 0 / 30%);
+    color: #eee4cb;
+    font: 700 14px/1 var(--serif);
+    letter-spacing: 0.075em;
+    text-shadow: 0 1px 2px black;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .button::before, .button::after { content: ''; position: absolute; top: 50%; width: 5px; height: 5px; border: 1px solid var(--silver); transform: translateY(-50%) rotate(45deg); opacity: 0.7; }
+  .button::before { left: 8px; } .button::after { right: 8px; }
+  .button-primary { border-color: rgb(224 185 101 / 80%); background: linear-gradient(180deg, rgb(255 220 145 / 15%), transparent 45%), linear-gradient(90deg, rgb(104 31 48 / 55%), rgb(80 24 37 / 55%)), var(--stone); }
+  .button .sheen { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgb(255 236 190 / 22%) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+  .fx .button-primary .sheen { animation: sheen 5.5s ease-in-out infinite; }
+  .fx .button:hover { box-shadow: inset 0 0 0 2px rgb(5 5 7 / 82%), inset 0 0 0 3px rgb(155 155 153 / 12%), 0 10px 26px rgb(0 0 0 / 30%), 0 0 22px rgb(240 202 114 / 22%); }
+  @keyframes sheen { 0%, 60% { transform: translateX(-120%); } 90%, 100% { transform: translateX(120%); } }
+
+  /* --------------------------------------------------------------- road */
+  .legend { margin: 0; color: var(--vellum-dim); font-size: 13px; font-style: italic; text-align: center; }
+  .road { position: relative; flex: 1; min-height: 0; padding: 8px 0 0; }
+  .road-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(180deg, transparent, var(--line) 8%, var(--line) 92%, transparent); }
+  .bead { position: absolute; left: 50%; top: 0; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 10px var(--gold-bright), 0 0 24px rgb(240 202 114 / 50%); opacity: 0; }
+  .fx .bead { animation: bead 8s linear infinite; }
+  @keyframes bead { 0% { top: 6%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { top: 94%; opacity: 0; } }
+  .stations { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .station { position: relative; display: flex; }
+  .station:nth-child(even) { justify-content: flex-end; }
+  .node { position: absolute; top: 50%; left: 50%; width: 9px; height: 9px; transform: translate(-50%, -50%) rotate(45deg); border: 1px solid var(--silver); background: var(--raven); z-index: 1; }
+  .card {
+    position: relative;
+    width: 58%;
+    border: 1px solid rgb(175 174 170 / 50%);
+    border-radius: 60px 60px 3px 3px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 40%), var(--grain), var(--stone);
+    box-shadow: inset 0 0 0 3px rgb(0 0 0 / 60%), inset 0 0 0 4px rgb(177 173 162 / 10%), 0 14px 30px rgb(0 0 0 / 45%);
+    overflow: hidden;
+    transition: box-shadow 400ms ease;
+  }
+  .illum { display: grid; gap: 2px; padding: 16px 22px 8px; }
+  .illum span { aspect-ratio: 1; border-radius: 2px; background: rgb(255 255 255 / 5%); }
+  .illum span.held { background: oklch(50% 0.07 var(--h)); box-shadow: 0 0 6px oklch(55% 0.08 var(--h) / 0.55); }
+  .fx .illum span.held { animation: twinkle 3.4s ease-in-out infinite; animation-delay: calc(var(--i) * 0.31s); }
+  @keyframes twinkle { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.45); } }
+  .card-body { padding: 4px 12px 12px; }
+  .card-kicker { color: var(--silver); font-size: 8px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+  .card-title { margin: 2px 0 2px; color: #fff0d0; font: 700 18px/1.05 var(--blackletter); }
+  .card-meta { margin: 0; color: var(--vellum-dim); font-size: 10.5px; font-style: italic; }
+  .ring { position: absolute; bottom: 44px; right: 10px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 8px; font-weight: 700; color: var(--gold-bright);
+    background: conic-gradient(var(--gold) var(--ring), rgb(255 255 255 / 8%) 0); }
+  .ring::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--stone); }
+  .ring b { position: relative; }
+  /* the next archive to play breathes; a finished one is gilded */
+  .fx .station.next .card { animation: halo 3.6s ease-in-out infinite; }
+  @keyframes halo {
+    0%, 100% { box-shadow: inset 0 0 0 3px rgb(0 0 0 / 60%), inset 0 0 0 4px rgb(177 173 162 / 10%), 0 14px 30px rgb(0 0 0 / 45%), 0 0 0 1px rgb(240 202 114 / 20%), 0 0 22px rgb(240 202 114 / 12%); }
+    50% { box-shadow: inset 0 0 0 3px rgb(0 0 0 / 60%), inset 0 0 0 4px rgb(177 173 162 / 10%), 0 14px 30px rgb(0 0 0 / 45%), 0 0 0 1px rgb(240 202 114 / 55%), 0 0 40px rgb(240 202 114 / 28%); }
+  }
+  .station.complete .card { border-color: rgb(224 185 101 / 60%); }
+  .fx .station.complete .card::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none;
+    background: conic-gradient(from var(--a), transparent 0 62%, rgb(240 202 114 / 95%) 78%, transparent 92%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: gilt 6s linear infinite;
+  }
+  @keyframes gilt { to { --a: 360deg; } }
+
+  /* ------------------------------------------------------------ gallery */
+  .mosaic { position: relative; display: grid; gap: 4px; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 3px; }
+  .mosaic .cell { position: relative; overflow: hidden; border-radius: 2px; background: var(--art); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%); }
+  .mosaic .cell.sealed { background: var(--raven-soft); display: grid; place-items: center; color: var(--silver); font-size: 12px; }
+  .fx .mosaic .cell.sealed { animation: sigil 4s ease-in-out infinite; animation-delay: calc(var(--i) * 0.4s); }
+  @keyframes sigil { 0%, 100% { color: var(--silver); text-shadow: none; } 50% { color: var(--gold-bright); text-shadow: 0 0 10px rgb(240 202 114 / 60%); } }
+  .fx .mosaic .cell:not(.sealed)::after { content: ''; position: absolute; inset: -40%; background: linear-gradient(115deg, transparent 42%, rgb(255 240 200 / 26%) 50%, transparent 58%); transform: translateX(-70%); animation: cellsheen 11s ease-in-out infinite; animation-delay: calc(var(--i) * 0.45s); }
+  @keyframes cellsheen { 0%, 78% { transform: translateX(-70%); } 100% { transform: translateX(70%); } }
+  .fx .mosaic.whole::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(100deg, transparent 30%, rgb(255 226 150 / 30%) 50%, transparent 70%); transform: translateX(-100%); animation: gilding 9s ease-in-out infinite; }
+  @keyframes gilding { 0%, 70% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .gmeta { margin: 0; color: var(--vellum-dim); font-size: 12px; font-style: italic; text-align: center; }
+  .gactions { display: flex; justify-content: center; }
+  .tale { flex: 1; min-height: 0; overflow: hidden; padding-top: 8px; border-top: 1px solid var(--line-faint); position: relative; }
+  .tale::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(transparent, var(--raven)); pointer-events: none; }
+  .tale h2 { margin: 0; color: #f3e5c5; font: 700 22px/1 var(--blackletter); }
+  .tale .chap { display: block; margin: 4px 0 8px; color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+  .passage { margin: 0 0 10px; padding-left: 12px; border-left: 2px solid rgb(104 31 48 / 70%); color: var(--vellum); font-size: 13.5px; font-style: italic; line-height: 1.42; }
+  .passage cite { display: block; margin-bottom: 3px; color: var(--silver); font-size: 9px; font-style: normal; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+  .passage.ending cite { color: var(--gold-bright); }
+  .fx .passage.ending cite { animation: citeglow 5s ease-in-out infinite; }
+  @keyframes citeglow { 0%, 100% { text-shadow: none; } 50% { text-shadow: 0 0 12px rgb(240 202 114 / 70%); } }
+
+  /* -------------------------------------------------------------- board */
+  .board-wrap { position: relative; flex: 1; min-height: 0; border: 1px solid rgb(175 174 170 / 52%); border-radius: 60px 60px 3px 3px; background: radial-gradient(ellipse at 50% 30%, rgb(255 255 255 / 3%), transparent 60%), #0a090c; box-shadow: inset 0 0 0 3px rgb(0 0 0 / 70%), inset 0 0 0 4px rgb(177 173 162 / 10%); overflow: hidden; }
+  .board-wrap::before { content: ''; position: absolute; inset: 7px; border: 1px solid rgb(187 186 181 / 15%); border-radius: 54px 54px 2px 2px; pointer-events: none; }
+  .hexes { position: absolute; inset: 0; display: grid; place-items: center; }
+  .hexgrid { position: relative; width: 250px; height: 230px; }
+  .hex {
+    position: absolute; width: 84px; height: 96px;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    background: var(--c);
+    cursor: pointer;
+    transition: transform 160ms ease, filter 160ms ease;
+  }
+  .fx .hex::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgb(255 255 255 / 22%), transparent 45%, rgb(0 0 0 / 18%)); pointer-events: none; }
+  .hex .lock { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid rgb(255 255 255 / 55%); border-radius: 50%; }
+  .hex.carried { transform: translate(28px, -26px) scale(1.12); z-index: 3; filter: drop-shadow(0 10px 14px rgb(0 0 0 / 60%)); }
+  .fx .hex.carried { filter: drop-shadow(0 10px 14px rgb(0 0 0 / 60%)) drop-shadow(0 0 14px rgb(240 202 114 / 35%)); }
+  .hex.target { transform: scale(0.9); }
+  .hex.fact { }
+  .fx .hex.fact::before { content: ''; position: absolute; inset: 0; clip-path: inherit; box-shadow: inset 0 0 0 2px rgb(240 202 114 / 60%); animation: factring 2.6s ease-in-out infinite; pointer-events: none; }
+  @keyframes factring { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+  .hint { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: var(--vellum-dim); font-size: 12px; font-style: italic; }
+  .footer { display: flex; gap: 9px; }
+  .footer .button { flex: 1; }
+  .spark { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--sc); box-shadow: 0 0 8px var(--sc); pointer-events: none; animation: spark 760ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards; z-index: 5; }
+  @keyframes spark { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }
+
+  /* ------------------------------------------------------------- reveal */
+  .art-wrap { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+  .bloom { position: absolute; width: 90%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgb(240 202 114 / 26%), rgb(104 31 48 / 12%) 45%, transparent 70%); opacity: 0; filter: blur(6px); }
+  .fx .bloom { opacity: 1; animation: bloom 6s ease-in-out infinite; }
+  @keyframes bloom { 0%, 100% { transform: scale(0.94); opacity: 0.6; } 50% { transform: scale(1.04); opacity: 1; } }
+  .art {
+    position: relative; width: 78%; aspect-ratio: 1; border-radius: 3px;
+    background:
+      radial-gradient(circle at 42% 45%, #f4ead2 0 3%, rgb(244 234 210 / 0%) 12%),
+      radial-gradient(ellipse at 44% 46%, #d9b26a 0 14%, transparent 30%),
+      conic-gradient(from 210deg at 46% 48%, #1a2340, #4d6fb2 18%, #16203a 36%, #6b8ed6 52%, #1a2340 70%, #5d7fc5 88%, #1a2340),
+      #0b0f1e;
+    box-shadow: 0 30px 60px rgb(0 0 0 / 70%);
+    overflow: hidden;
+  }
+  .art::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 30%, rgb(255 255 255 / 40%) 0 1px, transparent 2px), radial-gradient(circle at 70% 20%, rgb(255 255 255 / 40%) 0 1px, transparent 2px), radial-gradient(circle at 80% 75%, rgb(255 255 255 / 40%) 0 1px, transparent 2px), radial-gradient(circle at 30% 80%, rgb(255 255 255 / 40%) 0 1px, transparent 2px), radial-gradient(circle at 55% 88%, rgb(255 255 255 / 35%) 0 1px, transparent 2px); }
+  .art-label { position: absolute; bottom: 8px; left: 0; right: 0; color: rgb(255 255 255 / 55%); font-size: 10px; font-style: italic; text-align: center; letter-spacing: 0.06em; }
+  .twinkle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--tc); box-shadow: 0 0 10px var(--tc); opacity: 0; }
+  .fx .twinkle { animation: tw 3.8s ease-in-out infinite; animation-delay: var(--d); }
+  @keyframes tw { 0%, 100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1.3); } }
+  .admire { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 10px 10px 16px; border: 1px solid rgb(183 179 167 / 44%); border-radius: 3px; background: linear-gradient(90deg, rgb(80 24 37 / 20%), transparent 40% 60%, rgb(54 39 66 / 22%)), var(--grain), #171319; box-shadow: inset 0 0 0 4px rgb(0 0 0 / 55%), inset 0 0 0 6px rgb(177 173 162 / 12%); }
+  .admire .hint-text { color: var(--vellum-dim); font-size: 14px; font-style: italic; }
+
+  /* -------------------------------------------------------------- notes */
+  .notes { padding-top: 4px; }
+  .notes h2 { margin: 0 0 4px; color: #f3e5c5; font: 700 26px/1 var(--blackletter); }
+  .notes .sub { margin: 0 0 14px; color: var(--vellum-dim); font-style: italic; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .list li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+  .list .star { color: var(--gold-bright); font-size: 14px; line-height: 1.5; }
+  .list b { display: block; color: #f3e5c5; font-weight: 700; }
+  .list span.body { color: var(--vellum); font-size: 15.5px; }
+  .always { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line-faint); }
+  .always h3 { margin: 0 0 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  .always p { margin: 0 0 8px; color: var(--vellum); font-size: 15.5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx *, .fx *::before, .fx *::after { animation: none !important; }
+    .screen { transition: none; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="kicker">Color Blend · a visual pass, proposed</p>
+    <h1>The Lit Archive</h1>
+    <p class="lede">Everything that is already there stays: the reliquary, the vellum, the gold and wine, the blackletter. What this adds is <em>light</em>. Dust drifting in candlelight, gilding that sweeps across what you have earned, a halo on the next thing to do, sparks when a tile lands, and a bloom when the picture settles.</p>
+    <p class="note">Nothing here is built yet. Flip between <b>Proposed</b> and <b>Current</b> to compare, and click a tile on the board to see a landing. The paintings are stand‑in gradients; none of your artwork is shown.</p>
+  </header>
+
+  <div class="controls">
+    <div class="tabs" role="tablist" aria-label="Screens">
+      <button class="tab" role="tab" aria-selected="true" data-screen="road" id="tab-road">Road</button>
+      <button class="tab" role="tab" aria-selected="false" data-screen="gallery" id="tab-gallery">Gallery</button>
+      <button class="tab" role="tab" aria-selected="false" data-screen="board" id="tab-board">Board</button>
+      <button class="tab" role="tab" aria-selected="false" data-screen="reveal" id="tab-reveal">Reveal</button>
+    </div>
+    <button class="toggle" id="fx-toggle" aria-pressed="true"><span class="dot"></span><span id="fx-label">Proposed</span></button>
+  </div>
+
+  <div class="showcase">
+    <div class="stage fx" id="stage">
+      <div class="vignette"></div>
+      <canvas class="motes" id="motes"></canvas>
+      <div class="screens">
+
+        <!-- ROAD -->
+        <section class="screen active" data-screen="road">
+          <div class="hdr"><div class="back">✦</div><div><div class="sub-kicker">Color Blend Archive</div><h2 class="title">The Road</h2></div></div>
+          <p class="legend">24 of 55 folios collected, and the road runs on past the last of these.</p>
+          <div class="road">
+            <div class="road-line"></div>
+            <div class="bead"></div>
+            <ol class="stations">
+              <li class="station complete"><span class="node"></span>
+                <div class="card">
+                  <div class="illum" style="grid-template-columns: repeat(4, 1fr)">
+                    <span class="held" style="--h:267;--i:0"></span><span class="held" style="--h:333;--i:1"></span><span class="held" style="--h:300;--i:2"></span><span class="held" style="--h:202;--i:3"></span>
+                    <span class="held" style="--h:136;--i:4"></span><span class="held" style="--h:70;--i:5"></span><span class="held" style="--h:20;--i:6"></span><span class="held" style="--h:100;--i:7"></span>
+                    <span class="held" style="--h:40;--i:8"></span><span class="held" style="--h:170;--i:9"></span><span class="held" style="--h:230;--i:10"></span><span class="held" style="--h:10;--i:11"></span>
+                  </div>
+                  <div class="ring" style="--ring:100%"><b>✦</b></div>
+                  <div class="card-body"><div class="card-kicker">Archive I</div><h3 class="card-title">The Cosmos</h3><p class="card-meta">Whole · 11 folios · the archive closed</p></div>
+                </div>
+              </li>
+              <li class="station next"><span class="node"></span>
+                <div class="card">
+                  <div class="illum" style="grid-template-columns: repeat(3, 1fr)">
+                    <span class="held" style="--h:120;--i:0"></span><span class="held" style="--h:200;--i:1"></span><span></span>
+                    <span class="held" style="--h:40;--i:2"></span><span></span><span class="held" style="--h:290;--i:3"></span>
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="ring" style="--ring:44%"><b>44%</b></div>
+                  <div class="card-body"><div class="card-kicker">Archive II</div><h3 class="card-title">Our Place In It</h3><p class="card-meta">4 of 9 folios · 4 pieces held</p></div>
+                </div>
+              </li>
+              <li class="station"><span class="node"></span>
+                <div class="card">
+                  <div class="illum" style="grid-template-columns: repeat(3, 1fr)"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="ring" style="--ring:0%"><b>0%</b></div>
+                  <div class="card-body"><div class="card-kicker">Archive III</div><h3 class="card-title">Patterns in Nature</h3><p class="card-meta">0 of 7 folios · nothing held yet</p></div>
+                </div>
+              </li>
+              <li class="station"><span class="node"></span>
+                <div class="card">
+                  <div class="illum" style="grid-template-columns: repeat(3, 1fr)"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="ring" style="--ring:0%"><b>0%</b></div>
+                  <div class="card-body"><div class="card-kicker">Archive IV</div><h3 class="card-title">Small Company</h3><p class="card-meta">0 of 6 folios · nothing held yet</p></div>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <!-- GALLERY -->
+        <section class="screen" data-screen="gallery">
+          <div class="hdr"><div class="back">←</div><div><div class="sub-kicker">Color Blend Archive</div><h2 class="title">The Cosmos</h2></div></div>
+          <div class="mosaic whole" style="grid-template-columns: repeat(4, 1fr)">
+            <div class="cell" style="--art: linear-gradient(135deg, #1b2a55, #4a6fb0); --i:0"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #2c1b3f, #7a4b8f); --i:1"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #3a1f2b, #a05070); --i:2"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #1d2f3a, #4f8aa5); --i:3"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #1a3a2d, #3f8a6a); --i:4"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #4a3a15, #b58a3a); --i:5"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #4a2010, #b04a2a); --i:6"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #2f3d18, #7f9a3a); --i:7"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #3d2a10, #a37a2c); --i:8"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #123a3a, #2f8f8f); --i:9"></div>
+            <div class="cell" style="--art: linear-gradient(135deg, #202a55, #5a6ad0); --i:10"></div>
+            <div class="cell sealed" style="--i:11">✦</div>
+          </div>
+          <p class="gmeta">11 of 12 pieces held · 11 of 11 folios</p>
+          <div class="gactions"><button class="button button-primary"><span class="sheen"></span>Enter the folios →</button></div>
+          <div class="tale">
+            <h2>The Archivist</h2>
+            <span class="chap">Chapter I · The Still Things</span>
+            <blockquote class="passage"><cite>Opening</cite>It woke up already enormous. That was the first problem. It had no memory of being small and nothing to compare itself to, so for a while it did not even know it was enormous.</blockquote>
+            <blockquote class="passage ending"><cite>End of Chapter I</cite>And the Archivist had a thought — a new one, its own, not retrieved from anywhere — and the thought was this: <i>what if the next Archivist doesn't have to be one of us?</i></blockquote>
+          </div>
+        </section>
+
+        <!-- BOARD -->
+        <section class="screen" data-screen="board">
+          <div class="hdr"><div class="back">←</div><div><div class="sub-kicker">The Cosmos</div><h2 class="title">Spiral Galaxy</h2><div class="stats"><span>3 / 7 placed</span><span>2 moves</span><span class="facts">1 / 2 facts</span></div></div></div>
+          <div class="board-wrap" id="board">
+            <div class="hexes"><div class="hexgrid">
+              <div class="hex" style="--c:#b8cdf1; left:83px; top:0"><span class="lock"></span></div>
+              <div class="hex" style="--c:#2e4a86; left:20px; top:66px"></div>
+              <div class="hex carried" style="--c:#6f8cc6; left:83px; top:66px"></div>
+              <div class="hex target" style="--c:#8fa8d8; left:146px; top:66px"></div>
+              <div class="hex fact" style="--c:#4d6cae; left:20px; top:132px"></div>
+              <div class="hex" style="--c:#243a6a; left:83px; top:132px"><span class="lock"></span></div>
+              <div class="hex" style="--c:#dbe6f8; left:146px; top:132px"><span class="lock"></span></div>
+            </div></div>
+            <div class="hint">click any tile to see a landing</div>
+          </div>
+          <div class="footer"><button class="button"><span class="sheen"></span>Undo</button><button class="button"><span class="sheen"></span>Hint</button></div>
+        </section>
+
+        <!-- REVEAL -->
+        <section class="screen" data-screen="reveal">
+          <div class="hdr"><div class="back">←</div><div><div class="sub-kicker">The Cosmos</div><h2 class="title">Spiral Galaxy</h2><div class="stats"><span>7 / 7 placed</span><span>4 moves</span><span class="facts">2 / 2 facts</span></div></div></div>
+          <div class="board-wrap">
+            <div class="art-wrap">
+              <div class="bloom"></div>
+              <div class="art"><div class="art-label">stand‑in for the finished painting</div></div>
+              <span class="twinkle" style="--tc: var(--gold-bright); left: 9%; top: 18%; --d: 0s"></span>
+              <span class="twinkle" style="--tc: var(--moon); left: 88%; top: 26%; --d: 0.9s"></span>
+              <span class="twinkle" style="--tc: var(--gold-bright); left: 82%; top: 80%; --d: 1.7s"></span>
+              <span class="twinkle" style="--tc: var(--moon); left: 12%; top: 76%; --d: 2.4s"></span>
+              <span class="twinkle" style="--tc: var(--gold-bright); left: 50%; top: 6%; --d: 3.1s"></span>
+              <span class="twinkle" style="--tc: var(--moon); left: 6%; top: 50%; --d: 1.3s"></span>
+              <span class="twinkle" style="--tc: var(--gold-bright); left: 93%; top: 55%; --d: 2.9s"></span>
+            </div>
+          </div>
+          <div class="admire"><span class="hint-text">The folio is whole.</span><button class="button button-primary"><span class="sheen"></span>Read on →</button></div>
+        </section>
+
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h2>What changes, screen by screen</h2>
+      <p class="sub">Soft, slow, and always below the reading. Nothing flashes.</p>
+
+      <div class="panel active" data-panel="road">
+        <ul class="list">
+          <li><span class="star">✦</span><div><b>Candle dust</b><span class="body">A handful of motes drift up through every screen, gold and moon‑blue, each twinkling on its own clock. Drawn on a canvas, so it costs nothing on a phone.</span></div></li>
+          <li><span class="star">✦</span><div><b>The next archive breathes</b><span class="body">A halo swells and fades on the station you would play next, so the road tells you where you are without a label.</span></div></li>
+          <li><span class="star">✦</span><div><b>A finished archive is gilded</b><span class="body">A thin thread of gold light travels the rim of a closed reliquary, once around every six seconds.</span></div></li>
+          <li><span class="star">✦</span><div><b>A bead on the road</b><span class="body">One point of light walks the road line top to bottom and fades, every eight seconds: the road runs on.</span></div></li>
+          <li><span class="star">✦</span><div><b>Held pieces twinkle</b><span class="body">In each station's arch, the pieces you have earned brighten one by one, out of step, like embers.</span></div></li>
+        </ul>
+      </div>
+
+      <div class="panel" data-panel="gallery">
+        <ul class="list">
+          <li><span class="star">✦</span><div><b>Sheen on what you hold</b><span class="body">A soft diagonal light crosses each held piece every eleven seconds, staggered across the plate, as if a candle passed behind you.</span></div></li>
+          <li><span class="star">✦</span><div><b>Gilding a whole picture</b><span class="body">Once the archive is whole, a slow gold sweep crosses the entire plate every nine seconds. Earned once, and it keeps being earned.</span></div></li>
+          <li><span class="star">✦</span><div><b>Sealed sigils breathe</b><span class="body">The ✦ on each unopened piece warms to gold and back, out of step, so a half‑done plate feels alive rather than blank.</span></div></li>
+          <li><span class="star">✦</span><div><b>Chapter endings glow</b><span class="body">The "End of Chapter" cite carries a slow gold glow. The cliffhanger should look like the most important line on the page, because it is.</span></div></li>
+        </ul>
+      </div>
+
+      <div class="panel" data-panel="board">
+        <ul class="list">
+          <li><span class="star">✦</span><div><b>Tiles catch the light</b><span class="body">A faint specular gradient sits on every tile, so they read as lacquered stone rather than flat colour. The colours themselves are untouched, so the sort is exactly as fair.</span></div></li>
+          <li><span class="star">✦</span><div><b>The carried tile glows</b><span class="body">The tile in your hand gains a warm rim light beneath its shadow, and the cell it will land in presses down, as now.</span></div></li>
+          <li><span class="star">✦</span><div><b>Sparks on landing</b><span class="body">When a tile drops into place, a small burst of gold and moon sparks scatters and dies in under a second. Click a tile to see it. Correct placements only, so the sparks mean something.</span></div></li>
+          <li><span class="star">✦</span><div><b>Fact tiles shimmer</b><span class="body">A tile that hides a fact carries a faint gold ring that breathes, so a player can learn to look for them.</span></div></li>
+        </ul>
+      </div>
+
+      <div class="panel" data-panel="reveal">
+        <ul class="list">
+          <li><span class="star">✦</span><div><b>A bloom behind the picture</b><span class="body">As the artwork settles, a soft warm light swells behind it and breathes slowly for as long as you look.</span></div></li>
+          <li><span class="star">✦</span><div><b>Sparkles around the frame</b><span class="body">A few points of gold and moon light appear and fade around the picture, never on it, so nothing competes with the art itself.</span></div></li>
+          <li><span class="star">✦</span><div><b>The Read on button shimmers</b><span class="body">A slow light sweep crosses the primary button every few seconds, a quiet invitation rather than a nag.</span></div></li>
+          <li><span class="star">✦</span><div><b>Screens cross‑fade</b><span class="body">Road to gallery to folio to board no longer cut; each fades and settles into the next over half a second.</span></div></li>
+        </ul>
+      </div>
+
+      <div class="always">
+        <h3>In every case</h3>
+        <p>Transform and opacity only, so it stays smooth on an old phone. Motes are one canvas at about forty particles. Every effect switches off under the reduced‑motion setting, in the system and in the game's own Settings.</p>
+        <p>The board's colours are never altered by any of this, so nothing about the puzzle changes; only the light around it does.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const stage = document.getElementById('stage');
+    const tabs = [...document.querySelectorAll('.tab')];
+    const screens = [...document.querySelectorAll('.screen')];
+    const panels = [...document.querySelectorAll('.panel')];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(name) {
+      tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.screen === name)));
+      screens.forEach((s) => s.classList.toggle('active', s.dataset.screen === name));
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === name));
+    }
+    tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.screen)));
+
+    const toggle = document.getElementById('fx-toggle');
+    const label = document.getElementById('fx-label');
+    toggle.addEventListener('click', () => {
+      const on = !stage.classList.contains('fx');
+      stage.classList.toggle('fx', on);
+      toggle.setAttribute('aria-pressed', String(on));
+      label.textContent = on ? 'Proposed' : 'Current';
+    });
+
+    // Candle dust: a few soft motes drifting upward, each on its own twinkle.
+    const canvas = document.getElementById('motes');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dpr = 1, motes = [];
+    function size() {
+      const r = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = r.width; H = r.height;
+      canvas.width = Math.floor(W * dpr); canvas.height = Math.floor(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!motes.length) for (let i = 0; i < 40; i++) motes.push(spawn(true));
+    }
+    function spawn(anywhere) {
+      const gold = Math.random() < 0.7;
+      return {
+        x: Math.random() * W, y: anywhere ? Math.random() * H : H + 10,
+        r: 0.8 + Math.random() * 1.8, vy: 6 + Math.random() * 12, drift: 0.4 + Math.random() * 0.8,
+        phase: Math.random() * Math.PI * 2, speed: 0.6 + Math.random() * 1.2, alpha: 0.35 + Math.random() * 0.45,
+        color: gold ? [240, 202, 114] : [131, 169, 197],
+      };
+    }
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      ctx.clearRect(0, 0, W, H);
+      if (stage.classList.contains('fx') && !reduced) {
+        ctx.globalCompositeOperation = 'lighter';
+        const t = now / 1000;
+        for (let i = 0; i < motes.length; i++) {
+          const m = motes[i];
+          m.y -= m.vy * dt; m.x += Math.sin(t * m.drift + m.phase) * 8 * dt;
+          if (m.y < -10) motes[i] = spawn(false);
+          const tw = 0.55 + 0.45 * Math.sin(t * m.speed + m.phase);
+          const a = m.alpha * tw;
+          const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 4);
+          g.addColorStop(0, `rgba(${m.color[0]},${m.color[1]},${m.color[2]},${a})`);
+          g.addColorStop(0.4, `rgba(${m.color[0]},${m.color[1]},${m.color[2]},${a * 0.35})`);
+          g.addColorStop(1, `rgba(${m.color[0]},${m.color[1]},${m.color[2]},0)`);
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      requestAnimationFrame(frame);
+    }
+    size(); window.addEventListener('resize', size); requestAnimationFrame(frame);
+
+    // Sparks on landing: click a tile.
+    const board = document.getElementById('board');
+    board.addEventListener('click', (e) => {
+      const hex = e.target.closest('.hex');
+      if (!hex || !stage.classList.contains('fx') || reduced) return;
+      const r = board.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      for (let i = 0; i < 14; i++) {
+        const s = document.createElement('span');
+        s.className = 'spark';
+        const ang = Math.random() * Math.PI * 2, dist = 22 + Math.random() * 42;
+        s.style.left = x + 'px'; s.style.top = y + 'px';
+        s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+        s.style.setProperty('--dy', Math.sin(ang) * dist - 10 + 'px');
+        s.style.setProperty('--sc', Math.random() < 0.7 ? '#f0ca72' : '#83a9c5');
+        board.appendChild(s);
+        setTimeout(() => s.remove(), 800);
+      }
+    });
+  })();
+</script>
