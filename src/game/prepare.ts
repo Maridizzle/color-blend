@@ -41,44 +41,77 @@ const SHAPE_STRIDE = 5;
 /**
  * The difficulty ramp, and it runs along the *whole road*, not within one
  * archive. The first Cosmos board is the smallest and simplest the game has;
- * every board after it is a little larger, and only past the middle of the
- * journey do the two-colour planes appear. A player is never dropped in at the
+ * every board after it is a little larger. A player is never dropped in at the
  * deep end, and never made to start over from easy when a new archive opens --
  * which is what a per-archive ramp did, and why the first archive felt hard: it
  * held the hardest boards in the game a few puzzles from the start.
+ *
+ * The road has no end -- levels are meant to be added for as long as anyone
+ * cares to add them -- so the ramp is built to never run away. Two shapes to it:
+ *
+ *   - The tile count *saturates*. It climbs quickly at first and then flattens
+ *     into a long, gentle plateau it approaches but never reaches. Tile count
+ *     alone cannot carry difficulty forever -- eventually a new mechanic must --
+ *     so rather than pretend otherwise it settles at a fair, playable size and
+ *     holds there, however deep the road runs.
+ *
+ *   - The two-colour plane, the one genuinely hard board, is held back as a rare
+ *     capstone: the last board or two of the *deepest* archives only, and never
+ *     more than a few. So no archive is ever a wall of them, and the newest
+ *     archive on the road is never the hardest thing in the game -- because the
+ *     newest archive is, almost always, not really the last.
  */
 export const DIFFICULTY_RAMP = {
-  /**
-   * Archives the ramp climbs over before it tops out. Six is the shipped road,
-   * so the last archive plays at full difficulty and anything loaded past it
-   * (a pack joins the end of the road) stays there rather than climbing forever.
-   */
-  span: 6,
-  /** Tiles on the very first board, and on the last. */
+  /** Tiles on the very first board. */
   minTiles: 8,
-  maxTiles: 30,
-  /** Where on the 0..1 ramp the one-colour tiers give way. */
-  mediumFrom: 0.36,
-  hardFrom: 0.7,
+  /**
+   * The size one-colour boards climb toward and hold at. Approached, never
+   * quite reached, so no board ever runs away as the road lengthens.
+   */
+  maxTiles: 26,
+  /**
+   * Journey, in archives, at which the climb from min to max is half done.
+   * Small enough that the first archives feel a real progression, large enough
+   * that it soon flattens into the plateau an endless road needs.
+   */
+  halfLife: 6,
+  /** Below this progress a board hands over a few extra locked anchors. */
+  easyUntil: 0.28,
+  /**
+   * The first archive (0-based) whose tail can be a two-colour plane. Set past
+   * the end of the shipped road, so the current archives are all one colour and
+   * the plane returns only as the road grows deeper than it is today.
+   */
+  planeFromArchive: 7,
+  /** The most plane boards any one archive ever ends on. */
+  planeCap: 3,
 } as const;
 
-/** 0..1 along the whole road: 0 at the first board, 1 at the far archives. */
-function rampLevel(index: number, total: number, roadIndex: number): number {
+/**
+ * Progress along the road, 0..1, rising fast then flattening. Journey is the
+ * archive's place on the road plus how far through it a board sits, so it climbs
+ * smoothly across the whole road and settles into a plateau it never tops.
+ */
+function rampProgress(index: number, total: number, roadIndex: number): number {
   const throughArchive = total <= 1 ? 0 : index / (total - 1);
-  return Math.min(1, Math.max(0, (roadIndex + throughArchive) / DIFFICULTY_RAMP.span));
+  const journey = roadIndex + throughArchive;
+  return journey / (journey + DIFFICULTY_RAMP.halfLife);
 }
 
-/** The tier at a ramp level. Governs tone, two-colour planes and locked starters. */
-function tierForLevel(level: number): Difficulty {
-  if (level >= DIFFICULTY_RAMP.hardFrom) return 'hard';
-  if (level >= DIFFICULTY_RAMP.mediumFrom) return 'medium';
-  return 'easy';
-}
-
-/** Tiles at a ramp level: a straight climb from the first board to the last. */
-function tilesForLevel(level: number): number {
+/** Tiles at a given progress: the saturating climb from min toward max. */
+function tilesForProgress(p: number): number {
   const { minTiles, maxTiles } = DIFFICULTY_RAMP;
-  return Math.round(minTiles + (maxTiles - minTiles) * level);
+  return Math.round(minTiles + (maxTiles - minTiles) * p);
+}
+
+/**
+ * How many boards at the tail of an archive are two-colour planes: none until
+ * the road runs deep, then one, then a few, capped -- never the whole archive.
+ */
+function planeTail(roadIndex: number): number {
+  const { planeFromArchive, planeCap } = DIFFICULTY_RAMP;
+  if (roadIndex < planeFromArchive) return 0;
+  return Math.min(planeCap, roadIndex - planeFromArchive + 1);
 }
 
 export interface PuzzleShapeSpec {
@@ -142,19 +175,25 @@ function choose(
   offset: number,
   taken: ReadonlySet<string>,
 ): PuzzleShapeSpec {
-  const level = rampLevel(index, total, roadIndex);
-  const difficulty = subject.difficulty ?? tierForLevel(level);
-  // Ramped size for the road; an authored difficulty keeps that tier's count,
-  // since a pack that names a difficulty means the board it goes with.
-  const tileCount = subject.difficulty
-    ? DIFFICULTY_TUNING.tileCount[difficulty]
-    : tilesForLevel(level);
+  const p = rampProgress(index, total, roadIndex);
+  const authored = subject.difficulty;
+
+  // A plane is the one hard mechanic. The road hands it out only at the tail of
+  // its deepest archives; a pack that names its own hard difficulty still gets
+  // one. Everything else is a one-colour board, easy near the start and medium
+  // after -- which decides only how many anchors are given away for free. The
+  // `hard` tier is reserved for planes, so `isTwoColour(difficulty)` downstream
+  // still means exactly "this is a plane".
+  const plane = authored ? isTwoColour(authored) : index >= total - planeTail(roadIndex);
+  const difficulty: Difficulty =
+    authored ?? (plane ? 'hard' : p < DIFFICULTY_RAMP.easyUntil ? 'easy' : 'medium');
+  const tileCount = authored ? DIFFICULTY_TUNING.tileCount[difficulty] : tilesForProgress(p);
 
   // A two-colour board is read as rows and columns, so it has to have them: a
   // plain rectangle on a square lattice. A leaf or a ring has no rows. This
   // overrides a pack's own choice rather than deferring to it, because the
   // alternative is a board whose two axes cannot be seen.
-  if (isTwoColour(difficulty)) {
+  if (plane) {
     return { difficulty, latticeKind: 'square', shape: 'full', tileCount };
   }
 

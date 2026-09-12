@@ -132,15 +132,6 @@ describe('board assignment across a category', () => {
     }
   });
 
-  it('makes every two-colour board a plain rectangle on a square lattice', () => {
-    const planes = specs.filter((s) => isTwoColour(s.spec.difficulty));
-    expect(planes.length).toBeGreaterThan(0);
-    for (const { id, spec } of planes) {
-      expect(spec.latticeKind, id).toBe('square');
-      expect(spec.shape, id).toBe('full');
-    }
-  });
-
   it('does not make a second category a re-run of the first', () => {
     // Without the category offset every category opens with the same square
     // grid and then the same hexagon, in the same order.
@@ -155,7 +146,7 @@ describe('board assignment across a category', () => {
     expect(key(first)).not.toBe(key(second));
   });
 
-  it('ramps difficulty along the whole road, gently at the start', () => {
+  it('ramps difficulty along the whole road, gently at the start and never runs away', () => {
     // The journey is the archives in road order, concatenated: the difficulty
     // ramp runs across all of them, not within each one.
     const journey = specs; // already in road order
@@ -167,16 +158,13 @@ describe('board assignment across a category', () => {
     expect(first.tileCount).toBe(DIFFICULTY_RAMP.minTiles);
     expect(isTwoColour(first.difficulty)).toBe(false);
 
-    // The last board is the hardest.
-    expect(journey[journey.length - 1]!.spec.difficulty).toBe('hard');
-
-    // It only ever climbs: tile count never drops, tier never drops.
-    const rank = { easy: 0, medium: 1, hard: 2 };
+    // The tile count only ever climbs across the road, and never past the
+    // plateau -- the saturating curve is what lets the road grow without end.
     for (let i = 1; i < journey.length; i++) {
       expect(journey[i]!.spec.tileCount).toBeGreaterThanOrEqual(journey[i - 1]!.spec.tileCount);
-      expect(rank[journey[i]!.spec.difficulty]).toBeGreaterThanOrEqual(
-        rank[journey[i - 1]!.spec.difficulty],
-      );
+    }
+    for (const { id, spec } of journey) {
+      expect(spec.tileCount, id).toBeLessThanOrEqual(DIFFICULTY_RAMP.maxTiles);
     }
   });
 
@@ -190,12 +178,31 @@ describe('board assignment across a category', () => {
     }
   });
 
-  it('holds the two-colour planes back for the later archives', () => {
-    // No plane appears before the ramp crosses into the hard tier, which is well
-    // past the first archives.
-    const firstPlane = specs.find((s) => isTwoColour(s.spec.difficulty));
-    if (firstPlane) {
-      expect(firstPlane.roadIndex).toBeGreaterThanOrEqual(3);
+  it('keeps every shipped archive one colour, holding the plane for a deeper road', () => {
+    // The two-colour plane is the one hard mechanic, and it is deferred: none of
+    // the archives that exist today is a plane, so the newest content is never
+    // the hardest thing in the game.
+    const planes = specs.filter((s) => isTwoColour(s.spec.difficulty));
+    expect(planes, planes.map((p) => p.id).join(', ')).toHaveLength(0);
+  });
+
+  it('brings the plane back as a small capstone once the road runs deep', () => {
+    // Build a synthetic deep archive of ten boards and read its tail. The plane
+    // returns only past `planeFromArchive`, only at the end, and never as more
+    // than a few boards -- so no archive is ever a wall of them.
+    const deep = DIFFICULTY_RAMP.planeFromArchive + 5;
+    const boards = Array.from({ length: 10 }, (_, i) =>
+      specFor({ id: `deep-${i}` } as unknown as Subject, i, 10, 'deep', deep),
+    );
+    const planes = boards.filter((b) => isTwoColour(b.difficulty));
+    expect(planes.length).toBeGreaterThan(0);
+    expect(planes.length).toBeLessThanOrEqual(DIFFICULTY_RAMP.planeCap);
+    // They are the tail, and each is a plain square as a plane must be.
+    const firstPlane = boards.findIndex((b) => isTwoColour(b.difficulty));
+    expect(firstPlane).toBe(10 - planes.length);
+    for (const plane of planes) {
+      expect(plane.latticeKind).toBe('square');
+      expect(plane.shape).toBe('full');
     }
   });
 });
