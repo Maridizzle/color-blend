@@ -32,9 +32,11 @@ export function talePassage(options: {
   paragraphs: readonly string[];
   cite?: string;
   opening?: boolean;
+  /** A chapter's last passage: its cite is the cliffhanger, and is lit as such. */
+  ending?: boolean;
 }): HTMLElement {
   return el('div', {
-    class: `tale-passage${options.opening ? ' tale-opening' : ''}`,
+    class: `tale-passage${options.opening ? ' tale-opening' : ''}${options.ending ? ' tale-ending' : ''}`,
     children: [
       ...options.paragraphs.map((text) => paragraph(text)),
       options.cite ? el('cite', { text: options.cite }) : null,

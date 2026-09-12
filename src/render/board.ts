@@ -21,8 +21,28 @@ export interface Flight {
   t: number;
 }
 
+/** A spark thrown off a tile landing where it belongs, in board units. */
+export interface Spark {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  /** Progress, 0..1. */
+  t: number;
+  gold: boolean;
+}
+
 /** Everything the renderer needs to draw one frame. */
 export interface BoardView {
+  /**
+   * The light layer is on: gloss on the tiles, a warm glow under the carried
+   * one, a bloom behind the finished picture. None of it changes a colour the
+   * player is asked to compare -- the gloss is the same on every tile.
+   */
+  lit: boolean;
+  /** Milliseconds, for the slow breathing of the bloom. */
+  time: number;
+  sparks: Spark[];
   /** CSS color currently sitting in each cell, by cell id. */
   colors: string[];
   /** Perceptual lightness 0..1 per cell, for the accessibility overlay. */
@@ -78,6 +98,7 @@ export class BoardRenderer {
   private gutter = 0;
   private typicalCell = 1;
   private dpr = 1;
+  private lit = false;
 
   constructor(private canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
@@ -153,6 +174,7 @@ export class BoardRenderer {
   draw(view: BoardView): void {
     const { ctx, lattice } = this;
     if (!lattice) return;
+    this.lit = view.lit;
 
     ctx.fillStyle = BACKGROUND;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -191,7 +213,87 @@ export class BoardRenderer {
       if (cell) this.drawLifted(cell, view.carry.color, view.carry.at, CARRY_LIFT, 1);
     }
 
+    if (view.sparks.length > 0) this.drawSparks(view.sparks);
     if (view.cursor !== null) this.drawCursor(view.cursor);
+  }
+
+  /**
+   * A faint gloss over a tile, the same on every tile: a little light at the
+   * top edge, a little shade at the bottom, so the board reads as lacquered
+   * stone rather than flat paint. Identical geometry everywhere is what keeps
+   * it honest -- no tile is made lighter than its neighbour by it.
+   */
+  private gloss(poly: readonly Point[]): void {
+    const { ctx } = this;
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const [, y] of poly) {
+      const py = project(this.transform, 0, y)[1];
+      if (py < top) top = py;
+      if (py > bottom) bottom = py;
+    }
+    if (!(bottom > top)) return;
+    const light = ctx.createLinearGradient(0, top, 0, bottom);
+    light.addColorStop(0, 'rgba(255,255,255,0.10)');
+    light.addColorStop(0.45, 'rgba(255,255,255,0)');
+    light.addColorStop(1, 'rgba(0,0,0,0.06)');
+    // The tile's path is still current from the fill before this.
+    ctx.fillStyle = light;
+    ctx.fill();
+  }
+
+  /** Sparks: a few points of gold and moon light scattering from a landing and dying in under a second. */
+  private drawSparks(sparks: readonly Spark[]): void {
+    const { ctx } = this;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    // Sized to the tile, so they read on a big easy board and stay fine on a
+    // dense one.
+    const cellPx = this.typicalCell * this.transform.scale;
+    const full = Math.min(6, Math.max(2.5, cellPx * 0.045)) * this.dpr;
+    // A soft halo under a bright core, two plain discs: a canvas shadow here
+    // would be a blur pass per spark per frame, which is more than a phone
+    // should spend on glitter.
+    for (const spark of sparks) {
+      const ease = 1 - Math.pow(1 - spark.t, 3);
+      const [px, py] = project(this.transform, spark.x + spark.dx * ease, spark.y + spark.dy * ease);
+      const alpha = 1 - spark.t;
+      const radius = full * (1 - 0.6 * spark.t);
+      const rgb = spark.gold ? '240,202,114' : '131,169,197';
+      ctx.fillStyle = `rgba(${rgb},${alpha * 0.28})`;
+      ctx.beginPath();
+      ctx.arc(px, py, radius * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = `rgba(${rgb},${alpha})`;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** A warm light swelling behind the finished picture, breathing slowly for as long as it is looked at. */
+  private drawBloom(plan: RevealPlan, time: number, strength: number): void {
+    const { ctx } = this;
+    const [cx, cy] = project(this.transform, plan.square.x + plan.square.size / 2, plan.square.y + plan.square.size / 2);
+    // The picture covers the middle, so the light is shaped as a halo: full at
+    // the picture's edge, gold going to wine, gone at about twice its reach.
+    const half = (plan.square.size * this.transform.scale) / 2;
+    const radius = half * 2.1;
+    const breathe = 0.16 + 0.1 * Math.sin((time / 1000) * ((Math.PI * 2) / 6));
+    const alpha = strength * breathe;
+    const glow = ctx.createRadialGradient(cx, cy, half * 0.9, cx, cy, radius);
+    glow.addColorStop(0, `rgba(240,202,114,${alpha})`);
+    glow.addColorStop(0.25, `rgba(240,202,114,${alpha * 0.55})`);
+    glow.addColorStop(0.55, `rgba(104,31,48,${alpha * 0.45})`);
+    glow.addColorStop(1, 'rgba(104,31,48,0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   private fillCell(cell: Cell, color: string, alpha: number, pulse?: number, press = 1): void {
@@ -210,6 +312,7 @@ export class BoardRenderer {
     ctx.fillStyle = color;
     tracePolygon(ctx, poly, this.transform);
     ctx.fill();
+    if (this.lit) this.gloss(poly);
     ctx.restore();
   }
 
@@ -281,6 +384,22 @@ export class BoardRenderer {
       at[1],
       lift,
     );
+    // Under the light, the tile in hand carries a warm rim glow beneath its
+    // shadow: a few widening copies of its outline, faint and fainter, drawn
+    // first so the shadow pass sits over them. Plain fills, no blur pass.
+    if (this.lit && strength >= 1) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      // Eight thin steps, each fainter than the last, add up to a glow that
+      // is brightest at the tile's edge and gone a quarter-tile out.
+      const steps = 8;
+      for (let i = 1; i <= steps; i++) {
+        ctx.fillStyle = `rgba(240,202,114,${(0.055 * (steps + 1 - i)) / steps})`;
+        tracePolygon(ctx, scaleAbout(poly, at[0], at[1], 1 + i * 0.03), this.transform);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
     ctx.save();
     ctx.fillStyle = color;
     ctx.shadowColor = `rgba(0,0,0,${0.5 * strength})`;
@@ -288,6 +407,7 @@ export class BoardRenderer {
     ctx.shadowOffsetY = 5 * this.dpr * strength;
     tracePolygon(ctx, poly, this.transform);
     ctx.fill();
+    if (this.lit) this.gloss(poly);
     ctx.restore();
   }
 
@@ -336,6 +456,8 @@ export class BoardRenderer {
     }
 
     if (state.phase === 'crossfade' || state.phase === 'done') {
+      // The bloom comes up with the picture and keeps breathing behind it.
+      if (view.lit) this.drawBloom(plan, view.time, state.phase === 'done' ? 1 : easeOut(state.t));
       // Draw the settled mosaic, then bring the real artwork up over it.
       for (const cell of lattice.cells) {
         const poly = scaleAbout(

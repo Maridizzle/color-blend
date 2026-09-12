@@ -3,7 +3,7 @@ import type { Puzzle } from '../puzzle/generator';
 import { arrangementOf } from '../puzzle/generator';
 import type { Cell, Point } from '../puzzle/lattice';
 import { type Arrangement, findHintSwap, isCellCorrect, isSolved, swap } from '../puzzle/solve';
-import { BoardRenderer, type BoardView, type Flight } from '../render/board';
+import { BoardRenderer, type BoardView, type Flight, type Spark } from '../render/board';
 import {
   type RevealPlan,
   buildRevealPlan,
@@ -15,6 +15,9 @@ import type { Artwork, Subject } from '../content/types';
 /** How long a tile takes to fly into a cell, after a swap or on being let go. */
 const FLIGHT_MS = 190;
 const PULSE_DURATION = 700;
+/** How long the sparks from a landing take to die. */
+const SPARK_MS = 720;
+const SPARKS_PER_LANDING = 16;
 /**
  * On touch the carried tile rides this many cells above the finger, so the
  * finger does not hide the thing being placed. A mouse pointer hides nothing.
@@ -45,6 +48,15 @@ interface FlightInProgress {
   start: number;
 }
 
+interface SparkInFlight {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  born: number;
+  gold: boolean;
+}
+
 /**
  * One playthrough of one puzzle: owns the board state, the input handling and
  * the animation loop, and reports upward through callbacks. Deliberately knows
@@ -68,6 +80,7 @@ export class PuzzleSession {
   private carry: Carry | null = null;
   private target: number | null = null;
   private flights: FlightInProgress[] = [];
+  private sparks: SparkInFlight[] = [];
   private pulses = new Map<number, number>();
 
   /** Keyboard state: where the cursor is, what it has picked up, and whether it is in charge. */
@@ -92,7 +105,7 @@ export class PuzzleSession {
     private puzzle: Puzzle,
     private artwork: Artwork,
     private subject: Subject,
-    private options: { reducedMotion: boolean; lightnessAssist: boolean },
+    private options: { reducedMotion: boolean; lightnessAssist: boolean; lit: boolean },
     private callbacks: SessionCallbacks,
   ) {
     this.renderer = new BoardRenderer(canvas);
@@ -332,6 +345,8 @@ export class PuzzleSession {
 
     const colorA = this.colors[a] as string;
     const colorB = this.colors[b] as string;
+    const wasRightA = isCellCorrect(this.arrangement, a);
+    const wasRightB = isCellCorrect(this.arrangement, b);
 
     swap(this.puzzle.order, a, b);
     this.colors[a] = colorB;
@@ -347,6 +362,11 @@ export class PuzzleSession {
 
     this.launch(b, colorA, carriedFrom ?? this.centre(a));
     this.launch(a, colorB, this.centre(b));
+    // A tile landing where it belongs throws off a few sparks -- only a landing
+    // that is newly right, so they mean something. Decoration on top of the
+    // same correctness test the progress count uses; nothing here changes it.
+    if (!wasRightA && isCellCorrect(this.arrangement, a)) this.sparkle(a);
+    if (!wasRightB && isCellCorrect(this.arrangement, b)) this.sparkle(b);
     this.dirty = true;
 
     this.checkFacts();
@@ -363,6 +383,26 @@ export class PuzzleSession {
   private launch(cell: number, color: string, from: Point): void {
     if (this.options.reducedMotion) return;
     this.flights.push({ cell, color, from, start: performance.now() });
+  }
+
+  /** Scatter sparks from a cell, in gold and moon-blue, out to about a tile's width. */
+  private sparkle(cell: number): void {
+    if (!this.options.lit) return;
+    const [x, y] = this.centre(cell);
+    const reach = this.renderer.cellSize();
+    const born = performance.now();
+    for (let i = 0; i < SPARKS_PER_LANDING; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = reach * (0.35 + Math.random() * 0.6);
+      this.sparks.push({
+        x,
+        y,
+        dx: Math.cos(angle) * distance,
+        dy: Math.sin(angle) * distance - reach * 0.15,
+        born,
+        gold: Math.random() < 0.7,
+      });
+    }
   }
 
   undo(): void {
@@ -434,12 +474,20 @@ export class PuzzleSession {
     const landed = this.flights.length;
     this.flights = this.flights.filter((flight) => now - flight.start < FLIGHT_MS);
     if (this.flights.length !== landed) this.dirty = true;
+    const sparking = this.sparks.length;
+    this.sparks = this.sparks.filter((spark) => now - spark.born < SPARK_MS);
+    if (this.sparks.length !== sparking) this.dirty = true;
     for (const [cellId, start] of this.pulses) {
       if (now - start >= PULSE_DURATION) this.pulses.delete(cellId);
     }
 
+    // Under the light the finished picture keeps breathing, so the reveal stays
+    // live after it is done; one gradient and one drawImage a frame.
     const animating =
-      this.flights.length > 0 || this.pulses.size > 0 || (this.solved && !this.revealDone);
+      this.flights.length > 0 ||
+      this.sparks.length > 0 ||
+      this.pulses.size > 0 ||
+      (this.solved && (!this.revealDone || this.options.lit));
 
     if (this.dirty || animating) {
       this.renderer.draw(this.buildView(now));
@@ -461,6 +509,14 @@ export class PuzzleSession {
     for (const [cellId, start] of this.pulses) {
       pulses.set(cellId, Math.min(1, (now - start) / PULSE_DURATION));
     }
+    const sparks: Spark[] = this.sparks.map((spark) => ({
+      x: spark.x,
+      y: spark.y,
+      dx: spark.dx,
+      dy: spark.dy,
+      t: Math.min(1, (now - spark.born) / SPARK_MS),
+      gold: spark.gold,
+    }));
 
     let reveal: BoardView['reveal'] = null;
     if (this.solved && this.revealPlan && this.revealStart !== null) {
@@ -473,6 +529,9 @@ export class PuzzleSession {
     }
 
     return {
+      lit: this.options.lit,
+      time: now,
+      sparks,
       colors: this.colors,
       lightness: this.lightness,
       locked: this.puzzle.locked,

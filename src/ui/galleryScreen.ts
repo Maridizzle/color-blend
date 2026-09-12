@@ -1,7 +1,7 @@
 import type { ArtworkSource, Category } from '../content/types';
 import type { Progress } from '../game/persistence';
 import { cellOwners, collectionState } from '../game/story';
-import { button, el } from './dom';
+import { button, el, withSheen } from './dom';
 import { roman } from './numerals';
 import { talePassage } from './tale';
 
@@ -52,7 +52,9 @@ export function galleryScreen(
     const row = Math.floor(cell / plan.cols);
 
     let className = 'mosaic-cell';
-    const style: Record<string, string> = {};
+    // The index staggers the light: a sheen crossing held pieces, and sealed
+    // sigils breathing, each out of step with its neighbours.
+    const style: Record<string, string> = { '--i': String(cell) };
     if (held) {
       className += ' mosaic-cell-held';
       const piece = plate ?? cssUrl(subject?.artwork);
@@ -118,6 +120,7 @@ export function galleryScreen(
         talePassage({
           paragraphs: state.chapterClosing,
           cite: `End of Chapter ${roman(state.chapter.number)}`,
+          ending: true,
         }),
       );
     } else if (state.complete && state.chapter && !state.chapterClosing) {
@@ -140,7 +143,8 @@ export function galleryScreen(
     class: 'gallery',
     children: [
       el('div', {
-        class: 'mosaic',
+        // A whole plate is gilded: a slow sweep of light crosses the picture.
+        class: `mosaic${state.complete ? ' mosaic-whole' : ''}`,
         style: { '--mosaic-cols': String(plan.cols), '--mosaic-rows': String(plan.rows) },
         attrs: { role: 'list', 'aria-label': `${category.title} mosaic` },
         children: cells,
@@ -153,7 +157,7 @@ export function galleryScreen(
       }),
       el('div', {
         class: 'gallery-actions',
-        children: [button('Enter the folios →', host.onEnter, 'button button-primary')],
+        children: [withSheen(button('Enter the folios →', host.onEnter, 'button button-primary'))],
       }),
       tale
         ? el('section', {

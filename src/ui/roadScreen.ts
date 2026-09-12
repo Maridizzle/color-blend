@@ -23,6 +23,8 @@ export function roadScreen(
 ): HTMLElement {
   let held = 0;
   let all = 0;
+  // The first archive not yet whole is the one to play next; it gets the halo.
+  let nextMarked = false;
 
   const stations = categories.map((category, index) => {
     const state = collectionState(category, progress, categories);
@@ -30,6 +32,8 @@ export function roadScreen(
     held += state.solvedCount;
     all += total;
     const percent = total === 0 ? 0 : Math.round((state.solvedCount / total) * 100);
+    const isNext = !nextMarked && !state.complete;
+    if (isNext) nextMarked = true;
 
     // The miniature: one cell per mosaic piece, coloured with its board's own
     // hue once that piece is held. Colour rather than artwork, because at this
@@ -42,13 +46,15 @@ export function roadScreen(
       cells.push(
         el('span', {
           class: `mosaic-mini-cell${isHeld ? ' held' : ''}`,
-          style: isHeld ? { '--h': String(subject?.hue ?? 0) } : undefined,
+          // The index staggers the ember twinkle, so held pieces brighten out
+          // of step with each other rather than all at once.
+          style: isHeld ? { '--h': String(subject?.hue ?? 0), '--i': String(cell) } : undefined,
         }),
       );
     }
 
     return el('li', {
-      class: `station${index % 2 === 1 ? ' station-right' : ''}${state.complete ? ' station-complete' : ''}`,
+      class: `station${index % 2 === 1 ? ' station-right' : ''}${state.complete ? ' station-complete' : ''}${isNext ? ' station-next' : ''}`,
       children: [
         el('span', { class: 'station-node', attrs: { 'aria-hidden': 'true' } }),
         el('button', {
@@ -89,6 +95,8 @@ export function roadScreen(
                 }),
               ],
             }),
+            // A closed archive is gilded: a thread of light walks its rim.
+            state.complete ? el('span', { class: 'station-gilt', attrs: { 'aria-hidden': 'true' } }) : null,
           ],
         }),
       ],
@@ -107,7 +115,12 @@ export function roadScreen(
       }),
       el('ol', {
         class: 'road-line',
-        children: [...stations, el('span', { class: 'road-onward', text: 'and on, past these…' })],
+        children: [
+          ...stations,
+          // A point of light that walks the road and fades: the road runs on.
+          el('span', { class: 'road-bead', attrs: { 'aria-hidden': 'true' } }),
+          el('span', { class: 'road-onward', text: 'and on, past these…' }),
+        ],
       }),
     ],
   });

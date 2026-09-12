@@ -10,6 +10,7 @@ import { roadScreen } from './roadScreen';
 import { galleryScreen } from './galleryScreen';
 import { roman } from './numerals';
 import { prefersReducedMotion } from '../game/persistence';
+import { applyLighting } from './lighting';
 
 type Route =
   | { name: 'home' }
@@ -42,6 +43,8 @@ export class App {
     // The title card sits over the home screen rather than replacing it, so the
     // game is already built and interactive the instant it clears.
     const settings = loadSettings();
+    // The light layer: on unless motion is reduced, by the system or in Settings.
+    applyLighting(prefersReducedMotion(settings));
     this.showOverlay(
       introSplash(prefersReducedMotion(settings), () => {
         this.clearOverlay();
@@ -132,6 +135,12 @@ export class App {
     // timer still in flight cannot try to remove a node twice.
     this.overlay = null;
     clear(this.root);
+    // Every screen fades in rather than cutting. Next frame, so the screen is
+    // mounted first; opacity only, since a transform would re-anchor the fixed
+    // panels and toasts that live inside a screen.
+    requestAnimationFrame(() => {
+      this.root.querySelector(':scope > .screen')?.classList.add('screen-in');
+    });
 
     const route = this.route;
     switch (route.name) {
@@ -508,7 +517,11 @@ export class App {
       });
     };
 
-    const update = (patch: Partial<Settings>) => saveSettings({ ...loadSettings(), ...patch });
+    const update = (patch: Partial<Settings>) => {
+      saveSettings({ ...loadSettings(), ...patch });
+      // Reduced motion is the one switch the light layer answers to.
+      applyLighting(prefersReducedMotion(loadSettings()));
+    };
 
     return el('section', {
       class: 'screen screen-list',

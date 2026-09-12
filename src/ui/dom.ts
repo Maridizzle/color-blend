@@ -47,3 +47,13 @@ export function button(
     on: { click: onClick as (event: never) => void },
   });
 }
+
+/**
+ * A light that sweeps across a button now and then. Purely decorative and
+ * inert: a span the button's own styling positions and animates, and only when
+ * the light layer is on.
+ */
+export function withSheen<T extends HTMLElement>(node: T): T {
+  node.appendChild(el('span', { class: 'button-sheen', attrs: { 'aria-hidden': 'true' } }));
+  return node;
+}

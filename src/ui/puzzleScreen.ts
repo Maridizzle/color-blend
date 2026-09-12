@@ -4,7 +4,7 @@ import { isTwoColour } from '../puzzle/difficulty';
 import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
 import type { Category, Subject } from '../content/types';
 import { passageFor } from '../game/story';
-import { button, clear, el } from './dom';
+import { button, clear, el, withSheen } from './dom';
 import { talePassage } from './tale';
 
 export interface PuzzleScreenHost {
@@ -169,11 +169,29 @@ export function puzzleScreen(
       class: 'admire-bar',
       children: [
         el('span', { class: 'admire-hint', text: 'The folio is whole.' }),
-        button('Read on →', proceed, 'button button-primary admire-go'),
+        withSheen(button('Read on →', proceed, 'button button-primary admire-go')),
       ],
     });
     root.appendChild(bar);
     requestAnimationFrame(() => bar.classList.add('admire-bar-in'));
+
+    // A few points of light around the picture, never on it, so nothing
+    // competes with the art. Off with reduced motion, like the rest of the light.
+    if (!reducedMotion) {
+      const spots: [number, number, 'gold' | 'moon', number][] = [
+        [9, 18, 'gold', 0], [88, 26, 'moon', 0.9], [82, 80, 'gold', 1.7], [12, 76, 'moon', 2.4],
+        [50, 6, 'gold', 3.1], [6, 50, 'moon', 1.3], [93, 55, 'gold', 2.9],
+      ];
+      for (const [x, y, tone, delay] of spots) {
+        boardWrap.appendChild(
+          el('span', {
+            class: `twinkle twinkle-${tone}`,
+            attrs: { 'aria-hidden': 'true' },
+            style: { left: `${x}%`, top: `${y}%`, '--d': `${delay}s` },
+          }),
+        );
+      }
+    }
 
     // Tapping the picture itself reads on too, but only after a beat: the tap
     // that skips the reveal animation lands on this same board, and without the
@@ -195,6 +213,7 @@ export function puzzleScreen(
     }
     boardWrap.removeEventListener('click', proceed);
     root.querySelector('.admire-bar')?.remove();
+    boardWrap.querySelectorAll('.twinkle').forEach((spot) => spot.remove());
     root.classList.remove('admiring');
     showRevealPanel(solvedMoves);
   }
@@ -258,8 +277,8 @@ export function puzzleScreen(
           class: 'reveal-actions',
           children: [
             next
-              ? button(`Next: ${next.title}`, () => host.openSubject(category.id, next.id), 'button button-primary')
-              : button('Back to category', () => host.goBack(), 'button button-primary'),
+              ? withSheen(button(`Next: ${next.title}`, () => host.openSubject(category.id, next.id), 'button button-primary'))
+              : withSheen(button('Back to category', () => host.goBack(), 'button button-primary')),
             next ? button('Back to category', () => host.goBack()) : null,
           ],
         }),
@@ -294,7 +313,7 @@ export function puzzleScreen(
         prepared.puzzle,
         prepared.artwork,
         subject,
-        { reducedMotion, lightnessAssist: settings.lightnessAssist },
+        { reducedMotion, lightnessAssist: settings.lightnessAssist, lit: !reducedMotion },
         {
           onFact: showFact,
           onProgress: (correct, total, moves) => {
