@@ -252,6 +252,16 @@ cannot produce tiles nobody can order. On a decent palette it never triggers.
 See `src/puzzle/difficulty.ts` — `tileCount` is the one thing to change if the
 game feels too easy or too fiddly.
 
+**The road ramps as a whole, and form ramps before size.** The first board is a
+straight line of five tiles in one colour, two of them given — a value scale
+and nothing else to read. Lines grow, then build into small plain squares, then
+the second and third archives are squares and rectangles in two colours (the
+plane: hue across, lightness down), and only after all of that do silhouettes
+and the other lattices arrive. One new thing to read at a time. The tile count
+climbs with it and saturates, so an endless road never runs away; once shapes
+have begun, the plane comes back only as a capstone at the tail of the deepest
+archives. See `DIFFICULTY_RAMP` in `src/game/prepare.ts`.
+
 ## Content packs
 
 A pack is a zip of images. It can be loaded two ways, both running the same
@@ -372,8 +382,9 @@ loaded pack does, with no special case for being built in.
   which is an unusually good fit for a colour game: several of these are about
   how physics makes colour with no pigment involved at all.
 
-Each category ramps easy to hard across its own length, and boards are assigned
-by position rather than by a hash of the subject id — a hash gives each board
+The road ramps across all its archives rather than each ramping on its own (see
+`DIFFICULTY_RAMP`), and shaped boards are assigned by position rather than by a
+hash of the subject id — a hash gives each board
 stability and says nothing about its neighbours, so across twenty subjects it
 collides and the same handful of boards keep coming back. Walking the lattice
 and shape lists with a coprime stride guarantees the set is varied, which is the

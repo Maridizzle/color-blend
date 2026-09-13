@@ -3,7 +3,13 @@ import { type Rng, hashString, makeRng, shuffleInPlace } from '../util/rng';
 import type { Cell, Lattice, LatticeKind } from './lattice';
 import type { ShapeName } from './shapes';
 import { pickSymmetry } from './field';
-import { DIFFICULTY_TUNING, type Difficulty, calibrate, isTwoColour } from './difficulty';
+import {
+  type BoardGrid,
+  DIFFICULTY_TUNING,
+  type Difficulty,
+  calibrate,
+  isTwoColour,
+} from './difficulty';
 import { type Arrangement, countCorrect, isCellCorrect, isSolved, swap } from './solve';
 
 export const GENERATOR_TUNING = {
@@ -59,6 +65,11 @@ export interface GenerateOptions {
    * this so the opening boards are small and later ones grow.
    */
   targetTiles?: number;
+  /**
+   * An exact rectangle to build -- the road's opening line and squares -- in
+   * place of the count, lattice and silhouette. See `calibrate`.
+   */
+  grid?: BoardGrid;
   seed?: number;
 }
 
@@ -226,6 +237,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     hue,
     factCount = 0,
     targetTiles,
+    grid,
     seed = hashString(id),
   } = options;
 
@@ -250,6 +262,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     symmetry,
     hue,
     targetTiles,
+    grid,
   );
 
   const targets = field;

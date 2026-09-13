@@ -449,7 +449,11 @@ export class PuzzleSession {
     if (this.solved || !isSolved(this.arrangement)) return;
     this.solved = true;
     this.dropEverything();
-    this.revealPlan = buildRevealPlan(this.puzzle.lattice, this.artwork.pixels);
+    this.revealPlan = buildRevealPlan(
+      this.puzzle.lattice,
+      this.artwork.pixels,
+      this.renderer.revealFrame(),
+    );
     this.revealStart = performance.now();
     this.callbacks.onSolved(this.moves);
   }

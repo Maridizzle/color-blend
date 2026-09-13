@@ -19,6 +19,7 @@ import {
   boardForTileCount,
   calibrate,
   type Difficulty,
+  gridBoard,
   isTwoColour,
 } from '../src/puzzle/difficulty';
 import { arrangementOf, generatePuzzle } from '../src/puzzle/generator';
@@ -639,5 +640,58 @@ describe('correctness and hints', () => {
       }
       expect(isSolved(arrangement), `${label} did not solve in ${limit} hints`).toBe(true);
     }
+  });
+});
+
+describe('the opening boards: lines and small rectangles', () => {
+  it('builds the rectangle asked for, trimming its long side only when the floor bites', () => {
+    expect(gridBoard({ cols: 5, rows: 1 }, 5).cells).toHaveLength(5);
+    expect(gridBoard({ cols: 3, rows: 3 }, 9).cells).toHaveLength(9);
+    // Asked for fewer tiles, the long side gives way and the short side holds.
+    expect(gridBoard({ cols: 5, rows: 1 }, 3).cells).toHaveLength(3);
+    const trimmed = gridBoard({ cols: 2, rows: 4 }, 6);
+    expect(trimmed.cells).toHaveLength(6);
+    expect(trimmed.width).toBe(2);
+    // A line never gets shorter than three.
+    expect(gridBoard({ cols: 5, rows: 1 }, 1).cells).toHaveLength(3);
+  });
+
+  it('makes a line of five a fair value scale with both ends given', () => {
+    const puzzle = generatePuzzle({
+      id: 'first-light',
+      anchors: PALETTE.anchors,
+      difficulty: 'easy',
+      grid: { cols: 5, rows: 1 },
+    });
+    const cells = puzzle.lattice.cells;
+    expect(cells).toHaveLength(5);
+    expect(puzzle.lattice.height).toBe(1);
+    expect(puzzle.stats.targetTileCount).toBe(5);
+
+    // The two ends are the anchors; the three between them are the puzzle.
+    expect(puzzle.locked.filter(Boolean)).toHaveLength(2);
+    expect(puzzle.locked[0]).toBe(true);
+    expect(puzzle.locked[4]).toBe(true);
+    expect(isSolved(arrangementOf(puzzle))).toBe(false);
+
+    // Every tile is its own shade: along a line nothing projects to the same
+    // place, so nothing is interchangeable.
+    for (let i = 0; i < cells.length; i++) {
+      for (let j = i + 1; j < cells.length; j++) {
+        expect(deltaE(puzzle.targets[i]!, puzzle.targets[j]!)).toBeGreaterThan(0.02);
+      }
+    }
+  });
+
+  it('makes the smallest two-colour rectangle with its four corners given', () => {
+    const puzzle = generatePuzzle({
+      id: 'first-plane',
+      anchors: PALETTE.anchors,
+      difficulty: 'hard',
+      grid: { cols: 3, rows: 3 },
+    });
+    expect(puzzle.lattice.cells).toHaveLength(9);
+    expect(puzzle.locked.filter(Boolean)).toHaveLength(4);
+    expect(isSolved(arrangementOf(puzzle))).toBe(false);
   });
 });

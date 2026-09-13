@@ -250,8 +250,16 @@ export function calibrate(
    * authors a difficulty but no count still gets the tier's default.
    */
   targetTiles?: number,
+  /**
+   * An exact rectangle to build instead of searching for one: the road's
+   * opening boards are a line of five, then small squares, and those are
+   * chosen, not discovered. Overrides the count, lattice and silhouette.
+   */
+  grid?: BoardGrid,
 ): CalibrationResult {
-  const targetTileCount = targetTiles ?? DIFFICULTY_TUNING.tileCount[difficulty];
+  const targetTileCount = grid
+    ? grid.cols * grid.rows
+    : (targetTiles ?? DIFFICULTY_TUNING.tileCount[difficulty]);
   const toneCount = DIFFICULTY_TUNING.toneCount[difficulty];
 
   // A second colour is a second *axis*, not a longer ramp -- see
@@ -263,7 +271,7 @@ export function calibrate(
       : buildField(l, anchors, { symmetry, toneCount, hue });
 
   const board = (t: number) =>
-    toneCount >= 2 ? planeBoard(t) : boardForTileCount(kind, shape, t);
+    grid ? gridBoard(grid, t) : toneCount >= 2 ? planeBoard(t) : boardForTileCount(kind, shape, t);
 
   let target = targetTileCount;
   let lattice = board(target);
@@ -299,6 +307,27 @@ export function calibrate(
     // interchangeable and the hue axis decorative.
     toleranceBasis: toneCount >= 2 ? stats.minPositiveNeighborDeltaE : measured,
   };
+}
+
+/** A plain rectangle of squares, given as its column and row counts. */
+export interface BoardGrid {
+  cols: number;
+  rows: number;
+}
+
+/**
+ * The rectangle asked for, exactly -- or, when the legibility floor asks for
+ * fewer tiles than it holds, the same rectangle with its longer side trimmed
+ * until it fits. A line stays a line; nothing gets narrower than three along
+ * its length.
+ */
+export function gridBoard(grid: BoardGrid, target: number): Lattice {
+  let { cols, rows } = grid;
+  while (cols * rows > target && Math.max(cols, rows) > 3) {
+    if (cols >= rows) cols--;
+    else rows--;
+  }
+  return squareLattice(cols, rows);
 }
 
 /**

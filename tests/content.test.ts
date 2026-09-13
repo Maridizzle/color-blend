@@ -84,14 +84,15 @@ describe('board assignment across a category', () => {
     // A hash of the subject id gives each board stability and says nothing
     // about its neighbours, so it collided; walking by position does not.
     //
-    // Two-colour boards are excluded because they are all deliberately the same
-    // shape: a plane has to have rows and columns to be read as two axes, so it
-    // is always a plain rectangle. That is a real cost of the hard tier and it
-    // is recorded in `isTwoColour`, not something to paper over here.
+    // Only silhouettes count. The road's opening forms -- lines, rectangles and
+    // two-colour planes -- are all deliberately plain rectangles of squares: a
+    // plane has to have rows and columns to be read as two axes, and a line is
+    // a line. Variety is a property of the shaped boards that follow them.
     for (const category of SAMPLER_CATEGORIES) {
       const mine = specs.filter(
-        (s) => s.category === category.id && !isTwoColour(s.spec.difficulty),
+        (s) => s.category === category.id && s.spec.form === 'silhouette',
       );
+      if (mine.length < 2) continue;
       const pairs = new Set(mine.map((s) => `${s.spec.latticeKind}/${s.spec.shape}`));
       expect(pairs.size, category.id).toBe(mine.length);
 
@@ -119,13 +120,15 @@ describe('board assignment across a category', () => {
     // archive should not need one either: The Elements, at seven, had two
     // hexagons on the triangle lattice before the assignment learned to step
     // past a pair already taken. Sizes up to sixteen keep every tier inside a
-    // pool wide enough that a repeat is always avoidable.
+    // pool wide enough that a repeat is always avoidable. A pack plays at the
+    // road's first archive of shapes, as the app places it.
     const ids = ['a', 'pack-1', 'the-elements', 'wonder', 'zeta', 'periodic-table-2'];
     for (const id of ids) {
       for (let total = 1; total <= 16; total++) {
         const boards = Array.from({ length: total }, (_, i) =>
-          specFor({ id: `${id}-${i}` } as unknown as Subject, i, total, id),
-        ).filter((spec) => !isTwoColour(spec.difficulty));
+          specFor({ id: `${id}-${i}` } as unknown as Subject, i, total, id, DIFFICULTY_RAMP.planeUntil),
+        ).filter((spec) => spec.form === 'silhouette');
+        expect(boards.length, `${id} × ${total} is all shapes`).toBe(total);
         const pairs = new Set(boards.map((spec) => `${spec.latticeKind}/${spec.shape}`));
         expect(pairs.size, `${id} × ${total}`).toBe(boards.length);
       }
@@ -139,7 +142,7 @@ describe('board assignment across a category', () => {
     const key = (c: typeof first) =>
       c!.subjects
         .map((s, i) => {
-          const spec = specFor(s, i, c!.subjects.length, c!.id);
+          const spec = specFor(s, i, c!.subjects.length, c!.id, DIFFICULTY_RAMP.planeUntil);
           return `${spec.latticeKind}/${spec.shape}`;
         })
         .join(',');
@@ -168,22 +171,66 @@ describe('board assignment across a category', () => {
     }
   });
 
-  it('keeps the first archive a gentle on-ramp: small, one colour, no planes', () => {
+  it('opens with straight lines in one colour, then builds into squares', () => {
+    // The first archive is the lesson: a line of five, two of them given, then
+    // longer lines, then small plain rectangles growing to a three-by-three.
+    // Nothing shaped, nothing two-coloured, nothing big.
     const cosmos = specs.filter((s) => s.roadIndex === 0);
-    expect(cosmos.length).toBeGreaterThan(0);
+    expect(cosmos.length).toBeGreaterThan(3);
+
+    const first = cosmos[0]!.spec;
+    expect(first.form).toBe('line');
+    expect(first.grid).toEqual({ cols: DIFFICULTY_RAMP.minTiles, rows: 1 });
+    expect(first.difficulty).toBe('easy');
+
+    const forms = cosmos.map((s) => s.spec.form);
+    const lines = forms.filter((f) => f === 'line').length;
+    expect(lines).toBeGreaterThanOrEqual(2);
+    expect(forms.slice(0, lines).every((f) => f === 'line')).toBe(true);
+    expect(forms.slice(lines).every((f) => f === 'rectangle')).toBe(true);
+
     for (const { id, spec } of cosmos) {
       expect(isTwoColour(spec.difficulty), `${id} is a plane in the first archive`).toBe(false);
-      // Nothing in the opening archive is a big board.
-      expect(spec.tileCount, id).toBeLessThanOrEqual(14);
+      expect(spec.latticeKind, id).toBe('square');
+      expect(spec.shape, id).toBe('full');
+      expect(spec.tileCount, id).toBeLessThanOrEqual(10);
+      if (spec.form === 'line') expect(spec.grid?.rows, id).toBe(1);
     }
+    // It ends on a square, not a strip.
+    expect(cosmos[cosmos.length - 1]!.spec.grid).toEqual({ cols: 3, rows: 3 });
   });
 
-  it('keeps every shipped archive one colour, holding the plane for a deeper road', () => {
-    // The two-colour plane is the one hard mechanic, and it is deferred: none of
-    // the archives that exist today is a plane, so the newest content is never
-    // the hardest thing in the game.
-    const planes = specs.filter((s) => isTwoColour(s.spec.difficulty));
-    expect(planes, planes.map((p) => p.id).join(', ')).toHaveLength(0);
+  it('introduces one thing at a time: lines, squares, two colours, then shapes', () => {
+    // Along the road the form only ever moves forward through that order. The
+    // one exception is the plane returning as a capstone at the tail of a deep
+    // archive, which is allowed only there.
+    const order: Record<string, number> = { line: 0, rectangle: 1, plane: 2, silhouette: 3 };
+    let reached = 0;
+    for (const { id, spec, roadIndex } of specs) {
+      const rank = order[spec.form]!;
+      if (rank < reached) {
+        expect(spec.form, `${id} steps back to a ${spec.form}`).toBe('plane');
+        expect(roadIndex, `${id} is a plane before the road runs deep`).toBeGreaterThanOrEqual(
+          DIFFICULTY_RAMP.planeFromArchive,
+        );
+      } else {
+        reached = rank;
+      }
+    }
+    expect(reached, 'the road reaches shapes').toBe(3);
+
+    // The second and third archives are the two-colour rectangles, entire.
+    for (const { id, spec, roadIndex } of specs) {
+      if (roadIndex === 1 || roadIndex === 2) {
+        expect(spec.form, id).toBe('plane');
+        expect(spec.grid, id).toBeDefined();
+        expect(spec.grid!.cols, id).toBeLessThanOrEqual(4);
+        expect(spec.grid!.cols * spec.grid!.rows, id).toBeLessThanOrEqual(16);
+      }
+    }
+    // And the first of those is the smallest plane there is.
+    const firstPlane = specs.find((s) => s.spec.form === 'plane')!.spec;
+    expect(firstPlane.grid).toEqual({ cols: 3, rows: 3 });
   });
 
   it('brings the plane back as a small capstone once the road runs deep', () => {
@@ -203,6 +250,11 @@ describe('board assignment across a category', () => {
     for (const plane of planes) {
       expect(plane.latticeKind).toBe('square');
       expect(plane.shape).toBe('full');
+      expect(plane.form).toBe('plane');
+    }
+    // Before the tail, a deep archive is shapes, not more of the opening.
+    for (const board of boards.slice(0, firstPlane)) {
+      expect(board.form).toBe('silhouette');
     }
   });
 });

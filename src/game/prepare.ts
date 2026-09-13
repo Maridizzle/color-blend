@@ -1,7 +1,12 @@
 import type { Oklab } from '../color/oklab';
 import { type Palette, extractPalette } from '../color/palette';
 import { hashString } from '../util/rng';
-import { DIFFICULTY_TUNING, type Difficulty, isTwoColour } from '../puzzle/difficulty';
+import {
+  type BoardGrid,
+  DIFFICULTY_TUNING,
+  type Difficulty,
+  isTwoColour,
+} from '../puzzle/difficulty';
 import type { LatticeKind } from '../puzzle/lattice';
 import {
   SHAPE_LATTICES,
@@ -46,24 +51,32 @@ const SHAPE_STRIDE = 5;
  * which is what a per-archive ramp did, and why the first archive felt hard: it
  * held the hardest boards in the game a few puzzles from the start.
  *
+ * Two things ramp, and the *form* of the board ramps before its size does:
+ *
+ *   - Form. The road opens as a straight line of tiles in one colour -- a
+ *     value scale, nothing else to read -- then builds into small one-colour
+ *     squares, then squares and rectangles in two colours (the plane: hue
+ *     across, lightness down), and only after all of that do silhouettes and
+ *     the other lattices arrive. Lines, squares, planes, shapes: a new thing
+ *     to read is introduced only once the last one is familiar. A board with
+ *     a hexagon cut out of triangles was never an easy first puzzle, however
+ *     few tiles it had.
+ *
+ *   - Size. The tile count *saturates*: it climbs quickly at first and then
+ *     flattens into a long, gentle plateau it approaches but never reaches.
+ *     Tile count alone cannot carry difficulty forever -- eventually a new
+ *     mechanic must -- so rather than pretend otherwise it settles at a fair,
+ *     playable size and holds there, however deep the road runs.
+ *
  * The road has no end -- levels are meant to be added for as long as anyone
- * cares to add them -- so the ramp is built to never run away. Two shapes to it:
- *
- *   - The tile count *saturates*. It climbs quickly at first and then flattens
- *     into a long, gentle plateau it approaches but never reaches. Tile count
- *     alone cannot carry difficulty forever -- eventually a new mechanic must --
- *     so rather than pretend otherwise it settles at a fair, playable size and
- *     holds there, however deep the road runs.
- *
- *   - The two-colour plane, the one genuinely hard board, is held back as a rare
- *     capstone: the last board or two of the *deepest* archives only, and never
- *     more than a few. So no archive is ever a wall of them, and the newest
- *     archive on the road is never the hardest thing in the game -- because the
- *     newest archive is, almost always, not really the last.
+ * cares to add them -- so both are built to never run away. Once silhouettes
+ * have begun, the plane comes back only as a capstone: the last board or two of
+ * the *deepest* archives, never more than a few, so no archive is a wall of
+ * them and the newest archive is never the hardest thing in the game.
  */
 export const DIFFICULTY_RAMP = {
-  /** Tiles on the very first board. */
-  minTiles: 8,
+  /** Tiles on the very first board: a line of five, two of them given. */
+  minTiles: 5,
   /**
    * The size one-colour boards climb toward and hold at. Approached, never
    * quite reached, so no board ever runs away as the road lengthens.
@@ -71,30 +84,43 @@ export const DIFFICULTY_RAMP = {
   maxTiles: 26,
   /**
    * Journey, in archives, at which the climb from min to max is half done.
-   * Small enough that the first archives feel a real progression, large enough
-   * that it soon flattens into the plateau an endless road needs.
+   * Small enough that the first archive builds from a line of five into a
+   * three-by-three, large enough that it soon flattens into the plateau an
+   * endless road needs.
    */
-  halfLife: 6,
+  halfLife: 3,
   /** Below this progress a board hands over a few extra locked anchors. */
   easyUntil: 0.28,
+  /** Journey before which a board is a straight line: the first few boards. */
+  lineUntil: 0.25,
+  /** Journey before which a board is a plain one-colour rectangle: the rest of the first archive. */
+  rectangleUntil: 1,
+  /** Journey before which a board is a two-colour rectangle: the second and third archives. */
+  planeUntil: 3,
   /**
-   * The first archive (0-based) whose tail can be a two-colour plane. Set past
-   * the end of the shipped road, so the current archives are all one colour and
-   * the plane returns only as the road grows deeper than it is today.
+   * The first archive (0-based) whose tail can be a plane again once
+   * silhouettes have begun. Two archives of shapes first, so the capstone is
+   * a return, not a continuation.
    */
-  planeFromArchive: 7,
+  planeFromArchive: 5,
   /** The most plane boards any one archive ever ends on. */
   planeCap: 3,
 } as const;
 
 /**
- * Progress along the road, 0..1, rising fast then flattening. Journey is the
- * archive's place on the road plus how far through it a board sits, so it climbs
- * smoothly across the whole road and settles into a plateau it never tops.
+ * Where a board sits on the road, in archives: the archive's place plus how far
+ * through it the board is. Everything about the ramp is a function of this, so
+ * it climbs smoothly across the whole road rather than restarting per archive.
  */
-function rampProgress(index: number, total: number, roadIndex: number): number {
-  const throughArchive = total <= 1 ? 0 : index / (total - 1);
-  const journey = roadIndex + throughArchive;
+function journeyOf(index: number, total: number, roadIndex: number): number {
+  // Over `total`, not `total - 1`: an archive's last board still belongs to
+  // that archive, and must not land on the next one's threshold.
+  const throughArchive = total <= 1 ? 0 : index / total;
+  return roadIndex + throughArchive;
+}
+
+/** Progress along the road, 0..1, rising fast then flattening toward a plateau it never tops. */
+function rampProgress(journey: number): number {
   return journey / (journey + DIFFICULTY_RAMP.halfLife);
 }
 
@@ -114,12 +140,71 @@ function planeTail(roadIndex: number): number {
   return Math.min(planeCap, roadIndex - planeFromArchive + 1);
 }
 
+/**
+ * What kind of thing a board is, in the order the road introduces them.
+ *
+ *   - `line`: one row of squares, one colour. The first boards.
+ *   - `rectangle`: a small plain rectangle of squares, one colour.
+ *   - `plane`: a rectangle in two colours, hue across and lightness down.
+ *   - `silhouette`: a shape carved from any lattice, one colour -- the general
+ *     board, and everything after the opening.
+ */
+export type BoardForm = 'line' | 'rectangle' | 'plane' | 'silhouette';
+
+/** The form a board takes at a point on the road, before any authored override. */
+function formAt(journey: number, index: number, total: number, roadIndex: number): BoardForm {
+  const { lineUntil, rectangleUntil, planeUntil } = DIFFICULTY_RAMP;
+  if (journey < lineUntil) return 'line';
+  if (journey < rectangleUntil) return 'rectangle';
+  if (journey < planeUntil) return 'plane';
+  return index >= total - planeTail(roadIndex) ? 'plane' : 'silhouette';
+}
+
+/** A straight line of tiles, the simplest board there is. Never shorter than three. */
+function lineGrid(tiles: number): BoardGrid {
+  return { cols: Math.max(3, tiles), rows: 1 };
+}
+
+/**
+ * The plain rectangle nearest a tile count: two to six on a side, never more
+ * than twice as long as it is wide, squarer settling ties. Wide and tall
+ * alternate along the road so consecutive boards do not all lie the same way.
+ */
+function rectangleGrid(tiles: number, index: number): BoardGrid {
+  let best: BoardGrid = { cols: 3, rows: 2 };
+  let bestScore = Infinity;
+  for (let short = 2; short <= 6; short++) {
+    for (let long = short; long <= Math.min(6, short * 2); long++) {
+      const score = Math.abs(short * long - tiles) + Math.log(long / short) * 0.25;
+      if (score < bestScore) {
+        bestScore = score;
+        best = { cols: long, rows: short };
+      }
+    }
+  }
+  return index % 2 === 0 ? best : { cols: best.rows, rows: best.cols };
+}
+
+/**
+ * The plane's grid: three hue columns while the board is small, then the usual
+ * four, with lightness rows making up the count. Three columns is a short arc
+ * of hue, which is the gentlest way to meet a second axis.
+ */
+function planeGrid(tiles: number): BoardGrid {
+  const cols = tiles < 12 ? 3 : DIFFICULTY_TUNING.planeColumns;
+  const rows = Math.max(3, Math.min(12, Math.round(tiles / cols)));
+  return { cols, rows };
+}
+
 export interface PuzzleShapeSpec {
   difficulty: Difficulty;
   latticeKind: LatticeKind;
   shape: ShapeName;
   /** Tiles this board aims for, from the ramp rather than the tier default. */
   tileCount: number;
+  form: BoardForm;
+  /** The exact rectangle to build, for every form but a silhouette. */
+  grid?: BoardGrid;
 }
 
 /** The parts of a subject that decide its board. */
@@ -162,7 +247,7 @@ function takenBefore(index: number, total: number, roadIndex: number, offset: nu
   const taken = new Set<string>();
   for (let j = 0; j < index; j++) {
     const spec = choose({}, j, total, roadIndex, offset, taken);
-    if (!isTwoColour(spec.difficulty)) taken.add(`${spec.latticeKind}/${spec.shape}`);
+    if (spec.form === 'silhouette') taken.add(`${spec.latticeKind}/${spec.shape}`);
   }
   return taken;
 }
@@ -175,32 +260,48 @@ function choose(
   offset: number,
   taken: ReadonlySet<string>,
 ): PuzzleShapeSpec {
-  const p = rampProgress(index, total, roadIndex);
+  const journey = journeyOf(index, total, roadIndex);
+  const p = rampProgress(journey);
   const authored = subject.difficulty;
 
-  // A plane is the one hard mechanic. The road hands it out only at the tail of
-  // its deepest archives; a pack that names its own hard difficulty still gets
-  // one. Everything else is a one-colour board, easy near the start and medium
-  // after -- which decides only how many anchors are given away for free. The
-  // `hard` tier is reserved for planes, so `isTwoColour(difficulty)` downstream
-  // still means exactly "this is a plane".
-  const plane = authored ? isTwoColour(authored) : index >= total - planeTail(roadIndex);
+  // The road decides the form; a pack's own choices still win. A pack that
+  // names its own hard difficulty gets a plane, since the `hard` tier is
+  // reserved for planes so that `isTwoColour(difficulty)` downstream still
+  // means exactly "this is a plane"; one that names a lattice or a silhouette
+  // gets that silhouette. Everything else is a one-colour board, easy near the
+  // start and medium after -- which decides only how many anchors are given
+  // away for free.
+  const form: BoardForm = authored
+    ? isTwoColour(authored)
+      ? 'plane'
+      : 'silhouette'
+    : subject.latticeKind || subject.shape
+      ? 'silhouette'
+      : formAt(journey, index, total, roadIndex);
+  const plane = form === 'plane';
   const difficulty: Difficulty =
     authored ?? (plane ? 'hard' : p < DIFFICULTY_RAMP.easyUntil ? 'easy' : 'medium');
   const tileCount = authored ? DIFFICULTY_TUNING.tileCount[difficulty] : tilesForProgress(p);
 
-  // A two-colour board is read as rows and columns, so it has to have them: a
-  // plain rectangle on a square lattice. A leaf or a ring has no rows. This
-  // overrides a pack's own choice rather than deferring to it, because the
-  // alternative is a board whose two axes cannot be seen.
-  if (plane) {
-    return { difficulty, latticeKind: 'square', shape: 'full', tileCount };
+  // The opening forms are plain rectangles of squares, chosen outright. A
+  // two-colour board in particular is read as rows and columns, so it has to
+  // have them: a leaf or a ring has no rows. That overrides a pack's own
+  // lattice or silhouette rather than deferring to it, because the alternative
+  // is a board whose two axes cannot be seen.
+  if (form !== 'silhouette') {
+    const grid =
+      form === 'line'
+        ? lineGrid(tileCount)
+        : form === 'rectangle'
+          ? rectangleGrid(tileCount, index)
+          : planeGrid(tileCount);
+    return { difficulty, latticeKind: 'square', shape: 'full', tileCount, form, grid };
   }
 
   const latticeKind =
     subject.latticeKind ??
     (LATTICE_KINDS[(index + offset) % LATTICE_KINDS.length] as LatticeKind);
-  if (subject.shape) return { difficulty, latticeKind, shape: subject.shape, tileCount };
+  if (subject.shape) return { difficulty, latticeKind, shape: subject.shape, tileCount, form };
 
   // The tile count joins the walk position because it decides which silhouettes
   // are legible, and without it two boards of different sizes on the same
@@ -218,7 +319,7 @@ function choose(
   for (let step = 1; step < eligible.length && taken.has(`${latticeKind}/${shape}`); step++) {
     shape = pick(eligible, from + step);
   }
-  return { difficulty, latticeKind, shape, tileCount };
+  return { difficulty, latticeKind, shape, tileCount, form };
 }
 
 /**
@@ -309,6 +410,7 @@ export async function preparePuzzle(
     shape: spec.shape,
     hue: subject.hue,
     targetTiles: spec.tileCount,
+    grid: spec.grid,
     factCount: factCountFor(spec.tileCount, subject.facts.length),
   });
 

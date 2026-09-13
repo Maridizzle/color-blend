@@ -36,10 +36,21 @@ function polygonRadius(poly: readonly (readonly [number, number])[]): number {
   return poly.reduce((s, p) => s + Math.hypot(p[0] - cx, p[1] - cy), 0) / poly.length;
 }
 
-export function buildRevealPlan(lattice: Lattice, artwork: ImageData8): RevealPlan {
+export function buildRevealPlan(
+  lattice: Lattice,
+  artwork: ImageData8,
+  /**
+   * Where the picture goes, in board units. Left out, it is the square
+   * inscribed in the board -- which is the whole board when the board is
+   * square, and a sliver of it when the board is a line of five tiles. The
+   * renderer knows how much room the canvas really has, so the session hands
+   * that square in and the picture fills the frame whatever shape the board was.
+   */
+  frame?: { x: number; y: number; size: number },
+): RevealPlan {
   const n = lattice.cells.length;
   const side = Math.min(lattice.width, lattice.height);
-  const square = {
+  const square = frame ?? {
     x: (lattice.width - side) / 2,
     y: (lattice.height - side) / 2,
     size: side,
@@ -54,8 +65,8 @@ export function buildRevealPlan(lattice: Lattice, artwork: ImageData8): RevealPl
   // 20 = 5x4, 30 = 6x5).
   const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
   const rows = Math.max(1, Math.ceil(n / cols));
-  const cellWidth = side / cols;
-  const cellHeight = side / rows;
+  const cellWidth = square.size / cols;
+  const cellHeight = square.size / rows;
 
   // A last row that cannot be filled is centred, so the gap sits either side
   // rather than hanging off one end.

@@ -96,6 +96,7 @@ export class BoardRenderer {
   private transform: BoardTransform = { scale: 1, offsetX: 0, offsetY: 0 };
   private lattice: Lattice | null = null;
   private gutter = 0;
+  private padding = 0;
   private typicalCell = 1;
   private dpr = 1;
   private lit = false;
@@ -123,12 +124,12 @@ export class BoardRenderer {
 
     if (!this.lattice) return;
 
-    const padding = Math.max(8, Math.min(cssWidth, cssHeight) * 0.035) * this.dpr;
+    this.padding = Math.max(8, Math.min(cssWidth, cssHeight) * 0.035) * this.dpr;
     this.transform = fitTransform(
       this.lattice,
       this.canvas.width,
       this.canvas.height,
-      padding,
+      this.padding,
     );
 
     // Gutter scaled to tile size: a fixed pixel gap swallows small tiles whole
@@ -169,6 +170,23 @@ export class BoardRenderer {
   /** The side of a typical tile, in board units. */
   cellSize(): number {
     return this.typicalCell;
+  }
+
+  /**
+   * The largest square the finished picture can occupy, in board units: centred
+   * on the board, inside the padding, and never smaller than the square the
+   * board itself inscribes. A line of five tiles is fitted to the canvas's
+   * width, so this is most of the canvas; a square board is just the board.
+   */
+  revealFrame(): { x: number; y: number; size: number } | undefined {
+    if (!this.lattice) return undefined;
+    const room = (Math.min(this.canvas.width, this.canvas.height) - 2 * this.padding) / this.transform.scale;
+    const size = Math.max(Math.min(this.lattice.width, this.lattice.height), room);
+    return {
+      x: this.lattice.width / 2 - size / 2,
+      y: this.lattice.height / 2 - size / 2,
+      size,
+    };
   }
 
   draw(view: BoardView): void {

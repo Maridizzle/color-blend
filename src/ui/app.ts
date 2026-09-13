@@ -1,6 +1,7 @@
 import { formatReport, ingestPack } from '../content/ingest';
 import { loadArtwork } from '../content/artwork';
 import { addPackCategory, allCategories, findCategory, findSubject } from '../game/library';
+import { DIFFICULTY_RAMP } from '../game/prepare';
 import { clearProgress, loadProgress, loadSettings, saveSettings, type Settings } from '../game/persistence';
 import { button, clear, el } from './dom';
 import { puzzleScreen } from './puzzleScreen';
@@ -158,11 +159,12 @@ export class App {
         }
         // The archive's place on the road sets the difficulty ramp: the first
         // archive plays easiest, later ones harder. A loaded pack joins the end
-        // of the road, but it is side content and should not inherit the road's
-        // hardest boards -- so it ramps from the start within itself, as a fresh
-        // journey does.
+        // of the road, but it is side content: it should not inherit the road's
+        // hardest boards, nor replay the road's opening lesson of lines and
+        // squares -- so it plays as the first archive of shapes does, moderate
+        // and varied, whatever its own length.
         const roadIndex = found.category.fromPack
-          ? 0
+          ? DIFFICULTY_RAMP.planeUntil
           : Math.max(0, allCategories().findIndex((c) => c.id === found.category.id));
         const screen = puzzleScreen(this, found.category, found.subject, found.index, roadIndex);
         this.teardown = screen.destroy;
