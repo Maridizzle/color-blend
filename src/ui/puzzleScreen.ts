@@ -1,6 +1,5 @@
 import { PuzzleSession } from '../game/session';
 import { preparePuzzle } from '../game/prepare';
-import { isTwoColour } from '../puzzle/difficulty';
 import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
 import type { Category, Subject } from '../content/types';
 import { passageFor } from '../game/story';
@@ -338,13 +337,8 @@ export function puzzleScreen(
       );
       canvas.focus({ preventScroll: true });
 
-      // Two-colour boards open with a look at the finished plane. A player can
-      // infer a one-colour board's target from the rule alone -- darkest to
-      // lightest -- but a plane has a hue axis as well, and no amount of
-      // staring at a shuffle tells you where its ends are. Showing it first
-      // turns the puzzle into putting back what you just saw, which is how the
-      // genre makes its hardest boards fair rather than merely hard.
-      if (isTwoColour(prepared.spec.difficulty) && !reducedMotion) {
+      // Flash the solved state before scrambling so the player knows the target.
+      if (!reducedMotion) {
         session.preview(PREVIEW_MS);
         flash('Remember this.');
       }
