@@ -1,6 +1,7 @@
 import type { Oklab } from '../color/oklab';
 import { type Palette, extractPalette } from '../color/palette';
-import { hashString } from '../util/rng';
+import { hashString, makeRng } from '../util/rng';
+import type { Unconformity } from '../puzzle/field';
 import {
   type BoardGrid,
   DIFFICULTY_TUNING,
@@ -16,7 +17,7 @@ import {
 } from '../puzzle/shapes';
 import { type Puzzle, generatePuzzle } from '../puzzle/generator';
 import { loadArtwork } from '../content/artwork';
-import type { Artwork, Subject } from '../content/types';
+import type { Artwork, CategoryTwists, Subject } from '../content/types';
 
 /**
  * Subject -> playable puzzle.
@@ -362,6 +363,52 @@ export function factCountFor(tileCount: number, availableFacts: number): number 
   return Math.min(availableFacts, Math.max(2, Math.round(tileCount / 8)), 5);
 }
 
+/**
+ * How much of the ramp an unconformity takes out, and where it can fall.
+ *
+ * The one-colour ramp spans about 0.54 of lightness and a board of twenty-odd
+ * tiles steps through it at roughly 0.02 a tile, so a gap a quarter of the
+ * ramp wide is a jump of five or six tiles' worth: unmistakably a step, never
+ * mistakable for a badly judged neighbour. It sits in the middle half of the
+ * board so both ends keep enough tiles to read the ramp's direction from.
+ */
+export const UNCONFORMITY_TUNING = {
+  minWidth: 0.2,
+  maxWidth: 0.3,
+  earliest: 0.35,
+  latest: 0.65,
+} as const;
+
+/**
+ * Whether this folio has an unconformity, and where.
+ *
+ * Decided from the subject's id, not at random, so a folio always looks like
+ * itself: the same board with the same missing span every time it is opened.
+ * The collection sets the odds, rising from its first folio to its last; a
+ * subject can still force the matter either way.
+ */
+export function unconformityFor(
+  subject: Pick<Subject, 'id' | 'unconformity'>,
+  index: number,
+  total: number,
+  twists?: CategoryTwists,
+): Unconformity | undefined {
+  const odds = twists?.unconformity;
+  if (subject.unconformity === false) return undefined;
+  if (subject.unconformity === undefined && !odds) return undefined;
+
+  const rng = makeRng(hashString(`${subject.id}/unconformity`));
+  const roll = rng.next();
+  if (subject.unconformity === undefined && odds) {
+    const through = total <= 1 ? 1 : index / (total - 1);
+    const chance = odds.from + (odds.to - odds.from) * through;
+    if (roll >= chance) return undefined;
+  }
+
+  const { minWidth, maxWidth, earliest, latest } = UNCONFORMITY_TUNING;
+  return { at: rng.range(earliest, latest), width: rng.range(minWidth, maxWidth) };
+}
+
 export interface PreparedPuzzle {
   subject: Subject;
   artwork: Artwork;
@@ -386,6 +433,8 @@ export async function preparePuzzle(
   total = 1,
   categoryId = '',
   roadIndex = 0,
+  /** The collection's twists, which decide whether this board has an unconformity. */
+  twists?: CategoryTwists,
 ): Promise<PreparedPuzzle> {
   const artwork = await loadArtwork(subject.artwork);
 
@@ -412,6 +461,7 @@ export async function preparePuzzle(
     targetTiles: spec.tileCount,
     grid: spec.grid,
     factCount: factCountFor(spec.tileCount, subject.facts.length),
+    unconformity: unconformityFor(subject, index, total, twists),
   });
 
   return { subject, artwork, anchors, palette, puzzle, spec };

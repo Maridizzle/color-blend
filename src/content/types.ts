@@ -44,6 +44,29 @@ export interface Subject {
    * validated, and that play does not repeat the clustering work.
    */
   anchors?: readonly Oklab[];
+  /**
+   * Force the unconformity on or off for this board, overriding the
+   * collection's rising chance. Unset, the chance decides.
+   */
+  unconformity?: boolean;
+}
+
+/**
+ * The twists a collection carries. Only The Record has any; every other
+ * collection leaves this unset and plays exactly as it always has.
+ */
+export interface CategoryTwists {
+  /**
+   * The unconformity: a span of the lightness ramp missing, so the solved board
+   * jumps where the strata do. Given as the chance per folio, rising linearly
+   * from `from` on the first folio to `to` on the last, so it is rare at the
+   * start and common by the end of the collection.
+   */
+  unconformity?: { from: number; to: number };
+  /** The board opens hot and cools to its true colours while it is played. */
+  cooling?: boolean;
+  /** Core samples can be drilled on these boards. See `src/game/cores.ts`. */
+  cores?: boolean;
 }
 
 export interface Category {
@@ -51,6 +74,7 @@ export interface Category {
   title: string;
   blurb?: string;
   subjects: Subject[];
+  twists?: CategoryTwists;
   /** True for categories loaded from a zip at runtime rather than shipped. */
   fromPack?: boolean;
   /**

@@ -2,7 +2,7 @@ import type { Oklab } from '../color/oklab';
 import { type Rng, hashString, makeRng, shuffleInPlace } from '../util/rng';
 import type { Cell, Lattice, LatticeKind } from './lattice';
 import type { ShapeName } from './shapes';
-import { pickSymmetry } from './field';
+import { type Unconformity, pickSymmetry } from './field';
 import {
   type BoardGrid,
   DIFFICULTY_TUNING,
@@ -39,6 +39,8 @@ export interface Puzzle {
   /** Cells that reveal a fact when they land correctly. */
   factCells: number[];
   tolerance: number;
+  /** The span of the record this board is missing, when it has one. */
+  unconformity?: Unconformity;
   stats: {
     tileCount: number;
     /** What the difficulty asked for; differs only if the legibility floor bit. */
@@ -70,6 +72,8 @@ export interface GenerateOptions {
    * place of the count, lattice and silhouette. See `calibrate`.
    */
   grid?: BoardGrid;
+  /** A span of the ramp to leave out. See `Unconformity` in `field.ts`. */
+  unconformity?: Unconformity;
   seed?: number;
 }
 
@@ -238,6 +242,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     factCount = 0,
     targetTiles,
     grid,
+    unconformity,
     seed = hashString(id),
   } = options;
 
@@ -263,6 +268,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     hue,
     targetTiles,
     grid,
+    unconformity,
   );
 
   const targets = field;
@@ -313,6 +319,7 @@ export function generatePuzzle(options: GenerateOptions): Puzzle {
     locked,
     factCells,
     tolerance,
+    unconformity,
     stats: {
       tileCount,
       targetTileCount,

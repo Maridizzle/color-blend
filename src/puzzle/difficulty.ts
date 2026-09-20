@@ -7,7 +7,7 @@ import {
   squareLattice,
 } from './lattice';
 import { SHAPES, type ShapeName } from './shapes';
-import { buildField, buildPlaneField, fieldStats } from './field';
+import { type Unconformity, buildField, buildPlaneField, fieldStats } from './field';
 
 /**
  * How big a board gets.
@@ -256,6 +256,8 @@ export function calibrate(
    * chosen, not discovered. Overrides the count, lattice and silhouette.
    */
   grid?: BoardGrid,
+  /** A span of the ramp to leave out. See `Unconformity` in `field.ts`. */
+  unconformity?: Unconformity,
 ): CalibrationResult {
   const targetTileCount = grid
     ? grid.cols * grid.rows
@@ -267,8 +269,8 @@ export function calibrate(
   // one-colour board and a two-colour one.
   const build = (l: Lattice) =>
     toneCount >= 2
-      ? buildPlaneField(l, anchors, { symmetry, hue })
-      : buildField(l, anchors, { symmetry, toneCount, hue });
+      ? buildPlaneField(l, anchors, { symmetry, hue, unconformity })
+      : buildField(l, anchors, { symmetry, toneCount, hue, unconformity });
 
   const board = (t: number) =>
     grid ? gridBoard(grid, t) : toneCount >= 2 ? planeBoard(t) : boardForTileCount(kind, shape, t);

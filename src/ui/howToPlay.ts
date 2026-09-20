@@ -120,6 +120,15 @@ export function howToPlayContent(): HTMLElement {
         ),
       ]),
 
+      section('The Record', [
+        p(
+          'One archive reads differently. Some of its boards are missing a span of the record, so the shades take one step much larger than the rest; the order still runs darkest to lightest, and the step is not a mistake. Its boards open hot and cool as you sort them, and tiles that land right set as crust.',
+        ),
+        p(
+          'Every twenty tiles you place correctly, anywhere in the game, earn one core sample. Spend one there and tap a column, and the column’s true order shows beside the tiles for a moment. Finish the whole archive and cores work everywhere.',
+        ),
+      ]),
+
       section('Facts', [
         p(
           'Some tiles, unmarked, hold a fact about the subject. It appears when that tile lands in the right place. Everything you find is kept in the Journal, and the rest are listed when the picture is revealed.',

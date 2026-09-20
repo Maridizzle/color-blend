@@ -56,6 +56,44 @@ export interface FieldOptions {
   tones?: ToneSpec;
   /** The colour this board should come out, assigned across its category. */
   hue?: number;
+  /** A span of the ramp left out, so the board jumps where the strata do. */
+  unconformity?: Unconformity;
+}
+
+/**
+ * The unconformity: a band of the lightness ramp that is simply missing.
+ *
+ * In rock, an unconformity is a surface where a span of time has no layers to
+ * show for it -- eroded away, or never laid down -- so two strata that touch
+ * were made ages apart. Here it is the same thing done to the ramp: the cells
+ * either side of `at` are neighbours on the board and several shades apart in
+ * lightness, and the solved board carries a visible step where the record has
+ * a hole.
+ *
+ * What it must not do is reorder anything. The remap below is strictly
+ * increasing, so darkest-to-lightest is still the whole rule and every tile is
+ * still one question; the player just meets one step that is bigger than the
+ * rest, and learns not to distrust it.
+ */
+export interface Unconformity {
+  /** Where on the board's axis the gap falls, 0..1 from the dark end. */
+  at: number;
+  /** How much of the ramp is missing, as a fraction of its whole span. */
+  width: number;
+}
+
+/**
+ * Position on the board to position on the ramp, with the gap taken out.
+ *
+ * The positions below the gap are squeezed onto the ramp's lower part and the
+ * ones above onto its upper part, and the two parts are `width` apart. Both
+ * ends still land exactly on 0 and 1, so the board keeps its full contrast; the
+ * middle is where the record went missing.
+ */
+export function acrossUnconformity(t: number, gap?: Unconformity): number {
+  if (!gap) return t;
+  const kept = 1 - gap.width;
+  return t < gap.at ? t * kept : t * kept + gap.width;
 }
 
 /**
@@ -78,7 +116,7 @@ export function buildField(
   anchors: readonly Oklab[],
   options: FieldOptions = {},
 ): Oklab[] {
-  const { symmetry = 0, toneCount = 1, tones, hue } = options;
+  const { symmetry = 0, toneCount = 1, tones, hue, unconformity } = options;
   const spec = tones ?? planTones(anchors, toneCount, hue);
 
   // Normalise over the positions actually present. A masked silhouette may not
@@ -92,7 +130,9 @@ export function buildField(
   const hi = Math.max(...positions);
   const span = hi - lo;
 
-  return positions.map((p) => sampleToneRamp(spec, span > 1e-9 ? (p - lo) / span : 0.5));
+  return positions.map((p) =>
+    sampleToneRamp(spec, acrossUnconformity(span > 1e-9 ? (p - lo) / span : 0.5, unconformity)),
+  );
 }
 
 /** Normalise a list of positions to 0..1 over the values actually present. */
@@ -135,7 +175,7 @@ export function buildPlaneField(
   anchors: readonly Oklab[],
   options: FieldOptions = {},
 ): Oklab[] {
-  const { symmetry = 0, tones, hue } = options;
+  const { symmetry = 0, tones, hue, unconformity } = options;
   const spec = tones ?? planTones(anchors, 1, hue);
 
   const oriented = lattice.cells.map((cell) => orientUv(cell.u, cell.v, symmetry));
@@ -159,8 +199,12 @@ export function buildPlaneField(
   const centre = spec.families.length > 0 ? (spec.families[0] as ToneFamily).hue : 0;
   const plan = planHuePlane(centre, columns, rows, spec.chroma);
 
+  // The gap belongs to the lightness axis alone: a plane with an unconformity
+  // is missing a band of rows, never a band of hues. The plan's chroma was
+  // chosen for evenly spaced rows, and `sampleHuePlane` still guards the gamut
+  // for the rows the gap moves.
   return lattice.cells.map((_, i) =>
-    sampleHuePlane(plan, across[i] as number, down[i] as number),
+    sampleHuePlane(plan, across[i] as number, acrossUnconformity(down[i] as number, unconformity)),
   );
 }
 

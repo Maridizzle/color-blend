@@ -18,6 +18,13 @@ export interface Progress {
   solved: Record<string, SolvedRecord>;
   /** Unlocked fact indices per subject id. */
   facts: Record<string, number[]>;
+  /**
+   * Tiles ever placed correctly, across every board, counted once per tile per
+   * play. Core samples are earned from it -- see `src/game/cores.ts`.
+   */
+  placements: number;
+  /** Core samples drilled so far, so the bank is placements earned less these. */
+  coresSpent: number;
 }
 
 export type FontSize = 'default' | 'large' | 'larger';
@@ -37,7 +44,7 @@ export interface Settings {
   seenHowToPlay: boolean;
 }
 
-const DEFAULT_PROGRESS: Progress = { solved: {}, facts: {} };
+const DEFAULT_PROGRESS: Progress = { solved: {}, facts: {}, placements: 0, coresSpent: 0 };
 const DEFAULT_SETTINGS: Settings = {
   reducedMotion: null,
   lightnessAssist: false,
@@ -65,7 +72,13 @@ function write(key: string, value: unknown): void {
 
 export function loadProgress(): Progress {
   const progress = read(PROGRESS_KEY, DEFAULT_PROGRESS);
-  return { solved: progress.solved ?? {}, facts: progress.facts ?? {} };
+  return {
+    solved: progress.solved ?? {},
+    facts: progress.facts ?? {},
+    // Records written before cores existed carry neither count.
+    placements: Number.isFinite(progress.placements) ? Math.max(0, progress.placements) : 0,
+    coresSpent: Number.isFinite(progress.coresSpent) ? Math.max(0, progress.coresSpent) : 0,
+  };
 }
 
 export function saveProgress(progress: Progress): void {
@@ -112,6 +125,24 @@ export function recordFact(subjectId: string, factIndex: number): Progress {
   const found = new Set(progress.facts[subjectId] ?? []);
   found.add(factIndex);
   progress.facts[subjectId] = [...found].sort((a, b) => a - b);
+  saveProgress(progress);
+  return progress;
+}
+
+/** Add tiles newly placed correctly to the running count cores are earned from. */
+export function recordPlacements(count: number): Progress {
+  const progress = loadProgress();
+  if (count > 0) {
+    progress.placements += count;
+    saveProgress(progress);
+  }
+  return progress;
+}
+
+/** Note one core sample drilled. */
+export function recordCoreSpent(): Progress {
+  const progress = loadProgress();
+  progress.coresSpent += 1;
   saveProgress(progress);
   return progress;
 }
