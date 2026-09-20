@@ -1,6 +1,16 @@
 import { PuzzleSession } from '../game/session';
 import { preparePuzzle } from '../game/prepare';
-import { prefersReducedMotion, recordFact, recordSolved, loadSettings } from '../game/persistence';
+import {
+  loadProgress,
+  prefersReducedMotion,
+  recordCoreSpent,
+  recordFact,
+  recordPlacements,
+  recordSolved,
+  loadSettings,
+} from '../game/persistence';
+import { coresAllowedIn, coresBanked, placementsToNextCore } from '../game/cores';
+import { allCategories } from '../game/library';
 import type { Category, Subject } from '../content/types';
 import { passageFor } from '../game/story';
 import { button, clear, el, withSheen } from './dom';
@@ -42,6 +52,15 @@ export function puzzleScreen(
   const progressLabel = el('span', { class: 'stat', text: '0 / 0 placed' });
   const movesLabel = el('span', { class: 'stat', text: '0 moves' });
   const factsLabel = el('span', { class: 'stat stat-facts', text: '' });
+  const coresLabel = el('span', { class: 'stat stat-cores', text: '' });
+
+  /**
+   * Whether a core can be drilled here: on The Record's own boards, and on
+   * every board once The Record is whole. Decided once, on the way in; solving
+   * the last folio of The Record unlocks the rest of the game from the next
+   * board on, not mid-play.
+   */
+  const coresAllowed = coresAllowedIn(category, allCategories(), loadProgress());
 
   const header = el('header', {
     class: 'puzzle-header',
@@ -54,7 +73,7 @@ export function puzzleScreen(
           title,
           el('div', {
             class: 'puzzle-stats',
-            children: [progressLabel, movesLabel, factsLabel],
+            children: [progressLabel, movesLabel, factsLabel, coresAllowed ? coresLabel : null],
           }),
         ],
       }),
@@ -90,10 +109,42 @@ export function puzzleScreen(
   const hintButton = button('Hint', () => {
     if (session && !session.hint()) flash('Nothing left to hint.');
   });
+  const coreButton = button('Core', () => useCore());
   const footer = el('footer', {
     class: 'puzzle-footer',
-    children: [undoButton, hintButton],
+    children: [undoButton, hintButton, coresAllowed ? coreButton : null],
   });
+
+  /** The bank, on the button and in the stats; called whenever it can have moved. */
+  function updateCores(): void {
+    if (!coresAllowed) return;
+    const progress = loadProgress();
+    const banked = coresBanked(progress);
+    coreButton.textContent = banked > 0 ? `Core · ${banked}` : 'Core';
+    coresLabel.textContent =
+      banked > 0
+        ? `${banked} ${banked === 1 ? 'core' : 'cores'}`
+        : `core in ${placementsToNextCore(progress)}`;
+  }
+
+  /**
+   * Spend a core, or put an armed one away. The bank is checked here, at the
+   * moment of spending, so a core earned on this very board is usable on it.
+   */
+  function useCore(): void {
+    if (!session || !coresAllowed) return;
+    if (session.isCoring()) {
+      session.disarmCore();
+      return;
+    }
+    const progress = loadProgress();
+    if (coresBanked(progress) <= 0) {
+      const needed = placementsToNextCore(progress);
+      flash(`No core to drill yet. ${needed} more ${needed === 1 ? 'tile' : 'tiles'} placed earns one.`);
+      return;
+    }
+    if (session.armCore()) flash('Tap a column to drill it.');
+  }
 
   root.append(header, status, boardWrap, toasts, footer);
 
@@ -105,6 +156,8 @@ export function puzzleScreen(
   let solvedMoves = 0;
   /** Fact tiles actually planted on this board; scales with its size. */
   let factTilesOnBoard = 0;
+  /** Whether this board turned out to carry an unconformity. */
+  let unconformity = false;
   /** Guards the one step from admiring the finished art to reading the passage. */
   let proceeded = false;
   let admireTimer: number | null = null;
@@ -232,6 +285,12 @@ export function puzzleScreen(
         el('div', { class: 'reveal-rule', attrs: { 'aria-hidden': 'true' } }),
         subject.blurb ? el('p', { class: 'reveal-blurb', text: subject.blurb }) : null,
         el('p', { class: 'reveal-moves', text: `Solved in ${moves} moves.` }),
+        unconformity
+          ? el('p', {
+              class: 'reveal-hint',
+              text: 'A span of this record is missing. The step you crossed is where it went.',
+            })
+          : null,
         // Every fact, not just the ones found. Fact tiles are seeded, so a
         // replay serves the same ones and anything missed would otherwise be
         // unreachable -- on a twelve-tile board that would permanently hide
@@ -300,24 +359,45 @@ export function puzzleScreen(
         category.subjects.length,
         category.id,
         roadIndex,
+        category.twists,
       );
       if (destroyed) return;
 
       status.remove();
       factTilesOnBoard = prepared.puzzle.factCells.length;
+      unconformity = Boolean(prepared.puzzle.unconformity);
       updateFactsLabel();
+      updateCores();
 
       session = new PuzzleSession(
         canvas,
         prepared.puzzle,
         prepared.artwork,
         subject,
-        { reducedMotion, lightnessAssist: settings.lightnessAssist, lit: !reducedMotion },
+        {
+          reducedMotion,
+          lightnessAssist: settings.lightnessAssist,
+          lit: !reducedMotion,
+          cooling: Boolean(category.twists?.cooling),
+        },
         {
           onFact: showFact,
           onProgress: (correct, total, moves) => {
             progressLabel.textContent = `${correct} / ${total} placed`;
             movesLabel.textContent = `${moves} ${moves === 1 ? 'move' : 'moves'}`;
+          },
+          onPlaced: (count) => {
+            // Counted everywhere, so cores are earned on any board; the label
+            // and button only exist where one can be spent.
+            const before = coresBanked(loadProgress());
+            const after = coresBanked(recordPlacements(count));
+            updateCores();
+            if (coresAllowed && after > before) flash('A core sample is yours.');
+          },
+          onCoreKey: useCore,
+          onCore: () => {
+            recordCoreSpent();
+            updateCores();
           },
           onSolved: (moves) => {
             solvedMoves = moves;
@@ -325,6 +405,7 @@ export function puzzleScreen(
             host.refreshProgress();
             undoButton.disabled = true;
             hintButton.disabled = true;
+            coreButton.disabled = true;
             // Get the toasts out of the way of the artwork; the reveal panel
             // later lists every fact found anyway.
             clear(toasts);
@@ -341,6 +422,13 @@ export function puzzleScreen(
       if (!reducedMotion) {
         session.preview(PREVIEW_MS);
         flash('Remember this.');
+      }
+      // Said once, up front, so the big step reads as the record's and not as
+      // the player's misjudgement.
+      if (unconformity) {
+        window.setTimeout(() => {
+          if (!destroyed) flash('A span of this record is missing. Expect one large step.');
+        }, reducedMotion ? 0 : PREVIEW_MS + 400);
       }
     } catch (error) {
       status.className = 'loading loading-error';

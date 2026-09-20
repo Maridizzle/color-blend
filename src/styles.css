@@ -821,6 +821,15 @@ summary {
   color: var(--gold-bright);
 }
 
+.stat-cores:not(:empty) {
+  color: var(--gold-bright);
+}
+
+/* A core is armed: the board is a drill site until a column is tapped. */
+.board-coring {
+  cursor: crosshair;
+}
+
 .board-wrap {
   flex: 1;
   min-height: 0;

@@ -1,4 +1,5 @@
 import { type Oklab, oklabToHex } from '../color/oklab';
+import { fitToGamut } from '../color/gamut';
 import type { Puzzle } from '../puzzle/generator';
 import { arrangementOf } from '../puzzle/generator';
 import type { Cell, Point } from '../puzzle/lattice';
@@ -24,11 +25,62 @@ const SPARKS_PER_LANDING = 16;
  */
 const TOUCH_LIFT = 0.55;
 
+/**
+ * Cooling: the board opens hot and settles to its true colours as it is played.
+ *
+ * The lift is the same on every tile, and that is what makes it honest. The
+ * sort is by lightness, and a constant offset cannot change an ordering, so a
+ * hot board is exactly as sortable as a cold one; the player is never asked to
+ * see through the heat, only to watch it go. Chroma is fitted to gamut after
+ * the lift, and fitting holds lightness fixed, so even the clipping cannot
+ * reorder anything.
+ *
+ * Nothing waits on it. It is atmosphere -- the flow setting while you read it
+ * -- and when it has cooled the board is simply the board.
+ */
+export const COOLING_TUNING = {
+  /** How long the board takes to reach its true colours. */
+  durationMs: 180_000,
+  /** Lightness added to every tile at full heat. */
+  lift: 0.05,
+  /** Oklab a (toward red) and b (toward yellow) added at full heat: the colour of ember. */
+  warmA: 0.025,
+  warmB: 0.05,
+} as const;
+
+/** How long a drilled core stays readable beside its column. */
+const CORE_MS = 1800;
+/** Cells whose centre lies within this many tile-widths of the tapped one are the column. */
+const CORE_COLUMN_REACH = 0.51;
+
 export interface SessionCallbacks {
   onFact(factIndex: number, text: string): void;
   onProgress(correct: number, total: number, moves: number): void;
+  /** Tiles that have just landed correctly for the first time this play. */
+  onPlaced(count: number): void;
+  /** The keyboard asked for a core; the screen decides whether one can be spent. */
+  onCoreKey(): void;
+  /** A core was drilled. */
+  onCore(): void;
   onSolved(moves: number): void;
   onRevealDone(): void;
+}
+
+/** A tile colour under the heat of a board that has not cooled yet. */
+export function heated(color: Oklab, heat: number): Oklab {
+  if (heat <= 0) return color;
+  const { lift, warmA, warmB } = COOLING_TUNING;
+  return fitToGamut({
+    L: color.L + lift * heat,
+    a: color.a + warmA * heat,
+    b: color.b + warmB * heat,
+  });
+}
+
+/** Heat left in a board `elapsed` ms after it opened: full at first, falling fast, then slowly to nothing. */
+export function heatAfter(elapsed: number): number {
+  const t = Math.min(1, Math.max(0, elapsed / COOLING_TUNING.durationMs));
+  return Math.pow(1 - t, 2);
 }
 
 /** A tile in the player's hand. */
@@ -71,11 +123,24 @@ interface SparkInFlight {
 export class PuzzleSession {
   private renderer: BoardRenderer;
   private arrangement: Arrangement;
+  /** The colour actually in each cell, by cell id, before any heat. */
+  private trueColors: Oklab[];
+  /** What is drawn in each cell: the true colour under whatever heat is left. */
   private colors: string[];
   private lightness: number[];
   private moves = 0;
   private undoStack: [number, number][] = [];
   private firedFacts = new Set<number>();
+  /** Cells that have been correct at some point this play, so a placement counts once. */
+  private everCorrect = new Set<number>();
+
+  /** Heat left in the board, 1 at opening and 0 once cooled; always 0 without the twist. */
+  private heat = 0;
+  private openedAt = performance.now();
+
+  /** A core is armed: the next tap on the board drills it. */
+  private coring = false;
+  private core: { cells: number[]; start: number } | null = null;
 
   private carry: Carry | null = null;
   private target: number | null = null;
@@ -105,13 +170,27 @@ export class PuzzleSession {
     private puzzle: Puzzle,
     private artwork: Artwork,
     private subject: Subject,
-    private options: { reducedMotion: boolean; lightnessAssist: boolean; lit: boolean },
+    private options: {
+      reducedMotion: boolean;
+      lightnessAssist: boolean;
+      lit: boolean;
+      /** The board opens hot and cools. Off under reduced motion, like the rest of the light. */
+      cooling?: boolean;
+    },
     private callbacks: SessionCallbacks,
   ) {
     this.renderer = new BoardRenderer(canvas);
     this.arrangement = arrangementOf(puzzle);
-    this.colors = puzzle.order.map((tile) => oklabToHex(puzzle.tileColors[tile] as Oklab));
+    this.trueColors = puzzle.order.map((tile) => puzzle.tileColors[tile] as Oklab);
     this.lightness = puzzle.order.map((tile) => (puzzle.tileColors[tile] as Oklab).L);
+    this.heat = options.cooling && !options.reducedMotion ? 1 : 0;
+    this.colors = this.drawnColors(this.trueColors);
+
+    // Whatever the shuffle left correct, starters included, was not placed by
+    // anyone and earns nothing.
+    for (let i = 0; i < puzzle.order.length; i++) {
+      if (isCellCorrect(this.arrangement, i)) this.everCorrect.add(i);
+    }
 
     this.renderer.setLattice(puzzle.lattice);
     this.attach();
@@ -147,14 +226,13 @@ export class PuzzleSession {
    */
   preview(ms: number): void {
     if (this.previewing || ms <= 0) return;
-    const shuffled = { colors: this.colors, lightness: this.lightness };
+    const shuffled = { trueColors: this.trueColors, lightness: this.lightness };
 
-    this.colors = this.puzzle.lattice.cells.map((c) =>
-      oklabToHex(this.puzzle.targets[c.id] as Oklab),
-    );
+    this.trueColors = this.puzzle.lattice.cells.map((c) => this.puzzle.targets[c.id] as Oklab);
     this.lightness = this.puzzle.lattice.cells.map(
       (c) => (this.puzzle.targets[c.id] as Oklab).L,
     );
+    this.colors = this.drawnColors(this.trueColors);
     this.previewing = true;
     this.dropEverything();
     this.dirty = true;
@@ -162,11 +240,77 @@ export class PuzzleSession {
     this.previewTimer = setTimeout(() => {
       this.previewTimer = null;
       if (this.destroyed) return;
-      this.colors = shuffled.colors;
+      this.trueColors = shuffled.trueColors;
       this.lightness = shuffled.lightness;
+      this.colors = this.drawnColors(this.trueColors);
       this.previewing = false;
       this.dirty = true;
     }, ms);
+  }
+
+  /** The CSS colour each of `colors` is drawn as under the board's current heat. */
+  private drawnColors(colors: readonly Oklab[]): string[] {
+    return colors.map((c) => oklabToHex(heated(c, this.heat)));
+  }
+
+  /**
+   * Let the board cool by however long has passed. Redraws only when the heat
+   * has moved enough to show, so a cooling board is not a three-minute
+   * animation at sixty frames a second.
+   */
+  private cool(now: number): void {
+    if (this.heat <= 0) return;
+    const next = Math.ceil(heatAfter(now - this.openedAt) * 200) / 200;
+    if (next === this.heat) return;
+    this.heat = next;
+    this.colors = this.drawnColors(this.trueColors);
+    this.dirty = true;
+  }
+
+  // ---------------------------------------------------------------- cores
+
+  /**
+   * Arm a core: the next tap on the board drills its column. The screen owns
+   * the bank and calls this only when there is a core to spend; the session
+   * only knows how to drill.
+   */
+  armCore(): boolean {
+    if (this.solved || this.previewing || this.coring) return false;
+    this.dropEverything();
+    this.coring = true;
+    this.canvas.classList.add('board-coring');
+    this.dirty = true;
+    return true;
+  }
+
+  disarmCore(): void {
+    if (!this.coring) return;
+    this.coring = false;
+    this.canvas.classList.remove('board-coring');
+    this.dirty = true;
+  }
+
+  isCoring(): boolean {
+    return this.coring;
+  }
+
+  /**
+   * Drill the column through `cellId`: every cell whose centre lies within
+   * half a tile of its vertical line, top to bottom. Half a tile rather than a
+   * grid index, so a hex or triangle board -- where alternate rows sit half a
+   * cell over -- gives a core that zigzags down one column rather than nothing.
+   */
+  private drill(cellId: number): void {
+    const cells = this.puzzle.lattice.cells;
+    const at = cells[cellId] as Cell;
+    const reach = this.renderer.cellSize() * CORE_COLUMN_REACH;
+    const column = cells
+      .filter((c) => Math.abs(c.cx - at.cx) <= reach)
+      .sort((a, b) => a.cy - b.cy)
+      .map((c) => c.id);
+    this.core = { cells: column, start: performance.now() };
+    this.disarmCore();
+    this.callbacks.onCore();
   }
 
   setLightnessAssist(on: boolean): void {
@@ -184,6 +328,13 @@ export class PuzzleSession {
   private onPointerDown = (event: PointerEvent) => {
     if (this.solved || this.previewing || this.carry) return;
     const cell = this.renderer.pickAtClient(event.clientX, event.clientY);
+    // An armed core drills whatever column is tapped, starters included; a tap
+    // on the ground puts the drill away and costs nothing.
+    if (this.coring) {
+      if (cell === null) this.disarmCore();
+      else this.drill(cell);
+      return;
+    }
     // A locked starter, or the ground between tiles, is simply not a handle.
     if (cell === null || this.puzzle.locked[cell]) return;
 
@@ -273,10 +424,20 @@ export class PuzzleSession {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       this.keyboard = true;
+      if (this.coring) {
+        if (this.cursor !== null) this.drill(this.cursor);
+        return;
+      }
       this.activateCursor();
     } else if (event.key === 'Escape') {
       this.held = null;
+      this.disarmCore();
       this.dirty = true;
+    } else if (event.key === 'c' || event.key === 'C') {
+      event.preventDefault();
+      this.keyboard = true;
+      if (this.coring) this.disarmCore();
+      else this.callbacks.onCoreKey();
     }
   };
 
@@ -351,6 +512,9 @@ export class PuzzleSession {
     swap(this.puzzle.order, a, b);
     this.colors[a] = colorB;
     this.colors[b] = colorA;
+    const trueA = this.trueColors[a] as Oklab;
+    this.trueColors[a] = this.trueColors[b] as Oklab;
+    this.trueColors[b] = trueA;
     const lightA = this.lightness[a] as number;
     this.lightness[a] = this.lightness[b] as number;
     this.lightness[b] = lightA;
@@ -368,6 +532,16 @@ export class PuzzleSession {
     if (!wasRightA && isCellCorrect(this.arrangement, a)) this.sparkle(a);
     if (!wasRightB && isCellCorrect(this.arrangement, b)) this.sparkle(b);
     this.dirty = true;
+
+    // A placement is a tile landing right for the first time this play. Undo
+    // and redo, or lifting a right tile and putting it back, earn nothing.
+    let placed = 0;
+    for (const cell of [a, b]) {
+      if (this.everCorrect.has(cell) || !isCellCorrect(this.arrangement, cell)) continue;
+      this.everCorrect.add(cell);
+      placed++;
+    }
+    if (placed > 0) this.callbacks.onPlaced(placed);
 
     this.checkFacts();
     this.reportProgress();
@@ -484,6 +658,11 @@ export class PuzzleSession {
     for (const [cellId, start] of this.pulses) {
       if (now - start >= PULSE_DURATION) this.pulses.delete(cellId);
     }
+    if (this.core && now - this.core.start >= CORE_MS) {
+      this.core = null;
+      this.dirty = true;
+    }
+    if (!this.solved) this.cool(now);
 
     // Under the light the finished picture keeps breathing, so the reveal stays
     // live after it is done; one gradient and one drawImage a frame.
@@ -491,6 +670,7 @@ export class PuzzleSession {
       this.flights.length > 0 ||
       this.sparks.length > 0 ||
       this.pulses.size > 0 ||
+      this.core !== null ||
       (this.solved && (!this.revealDone || this.options.lit));
 
     if (this.dirty || animating) {
@@ -522,6 +702,24 @@ export class PuzzleSession {
       gold: spark.gold,
     }));
 
+    // The crust: tiles that have set. Only a cooling board shows it, and it is
+    // texture, never a colour change, so the heat stays the same on every tile.
+    const crust = this.options.cooling
+      ? this.puzzle.order.map((_, cellId) => isCellCorrect(this.arrangement, cellId))
+      : null;
+
+    // The core is drawn under the same heat as the tiles it sits beside, so
+    // the comparison it invites is a fair one.
+    const core = this.core
+      ? {
+          cells: this.core.cells,
+          colors: this.core.cells.map((id) =>
+            oklabToHex(heated(this.puzzle.targets[id] as Oklab, this.heat)),
+          ),
+          t: Math.min(1, (now - this.core.start) / CORE_MS),
+        }
+      : null;
+
     let reveal: BoardView['reveal'] = null;
     if (this.solved && this.revealPlan && this.revealStart !== null) {
       const state = revealStateAt(now - this.revealStart, this.options.reducedMotion);
@@ -551,6 +749,9 @@ export class PuzzleSession {
       pulses,
       reveal,
       lightnessAssist: this.options.lightnessAssist,
+      crust,
+      core,
+      coring: this.coring,
     };
   }
 

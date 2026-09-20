@@ -65,6 +65,16 @@ export interface BoardView {
   pulses: Map<number, number>;
   reveal: { state: RevealState; plan: RevealPlan; artwork: HTMLCanvasElement } | null;
   lightnessAssist: boolean;
+  /**
+   * On a cooling board, the tiles that have set: drawn with a faint crackle
+   * of crust. Null on every other board. Texture only -- the colour under it
+   * is the same colour every other tile is drawn in.
+   */
+  crust: boolean[] | null;
+  /** A drilled core: the true colour of each cell in one column, shown for a moment beside the tiles. */
+  core: { cells: number[]; colors: string[]; t: number } | null;
+  /** A core is armed and waiting for a column to be tapped. */
+  coring: boolean;
 }
 
 // Keep the playing field perceptually neutral even though the surrounding UI
@@ -215,11 +225,13 @@ export class BoardRenderer {
       const pulse = view.pulses.get(cell.id);
       const press = cell.id === view.target ? TARGET_PRESS : 1;
       this.fillCell(cell, view.colors[cell.id] ?? '#000', 1, pulse, press);
+      if (view.crust?.[cell.id]) this.drawCrust(cell, view.lightness[cell.id] ?? 0);
       if (view.locked[cell.id]) this.drawLockMark(cell);
       if (view.lightnessAssist) this.drawLightnessMark(cell, view.lightness[cell.id] ?? 0);
     }
 
     for (const flight of view.flights) this.drawFlight(flight);
+    if (view.core) this.drawCore(view.core);
 
     if (view.held !== null) {
       const cell = lattice.cells[view.held];
@@ -345,6 +357,74 @@ export class BoardRenderer {
     ctx.beginPath();
     ctx.arc(px, py, radius, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * The crust on a tile that has set: three short cracks, placed by the cell's
+   * id so they never move, in a dark or light hairline to suit the tile. Kept
+   * faint and well inside the tile, so the colour still reads as the colour.
+   */
+  private drawCrust(cell: Cell, lightness: number): void {
+    const { ctx } = this;
+    const [px, py] = project(this.transform, cell.cx, cell.cy);
+    const cellPx = this.typicalCell * this.transform.scale;
+    const reach = cellPx * 0.3;
+    ctx.save();
+    ctx.strokeStyle = lightness > 0.55 ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = Math.max(0.8, cellPx * 0.018);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < 3; i++) {
+      // A small deterministic scatter from the id: the same crust every frame.
+      const seed = (cell.id * 7919 + i * 104729) % 360;
+      const angle = (seed * Math.PI) / 180;
+      const turn = angle + ((seed % 47) - 23) * 0.02;
+      const startR = reach * (0.15 + (seed % 5) * 0.08);
+      const endR = reach * (0.6 + (seed % 3) * 0.13);
+      ctx.moveTo(px + Math.cos(angle) * startR, py + Math.sin(angle) * startR);
+      ctx.lineTo(px + Math.cos(turn) * endR, py + Math.sin(turn) * endR);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * A drilled core: a narrow capsule down the column, each cell's stretch of
+   * it filled with that cell's true colour, so the column's real order can be
+   * read beside the tiles that are in it now. Fades over its last third.
+   */
+  private drawCore(core: NonNullable<BoardView['core']>): void {
+    const { ctx, lattice } = this;
+    if (!lattice) return;
+    const alpha = core.t < 0.66 ? 1 : 1 - (core.t - 0.66) / 0.34;
+    const cellPx = this.typicalCell * this.transform.scale;
+    const width = cellPx * 0.3;
+    const rim = Math.max(1, cellPx * 0.03);
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    core.cells.forEach((id, i) => {
+      const cell = lattice.cells[id];
+      if (!cell) return;
+      let top = Infinity;
+      let bottom = -Infinity;
+      for (const [, y] of cell.poly) {
+        const py = project(this.transform, 0, y)[1];
+        if (py < top) top = py;
+        if (py > bottom) bottom = py;
+      }
+      const [px] = project(this.transform, cell.cx, 0);
+      const inset = Math.max(1, (bottom - top) * 0.06);
+      ctx.fillStyle = 'rgba(8,7,10,0.85)';
+      ctx.beginPath();
+      ctx.roundRect(px - width / 2 - rim, top + inset - rim, width + 2 * rim, bottom - top - 2 * inset + 2 * rim, width / 3);
+      ctx.fill();
+      ctx.fillStyle = core.colors[i] ?? '#000';
+      ctx.beginPath();
+      ctx.roundRect(px - width / 2, top + inset, width, bottom - top - 2 * inset, width / 4);
+      ctx.fill();
+    });
     ctx.restore();
   }
 
