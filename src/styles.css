@@ -2687,3 +2687,118 @@ summary {
     left: 18px;
   }
 }
+
+/* --------------------------------------------------------- font size picker */
+
+.setting:has(.font-size-group) {
+  flex-wrap: wrap;
+}
+
+.setting:has(.font-size-group)::after {
+  display: none;
+}
+
+.font-size-group {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.font-size-btn {
+  padding: 6px 14px;
+  border: 1px solid rgb(163 161 155 / 35%);
+  border-radius: var(--radius);
+  background: var(--stone);
+  color: var(--vellum-dim);
+  font: 500 15px var(--serif);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.font-size-btn:hover {
+  border-color: var(--vellum-dim);
+  color: var(--vellum);
+}
+
+.font-size-active {
+  background: var(--wine);
+  border-color: var(--wine-bright);
+  color: var(--vellum);
+}
+
+/* --------------------------------------------------- font size: large */
+
+html[data-font-size="large"] body {
+  font-size: 21px;
+}
+
+html[data-font-size="large"] .setting-text strong,
+html[data-font-size="large"] .nav-label,
+html[data-font-size="large"] .road-title {
+  font-size: 23px;
+}
+
+html[data-font-size="large"] .setting-desc,
+html[data-font-size="large"] .button,
+html[data-font-size="large"] .road-blurb {
+  font-size: 18px;
+}
+
+html[data-font-size="large"] .toast {
+  font-size: 20px;
+}
+
+html[data-font-size="large"] .card-title {
+  font-size: 21px;
+}
+
+html[data-font-size="large"] .card-desc,
+html[data-font-size="large"] .fact-text,
+html[data-font-size="large"] .reveal-blurb {
+  font-size: 18px;
+}
+
+html[data-font-size="large"] .card-badge,
+html[data-font-size="large"] .gallery-count,
+html[data-font-size="large"] .reveal-credit {
+  font-size: 14px;
+}
+
+/* --------------------------------------------------- font size: larger */
+
+html[data-font-size="larger"] body {
+  font-size: 24px;
+}
+
+html[data-font-size="larger"] .setting-text strong,
+html[data-font-size="larger"] .nav-label,
+html[data-font-size="larger"] .road-title {
+  font-size: 27px;
+}
+
+html[data-font-size="larger"] .setting-desc,
+html[data-font-size="larger"] .button,
+html[data-font-size="larger"] .road-blurb {
+  font-size: 21px;
+}
+
+html[data-font-size="larger"] .toast {
+  font-size: 23px;
+}
+
+html[data-font-size="larger"] .card-title {
+  font-size: 25px;
+}
+
+html[data-font-size="larger"] .card-desc,
+html[data-font-size="larger"] .fact-text,
+html[data-font-size="larger"] .reveal-blurb {
+  font-size: 21px;
+}
+
+html[data-font-size="larger"] .card-badge,
+html[data-font-size="larger"] .gallery-count,
+html[data-font-size="larger"] .reveal-credit {
+  font-size: 16px;
+}
