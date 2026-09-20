@@ -2,7 +2,7 @@ import { formatReport, ingestPack } from '../content/ingest';
 import { loadArtwork } from '../content/artwork';
 import { addPackCategory, allCategories, findCategory, findSubject } from '../game/library';
 import { DIFFICULTY_RAMP } from '../game/prepare';
-import { clearProgress, loadProgress, loadSettings, saveSettings, type Settings } from '../game/persistence';
+import { applyFontSize, clearProgress, loadProgress, loadSettings, saveSettings, type FontSize, type Settings } from '../game/persistence';
 import { button, clear, el } from './dom';
 import { puzzleScreen } from './puzzleScreen';
 import { categoryFlash, introSplash, type Dismissable } from './intro';
@@ -46,6 +46,7 @@ export class App {
     const settings = loadSettings();
     // The light layer: on unless motion is reduced, by the system or in Settings.
     applyLighting(prefersReducedMotion(settings));
+    applyFontSize(settings.fontSize);
     this.showOverlay(
       introSplash(prefersReducedMotion(settings), () => {
         this.clearOverlay();
@@ -521,9 +522,46 @@ export class App {
 
     const update = (patch: Partial<Settings>) => {
       saveSettings({ ...loadSettings(), ...patch });
-      // Reduced motion is the one switch the light layer answers to.
       applyLighting(prefersReducedMotion(loadSettings()));
+      applyFontSize(loadSettings().fontSize);
     };
+
+    const fontSizeOptions: { value: FontSize; label: string }[] = [
+      { value: 'default', label: 'Default' },
+      { value: 'large', label: 'Large' },
+      { value: 'larger', label: 'Larger' },
+    ];
+
+    const fontSizePicker = (() => {
+      const buttons = fontSizeOptions.map(({ value, label }) => {
+        const btn = el('button', {
+          class: `font-size-btn${settings.fontSize === value ? ' font-size-active' : ''}`,
+          text: label,
+          attrs: { type: 'button', 'data-size': value },
+        });
+        btn.addEventListener('click', () => {
+          update({ fontSize: value });
+          for (const b of buttons) {
+            b.classList.toggle('font-size-active', b.dataset.size === value);
+          }
+        });
+        return btn;
+      });
+
+      return el('div', {
+        class: 'setting',
+        children: [
+          el('span', {
+            class: 'setting-text',
+            children: [
+              el('strong', { text: 'Font size' }),
+              el('span', { class: 'setting-desc', text: 'Make text larger across the whole game.' }),
+            ],
+          }),
+          el('div', { class: 'font-size-group', children: buttons }),
+        ],
+      });
+    })();
 
     return el('section', {
       class: 'screen screen-list',
@@ -541,6 +579,7 @@ export class App {
           settings.reducedMotion === true,
           (next) => update({ reducedMotion: next ? true : null }),
         ),
+        fontSizePicker,
         this.resetSection(),
       ],
     });

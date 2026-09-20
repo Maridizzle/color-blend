@@ -20,10 +20,13 @@ export interface Progress {
   facts: Record<string, number[]>;
 }
 
+export type FontSize = 'default' | 'large' | 'larger';
+
 export interface Settings {
   /** null follows the OS's prefers-reduced-motion setting. */
   reducedMotion: boolean | null;
   lightnessAssist: boolean;
+  fontSize: FontSize;
   /**
    * Whether the instructions have been shown once already.
    *
@@ -38,6 +41,7 @@ const DEFAULT_PROGRESS: Progress = { solved: {}, facts: {} };
 const DEFAULT_SETTINGS: Settings = {
   reducedMotion: null,
   lightnessAssist: false,
+  fontSize: 'default',
   seenHowToPlay: false,
 };
 
@@ -119,4 +123,10 @@ export function prefersReducedMotion(settings: Settings): boolean {
   } catch {
     return false;
   }
+}
+
+export function applyFontSize(size: FontSize): void {
+  const el = document.documentElement;
+  el.removeAttribute('data-font-size');
+  if (size !== 'default') el.setAttribute('data-font-size', size);
 }
