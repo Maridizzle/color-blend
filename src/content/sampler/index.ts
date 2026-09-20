@@ -864,4 +864,261 @@ export const SAMPLER_CATEGORIES: Category[] = [
       },
     ],
   },
+  /**
+   * The Record: the rock record, and what it is like to read one.
+   *
+   * The only collection that carries twists. Some of its boards are missing a
+   * span of the ramp, the way the rock is missing a span of time; its boards
+   * open hot and cool as they are sorted; and it is where core samples are
+   * drilled. See `CategoryTwists` and `src/game/cores.ts`.
+   *
+   * Facts were checked against the sources listed above each folio, all of
+   * them government surveys, national parks, universities or museums.
+   */
+  {
+    id: 'the-record',
+    title: 'The Record',
+    blurb: 'Stone that kept the time, and where it did not.',
+    twists: { unconformity: { from: 0.08, to: 0.9 }, cooling: true, cores: true },
+    subjects: [
+      // Sources: usgs.gov/news/volcano-watch-pahoehoe-and-aa-lava-flows;
+      // usgs.gov/faqs/how-hot-a-hawaiian-volcano; usgs.gov/news/volcano-watch-why-2018-lava-still-so-hot;
+      // pubs.usgs.gov/publication/70012218; nps.gov/articles/000/lava-flow-forms.htm
+      {
+        id: 'pahoehoe',
+        title: 'Pāhoehoe',
+        blurb: 'A river of stone, still writing.',
+        hue: 257,
+        artwork: { kind: 'url', url: './artwork/pahoehoe.jpg' },
+        facts: [
+          'Pāhoehoe and ʻaʻā are Hawaiian words, taken up by geologists everywhere for the two faces of basalt lava: pāhoehoe smooth, billowy and ropy, ʻaʻā a rubble of sharp clinker.',
+          'The ropes are a skin being dragged. Lava moving underneath pulls its cooling crust along, and the crust wrinkles and folds over itself like the skin on a pan of hot milk.',
+          'Kīlauea’s lava leaves the vent at about 1,170 °C. Travelling ten kilometres to the sea inside tubes roofed by its own crust, it arrived still at about 1,140 °C: the roof is that good an insulator.',
+          'Pāhoehoe can turn into ʻaʻā if it is made to keep moving as it thickens and cools. The change runs one way only. ʻAʻā never becomes pāhoehoe again.',
+          'Nearly all Hawaiian basalt erupts as pāhoehoe. The ʻaʻā you see on the slopes is what some of it became downstream.',
+        ],
+      },
+      // Sources: serc.carleton.edu/NAGTWorkshops/sedimentary/images/mudcracks.html;
+      // commons.wvc.edu/rdawes/g101ocl/basics/depoenvirons.html; journals.uchicago.edu/doi/pdf/10.1086/622446;
+      // nasa.gov/image-article/mars-rovers-mastcam-view-of-possible-mud-cracks;
+      // nasa.gov/missions/mars-science-laboratory/curiosity-rover/cracks-in-ancient-martian-mud-surprise-nasas-curiosity-rover-team
+      {
+        id: 'mud-cracks',
+        title: 'Mud Cracks',
+        blurb: 'A surface that remembers the day it dried.',
+        hue: 51,
+        artwork: { kind: 'url', url: './artwork/mud-cracks.jpg' },
+        facts: [
+          'Wet clay shrinks as it dries. The surface goes first, splits under the strain, and the cracks run and join until the whole bed is tiled with polygons.',
+          'The spacing keeps a record of the weather: mud that dried quickly cracks into wide polygons, and mud that dried slowly into small, close ones.',
+          'Find the pattern in ancient rock and it tells you two things at once. This side was the top, and the air reached it: whatever water had covered the bed had gone.',
+          'In 2017 NASA’s Curiosity rover confirmed mud cracks on Mars, in mudstone laid down in the lakes that filled Gale Crater about three and a half billion years ago.',
+          'In 2021 it found hexagonal cracks that only form when mud is wetted and dried over and over, perhaps with the seasons. Wet-and-dry cycling is thought to help, and maybe be needed, for the chemistry that leads to life.',
+        ],
+      },
+      // Sources: people.uwec.edu/jolhm/cave/caveform2.htm; nps.gov/articles/000/exploring-the-worlds-longest-known-cave.htm;
+      // usgs.gov/geology-and-ecology-of-national-parks/geology-mammoth-cave-national-park;
+      // ncbi.nlm.nih.gov/pmc/articles/PMC4464153
+      {
+        id: 'the-cave',
+        title: 'The Cave',
+        blurb: 'Stone that grows a centimetre a century.',
+        hue: 26,
+        artwork: { kind: 'url', url: './artwork/the-cave.jpg' },
+        facts: [
+          'Rain takes carbon dioxide from the air and the soil and becomes a weak acid, which dissolves limestone on its way down. Where a drop meets the cave’s air the gas escapes, and the stone comes back out of the water.',
+          'A stalactite begins as a soda straw: a hollow tube, the water running down its middle. A stalagmite grows up from the floor where the drops land, and where the two meet they make a column.',
+          'They grow at about a centimetre a century. A column as tall as a person has been growing since before there were pyramids.',
+          'A stalagmite is a climate archive. Its layers are annual, and the chemistry of each one records the rain and the temperature of that year, so a single stone can hold three thousand years, one at a time.',
+          'Mammoth Cave in Kentucky is the longest known cave in the world, with more than 420 miles of passage mapped, and it grows each year as more is surveyed.',
+        ],
+      },
+      // Sources: gia.edu/opal-description; ga.gov.au/education/minerals-energy/australian-mineral-facts/opal;
+      // energymining.sa.gov.au/industry/minerals-and-mining/mineral-commodities/opal
+      {
+        id: 'opal',
+        title: 'Opal',
+        blurb: 'Water, sand, and light bending between them.',
+        hue: 283,
+        artwork: { kind: 'url', url: './artwork/opal.jpg' },
+        facts: [
+          'Opal is silica with water locked in it, anywhere from 3 to 21 per cent by weight and usually 6 to 10. It has no crystal structure at all, so it is classed as a mineraloid rather than a mineral.',
+          'The colour is not in the stone. Precious opal is built of silica spheres packed in a regular grid, and light diffracts as it passes between them, splitting into its colours the way it does off a compact disc.',
+          'The size of the spheres sets the colour. Spheres about a tenth of a micron across give violet, spheres about two tenths give red, and every size between gives the rest of the rainbow.',
+          'Opal formed where silica-rich water filled crevices in rock and slowly dried. Where the spheres settled all of one size and in order, there is play of colour; where they settled jumbled, there is common opal, and no colour at all.',
+          'Australia produces around 95 per cent of the world’s precious opal, and has made it the national gemstone.',
+        ],
+      },
+      // Sources: science.nasa.gov/science-research/earth-science/climate-science/core-questions-an-introduction-to-ice-cores;
+      // climate.mit.edu/ask-mit/when-scientists-reconstruct-ancient-climates-ice-cores-how-do-they-create-accurate-timeline;
+      // giss.nasa.gov/pubs/abs/ma03700t.html; ncei.noaa.gov/pub/data/paleo/icecore/antarctica/epica_domec/edc3deuttemp2007-noaa.txt;
+      // geoinfo.nmt.edu/staff/dunbar/research/ice_cores.html; princeton.edu/news/2019/11/21/two-million-year-old-ice-cores-provide-first-direct-observations-ancient-climate;
+      // news.oregonstate.edu/news/six-million-year-old-ice-discovered-antarctica-offers-unprecedented-window-warmer-earth
+      {
+        id: 'ice-core',
+        title: 'The Ice Core',
+        blurb: 'Old air, kept in a bottle of old snow.',
+        hue: 231,
+        artwork: { kind: 'url', url: './artwork/ice-core.jpg' },
+        facts: [
+          'The bubbles in an ice core are younger than the ice around them, sometimes by thousands of years. Snow takes that long to compress into ice, and until it does the buried air still breathes with the sky.',
+          'The EPICA core from Dome C in Antarctica reaches back 800,000 years, nearly twice as far as the famous Vostok core, and its bubbles hold the actual atmosphere of each of those years.',
+          'Temperature is read from the water itself. Heavy and light forms of hydrogen and oxygen fall as snow in proportions that shift with the cold, so each layer carries a thermometer reading.',
+          'A volcanic eruption leaves a layer of ash with a chemical fingerprint. Match it to an eruption of known date and that depth in the core has an exact age, whatever the layer-counting said.',
+          'Old ice does not have to be deep. In the Allan Hills of Antarctica, where ancient ice is pushed up near the surface, cores have been recovered two million years old, and ice of about six million years has now been reported.',
+        ],
+      },
+      // Sources: nhm.ac.uk/discover/what-is-an-ammonite.html; geol.umd.edu/~tholtz/G102/lectures/102correl.html;
+      // ncbi.nlm.nih.gov/pmc/articles/PMC8580234; kirkby.esci.umn.edu/displays/tate-150/ammonite
+      {
+        id: 'index-fossil',
+        title: 'Index Fossil',
+        blurb: 'A shell that dates the stone it lies in.',
+        hue: 129,
+        artwork: { kind: 'url', url: './artwork/index-fossil.jpg' },
+        facts: [
+          'Ammonites were shelled cephalopods, relatives of the squid, the octopus and the nautilus. They died out 66 million years ago, in the same extinction that took the dinosaurs.',
+          'They make ideal index fossils because each species lasted only a few million years and yet spread through seas around the world. Find one, and you know roughly when the rock around it was laid down.',
+          'Much of the Mesozoic rock of Europe has been divided into ammonite zones, so a layer in one country can be matched to a layer in another by the species they share.',
+          'The largest known ammonite, Parapuzosia seppenradensis, was found in Germany at 1.8 metres across, and incomplete. Whole, it may have reached two and a half to three and a half metres.',
+          'The name is Roman. Pliny the Elder called them cornu Hammonis, the horns of Ammon, after the Egyptian god who was shown with the coiled horns of a ram.',
+        ],
+      },
+      // Sources: pirt.asu.edu/node/5981; calvin.edu/sites/default/files/2024-09/Case-14-Fluorescent-Minerals.pdf;
+      // eeps.washu.edu/glowing-rocks; dep.nj.gov (Bulletin 65, The Minerals of Franklin and Sterling Hill);
+      // pubs.usgs.gov/pp/0180/report.pdf; geo.hunter.cuny.edu/bight/franklin.html
+      {
+        id: 'fluorescence',
+        title: 'Fluorescence',
+        blurb: 'Light a stone gives back in a colour it was never given.',
+        hue: 154,
+        artwork: { kind: 'url', url: './artwork/fluorescence.jpg' },
+        facts: [
+          'A fluorescent mineral holds a trace of an impurity, an activator such as manganese or lead. Ultraviolet light kicks its electrons up a level, and as they fall back the energy comes out as visible light.',
+          'The same mineral can glow different colours in different places, depending on which activator it happens to carry, the purity of its structure, and the wavelength of the lamp.',
+          'The zinc mines at Franklin and Sterling Hill in New Jersey have yielded well over 300 mineral species, and nearly sixty of them luminesce: more fluorescent minerals than anywhere else on Earth.',
+          'The signature of that district under the lamp is a pair: willemite glowing green beside calcite glowing red, with black franklinite between them that does not glow at all.',
+          'Some minerals go on glowing after the lamp is switched off. That afterglow is phosphorescence, the same trick spent more slowly.',
+        ],
+      },
+      // Sources: usgs.gov/observatories/hvo/news/volcano-watch-columnar-jointing-provides-clues-cooling-history-lava-flows;
+      // askanexpert.asu.edu/earthspace/top-questions/columnar-jointing; volcano.oregonstate.edu/columnar-jointing;
+      // usgs.gov/volcanoes/long-valley-caldera/science/vertical-columns-volcanic-rock-devils-postpile-national;
+      // epod.usra.edu/blog/2015/05/giants-causeway-in-northern-ireland.html
+      {
+        id: 'columnar-basalt',
+        title: 'Columnar Basalt',
+        blurb: 'Lava that cooled slowly enough to do geometry.',
+        hue: 180,
+        artwork: { kind: 'url', url: './artwork/columnar-basalt.jpg' },
+        facts: [
+          'Cooling lava shrinks. Shrinking downward is easy, the flow simply settles, but shrinking sideways is not, and so the rock cracks.',
+          'The cracks favour hexagons because a hexagonal network relieves the most stress for the least total length of fracture. Nothing designs it; the pattern is what costs least.',
+          'The columns grow at right angles to the surfaces the heat leaves through, inward from the top, the bottom and the sides, which is why they stand upright in a flat flow and fan out in a curved one.',
+          'Slow cooling gives orderly columns and fast cooling gives random rubble. The most regular columns known, such as those of the Giant’s Causeway, are thought to come from the most slowly cooled lavas of all.',
+          'At Devils Postpile in California the columns are up to 1.1 metres across and 18 metres long, in a flow up to 122 metres thick that erupted about 100,000 years ago.',
+        ],
+      },
+      // Sources: uky.edu/KGS/geoky/fieldtrip/fort_payne/geode_forms.pdf; psu.edu/news/research/story/how-do-agates-form;
+      // iowageologicalsurvey.uiowa.edu/iowa-geology/popular-interest/iowa-geodes
+      {
+        id: 'geode',
+        title: 'The Geode',
+        blurb: 'Plain outside, and no way to know until it is opened.',
+        hue: 77,
+        artwork: { kind: 'url', url: './artwork/geode.jpg' },
+        facts: [
+          'A geode begins as a hollow: a gas bubble caught in cooling lava, or a cavity left in sediment where something rotted away.',
+          'Water carrying dissolved silica seeps in through pores too small to see. Fibres of chalcedony take hold on the walls and grow inward, and the bands they leave run parallel to the wall they started from.',
+          'The colours in the bands are impurities. A trace of iron or manganese carried in with one flush of water and not the next is enough to draw a line.',
+          'If the cavity is not filled, quartz crystals grow in from the rind, each pointing at the empty centre. Which is why the same lump of rock can be a solid agate or a hollow lined with points, and nobody can tell from outside.',
+          'Iowa made the geode its state rock in 1967. The famous Keokuk geodes come from a rock formation 340 million years old and are mostly the size of an orange, between two and six inches across.',
+        ],
+      },
+      // Sources: usgs.gov/observatories/yvo/news/travertine-yellowstones-hydrothermal-timekeeper;
+      // nps.gov/places/000/mammoth-hot-springs-lower-terraces.htm; nps.gov/places/000/palette-hot-spring.htm;
+      // usgs.gov/observatories/yvo/news/outlier-yellowstones-thermal-areas-travertine-mammoth-hot-springs
+      {
+        id: 'travertine',
+        title: 'Travertine',
+        blurb: 'Limestone being made in front of you.',
+        hue: 103,
+        artwork: { kind: 'url', url: './artwork/travertine.jpg' },
+        facts: [
+          'Rain and snowmelt sink deep, are heated, and take up carbon dioxide to become a weak acid that dissolves limestone on the way back up. At the surface the pressure drops, the gas escapes as it does from an opened can, and the stone falls out of the water.',
+          'At Mammoth Hot Springs in Yellowstone the travertine grows at about three millimetres a day, one of the fastest rates of any limestone-making system known.',
+          'The water there never exceeds 73 °C at the surface. That is hot enough to kill you and cool enough for microbes, which is why the terraces are painted.',
+          'The colours are living. Colourless and yellow thermophiles grow in the hottest water, orange, brown and green in the cooler runs, and the mats they form encourage the stone to precipitate on them.',
+          'Mammoth is the odd one out in Yellowstone. The park’s other hot springs build grey silica sinter from volcanic rock; Mammoth’s water rises through buried limestone, so it builds white travertine instead.',
+        ],
+      },
+      // Sources: geo.mtu.edu/volcanoes/boris/mirror/mirrored_html/VESUVIO_79.html; volcano.oregonstate.edu/vesuvius;
+      // volcanoes.sdsu.edu/Plinian.html; volcanoes.usgs.gov/volcanic_ash/components_ash.html;
+      // bomv.commons.gc.cuny.edu/guiseppi-fiorelli-excavation-director-from-1860-1875
+      {
+        id: 'ash-fall',
+        title: 'The Ash Fall',
+        blurb: 'A city kept whole by the thing that ended it.',
+        hue: 334,
+        artwork: { kind: 'url', url: './artwork/ash-fall.jpg' },
+        facts: [
+          'In AD 79 the column over Vesuvius rose about 27 kilometres and later to 33, spreading at the top into the shape Pliny the Younger compared to an umbrella pine. He watched it from Misenum, thirty kilometres away.',
+          'Pumice fell on Pompeii for hours. By the early morning of the second day about a metre and a half of it lay on the town, and roofs had begun to give way under the weight.',
+          'What killed was not the fall but the surges: fast currents of ash and hot gas that came down the mountain when the column collapsed. The fourth reached Pompeii at about seven in the morning.',
+          'Volcanic ash is not soot. It is shards of glass and minerals from the magma, made when the melt tears apart, which is why it is abrasive, heavy when wet, and does not dissolve in rain.',
+          'The bodies of Pompeii are absences. Giuseppe Fiorelli, from 1863, poured plaster into the hollows the dead had left in the hardened ash, and the casts kept the shapes the ash had kept.',
+        ],
+      },
+      // Sources: nps.gov/articles/geologic-principles-superposition-and-original-horizontality.htm;
+      // uh.edu/~geos6g/1330/strat.html; nps.gov/articles/000/grcatime-missing-time.htm;
+      // geolsoc.org.uk/science-and-policy/100-great-geosites/historical-scientific-importance/siccar-point
+      {
+        id: 'strata',
+        title: 'Strata',
+        blurb: 'Time laid down flat, then read from the bottom up.',
+        hue: 206,
+        artwork: { kind: 'url', url: './artwork/strata.jpg' },
+        facts: [
+          'In 1669 Nicolaus Steno wrote down the first rule of reading rock: in undisturbed layers, each bed is older than the one above it and younger than the one below. Superposition is still the foundation of relative dating.',
+          'His second rule is that sediment settles flat. A layer that stands tilted or folded was moved after it formed, and the tilt is itself a record of what moved it.',
+          'His third is that a layer, when it was laid, ran on in every direction. Where the same bed shows on both sides of a valley, the valley is what is missing, not the bed.',
+          'In the Grand Canyon a single surface, the Great Unconformity, separates rocks about 1.2 billion years apart in age. Roughly a quarter of Earth’s history is simply not there.',
+          'At Siccar Point in Scotland in 1788, James Hutton read tilted strata beneath flat ones as two whole cycles of deposition, uplift and erosion, and concluded of geological time that there was “no vestige of a beginning, no prospect of an end.”',
+        ],
+      },
+      // Sources: usgs.gov/publications/origin-and-chemical-composition-evaporite-deposits;
+      // people.ku.edu/~stalder/evaporites.html; commonminerals.esci.umn.edu/minerals-g-m/halite;
+      // ncbi.nlm.nih.gov/pmc/articles/PMC12248288; ui.adsabs.harvard.edu/abs/2020GPC...18403052H
+      {
+        id: 'rock-salt',
+        title: 'Rock Salt',
+        blurb: 'A sea that dried, kept as a mineral.',
+        hue: 309,
+        artwork: { kind: 'url', url: './artwork/rock-salt.jpg' },
+        facts: [
+          'Rock made by evaporating water is called an evaporite: gypsum, anhydrite and halite, which is ordinary salt. It forms wherever a sea or a lake loses water faster than rivers and rain can put it back.',
+          'The salts come out in order, the least soluble first. Carbonates, then gypsum, then halite, and only at the very end the potassium salts, so a bed of salt reads like a countdown.',
+          'Seawater carries about 35 grams of salt per litre. Halite does not start to crystallise until the water is concentrated to about 350, ten times as strong, so nine tenths of a sea must be gone before the first grain of rock salt forms.',
+          'Between about 5.97 and 5.3 million years ago the Mediterranean was cut off from the Atlantic and largely dried up. It left evaporites kilometres thick on its floor, holding more than five per cent of all the salt in the world’s oceans.',
+          'Buried salt does not stay put. Under the weight of later sediment it flows like a slow glacier and rises through the rock above it in domes and pillars, some of them kilometres tall.',
+        ],
+      },
+      // Sources: nps.gov/articles/tectonic-folding.htm; sites.radford.edu/~jtso/GeologyofVirginia/Structures/GeologyOfVAStructures4-2e.html;
+      // open.maricopa.edu/physicalgeology/chapter/12-2-folding; kgs.ku.edu/Publications/Oil/primer05.html
+      {
+        id: 'the-fold',
+        title: 'The Fold',
+        blurb: 'Flat beds, bent by a continent leaning on them.',
+        hue: 0,
+        artwork: { kind: 'url', url: './artwork/the-fold.jpg' },
+        facts: [
+          'A fold that arches upward is an anticline and one that sags is a syncline. They almost always come together, the way a rucked carpet has both ridges and troughs.',
+          'You can tell which is which without seeing the shape. Erode the top off an anticline and the oldest rock shows in the middle; do the same to a syncline and the youngest does.',
+          'Folds are made by squeezing, where tectonic plates press together and build mountains. Rock that is warm and deep bends; rock that is cold and shallow breaks instead, into faults.',
+          'They come at every size. Some have wavelengths of tens of kilometres and hold whole ranges; others are visible only under a microscope.',
+          'An anticline is where oil is looked for. Oil and gas are lighter than water and rise through porous rock until a sealing layer stops them, and the crest of an arch is where they collect.',
+        ],
+      },
+    ],
+  },
 ];
